@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -6,75 +6,17 @@ import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-interface FormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-}
-
-export default function SignUpForm() {
-  const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
+export default function SignInForm() {
+  const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState({ width: 0, text: '', className: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const calculatePasswordStrength = (password: string) => {
-    let strength = 0;
-    
-    if (password.length > 0) strength += 25;
-    if (password.length > 8) strength += 25;
-    if (/[A-Z]/.test(password)) strength += 25;
-    if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) strength += 25;
-
-    let text = '';
-    let className = '';
-    
-    if (strength <= 25) {
-      className = 'bg-red-500';
-      text = password.length > 0 ? 'Weak security' : 'Security: Enter at least 8 characters';
-    } else if (strength <= 50) {
-      className = 'bg-orange-400';
-      text = 'Moderate security';
-    } else if (strength <= 75) {
-      className = 'bg-blue-400';
-      text = 'Strong security';
-    } else {
-      className = 'bg-emerald-500';
-      text = 'Titanium-grade security';
-    }
-
-    return { width: strength, text, className };
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    let key: keyof FormData;
-    
-    switch (id) {
-      case 'firstName':
-        key = 'firstName';
-        break;
-      case 'lastName':
-        key = 'lastName';
-        break;
-      case 'email':
-        key = 'email';
-        break;
-      case 'password':
-        key = 'password';
-        setPasswordStrength(calculatePasswordStrength(value));
-        break;
-      default:
-        return;
-    }
-    
-    setFormData(prev => ({ ...prev, [key]: value }));
+    setFormData(prev => ({ ...prev, [id]: value }));
   };
 
   const togglePassword = () => {
@@ -84,8 +26,9 @@ export default function SignUpForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log('Sign up data:', formData);
+    console.log('Sign in data:', formData);
     setIsSubmitting(false);
   };
 
@@ -104,46 +47,14 @@ export default function SignUpForm() {
         <div className="bg-background-dim p-8 md:p-12 rounded-sm">
           <header className="mb-10 text-center md:text-left">
             <h2 className="text-[32px] font-bold tracking-tight mb-2">
-              Create Account
+              Sign In
             </h2>
             <p className="text-[17px] font-light text-foreground-secondary text-pretty">
-              Join the elite circle of iStore aficionados and experience the future of technology.
+              Access your personalized iStore experience.
             </p>
           </header>
 
           <form className="space-y-8" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="flex flex-col">
-                <label className="text-xs uppercase tracking-widest text-on-surface-variant font-medium mb-1" htmlFor="firstName">
-                  First Name
-                </label>
-                <input
-                  id="firstName"
-                  className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors"
-                  placeholder="Enter first name"
-                  type="text"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label className="text-xs uppercase tracking-widest text-on-surface-variant font-medium mb-1" htmlFor="lastName">
-                  Last Name
-                </label>
-                <input
-                  id="lastName"
-                  className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors"
-                  placeholder="Enter last name"
-                  type="text"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-
             <div className="flex flex-col">
               <label className="text-xs uppercase tracking-widest text-on-surface-variant font-medium mb-1" htmlFor="email">
                 Email Address
@@ -160,9 +71,14 @@ export default function SignUpForm() {
             </div>
 
             <div className="flex flex-col space-y-3">
-              <label className="text-xs uppercase tracking-widest text-on-surface-variant font-medium mb-1" htmlFor="password">
-                Password
-              </label>
+              <div className="flex justify-between items-end">
+                <label className="text-xs uppercase tracking-widest text-on-surface-variant font-medium mb-1" htmlFor="password">
+                  Password
+                </label>
+                <Link href="#" className="text-[11px] text-foreground-secondary hover:text-black uppercase tracking-widest transition-colors mb-1">
+                  Forgot?
+                </Link>
+              </div>
               <div className="relative">
                 <input
                   id="password"
@@ -181,13 +97,6 @@ export default function SignUpForm() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-
-              {/* Strength Indicator */}
-              <div className="space-y-2">
-                <p className="text-[11px] text-foreground-secondary uppercase tracking-tight">
-                  {passwordStrength.text || 'Enter at least 8 characters'}
-                </p>
-              </div>
             </div>
 
             <button
@@ -195,7 +104,7 @@ export default function SignUpForm() {
               type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creating account...' : 'Create Account →'}
+              {isSubmitting ? 'Signing in...' : 'Sign In →'}
             </button>
           </form>
 
@@ -224,9 +133,9 @@ export default function SignUpForm() {
 
           <footer className="mt-10 text-center">
             <p className="text-sm text-foreground-secondary">
-              Already have an account?{' '}
-              <Link className="text-black font-bold hover:underline underline-offset-4" href="/signin">
-                Sign In
+              Don&apos;t have an account?{' '}
+              <Link className="text-black font-bold hover:underline underline-offset-4" href="/signup">
+                Sign Up
               </Link>
             </p>
           </footer>

@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-export default function SignUpVisual() {
+export default function SignInVisual() {
   return (
     <section className="hidden md:flex relative w-1/2 bg-white overflow-hidden items-center justify-center px-12">
       {/* Background soft gradient - very subtle */}
@@ -35,13 +35,13 @@ export default function SignUpVisual() {
            transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         >
           <span className="text-[14px] font-bold text-black mb-4 block tracking-[0.2em] uppercase">
-            Exclusive Access
+            Welcome Back
           </span>
           <h1 className="text-[48px] font-bold leading-[1.1] tracking-tight mb-6">
-            Join the Future of iStore.
+            Log in to your account.
           </h1>
           <p className="text-[19px] font-light text-foreground-secondary max-w-md mx-auto tracking-tight leading-relaxed text-pretty">
-            Experience the pinnacle of technology through a lens of absolute minimalism and craft.
+            Good to see you again. Explore what&apos;s new in the world of iStore.
           </p>
         </motion.div>
       </div>
