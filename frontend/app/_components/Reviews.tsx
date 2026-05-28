@@ -100,6 +100,8 @@ export default function Reviews() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -111,30 +113,76 @@ export default function Reviews() {
   }, []);
 
   const itemsPerView = isMobile ? 1 : 3;
+
+  // Create circular array by duplicating reviews for seamless infinite loop
+  const duplicatedReviews = [...reviews, ...reviews, ...reviews];
+  const startIndex = reviews.length;
   const totalSlides = reviews.length;
 
+  // Handle slide change with circular logic
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % totalSlides);
+    setCurrentIndex((prevIndex) => {
+      const next = prevIndex + 1;
+      return next;
+    });
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + totalSlides) % totalSlides);
+    setCurrentIndex((prevIndex) => {
+      const prev = prevIndex - 1;
+      return prev;
+    });
   };
 
   // Auto-play functionality
   useEffect(() => {
     if (!isAutoPlaying) return;
-    
+
     const interval = setInterval(() => {
       nextSlide();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, currentIndex]);
+  }, [isAutoPlaying]);
+
+  // Handle circular reset after animation
+  useEffect(() => {
+    // When we reach the end of the duplicated array, jump back to the middle seamlessly
+    if (currentIndex >= startIndex + totalSlides) {
+      // Use setTimeout to avoid animation interruption
+      setTimeout(() => {
+        setCurrentIndex(startIndex);
+      }, 0);
+    } else if (currentIndex < 0) {
+      setTimeout(() => {
+        setCurrentIndex(startIndex + totalSlides - 1);
+      }, 0);
+    }
+  }, [currentIndex, startIndex, totalSlides]);
 
   // Pause auto-play on hover
   const handleMouseEnter = () => setIsAutoPlaying(false);
   const handleMouseLeave = () => setIsAutoPlaying(true);
+
+  // Touch handlers for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 50) {
+      nextSlide();
+    }
+    if (touchStart - touchEnd < -50) {
+      prevSlide();
+    }
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
 
   return (
     <section ref={sectionRef} className="relative w-full bg-background-dim overflow-hidden py-24 md:py-32">
@@ -145,7 +193,7 @@ export default function Reviews() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
         {/* Section Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -155,32 +203,35 @@ export default function Reviews() {
           <span className="text-[13px] md:text-[15px] font-semibold text-black/40 uppercase tracking-wider mb-4 block">
             Testimonials
           </span>
-          
+
           <h2 className="text-[40px] md:text-[64px] font-bold tracking-tight mb-6 text-black leading-[1.08]">
             Loved by enthusiasts.
           </h2>
-          
+
           <p className="text-[17px] md:text-[21px] font-light text-gray-500 max-w-2xl mx-auto leading-relaxed">
             See why people are switching to the new iPhone 16 Pro.
           </p>
         </motion.div>
 
         {/* Reviews Carousel */}
-        <div 
+        <div
           className="relative"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           {/* Carousel Container */}
           <div className="overflow-hidden py-5">
-            <div 
+            <div
               className="flex transition-transform duration-500 ease-out"
-              style={{ 
-                transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
+              style={{
+                transform: `translateX(-${(currentIndex % (itemsPerView * 3)) * (100 / itemsPerView)}%)`,
               }}
             >
-              {reviews.map((review, idx) => (
-                <div 
+              {duplicatedReviews.map((review, idx) => (
+                <div
                   key={`${review.name}-${idx}`}
                   className="flex-shrink-0 px-3 bg-background-dim"
                   style={{ width: `${100 / itemsPerView}%` }}
@@ -189,16 +240,14 @@ export default function Reviews() {
                     className="group bg-background border border-border relative rounded-2xl p-8 md:p-10 transition-all duration-500 hover:-translate-y-2 h-full"
                   >
                     {/* Hover shadow effect */}
-                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                    />
-                    
                     <div className="relative z-10 flex flex-col h-full">
                       {/* Rating */}
                       <div className="mb-6">
                         <StarRating rating={review.rating} size={16} />
                       </div>
-                      
+
                       {/* Review Text with truncation */}
                       <p className="text-[16px] md:text-[17px] font-light leading-relaxed text-gray-700 mb-8 flex-grow tracking-tight">
                         {truncateText(review.text, 110)}
@@ -235,7 +284,7 @@ export default function Reviews() {
             <>
               <button
                 onClick={prevSlide}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 w-10 h-10  rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-300 z-20"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 w-10 h-10 rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-300 z-20"
                 style={{
                   boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.1)',
                 }}
@@ -262,15 +311,18 @@ export default function Reviews() {
           {/* Dots Indicator */}
           {totalSlides > itemsPerView && (
             <div className="flex justify-center gap-2 mt-8 md:mt-12">
-              {Array.from({ length: totalSlides }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentIndex(i)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    currentIndex === i ? 'bg-black w-8' : 'bg-gray-300 w-2 hover:bg-gray-400'
-                  }`}
-                />
-              ))}
+              {Array.from({ length: totalSlides }).map((_, i) => {
+                // Map current index to the actual review index in the original array
+                const activeIndex = ((currentIndex % totalSlides) + totalSlides) % totalSlides;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentIndex(startIndex + i)}
+                    className={`h-2 rounded-full transition-all duration-300 ${activeIndex === i ? 'bg-black w-8' : 'bg-gray-300 w-2 hover:bg-gray-400'
+                      }`}
+                  />
+                );
+              })}
             </div>
           )}
         </div>

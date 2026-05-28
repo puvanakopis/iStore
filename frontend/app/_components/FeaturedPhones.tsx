@@ -39,10 +39,10 @@ export default function FeaturedPhones() {
   return (
     <section
       id="shop"
-      className="section-padding bg-background-alt"
+      className="section-padding bg-background-dim"
     >
       <div className="max-w-7xl mx-auto">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -57,7 +57,7 @@ export default function FeaturedPhones() {
           </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"

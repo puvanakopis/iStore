@@ -4,7 +4,7 @@
 @theme inline {
   /* Background */
   --color-background: var(--background);
-  --color-background-alt: var(--background-alt);
+  --color-background-dim: var(--background-dim);
   --color-background-dim: var(--background-dim);
   --color-background-dim-hover: var(--background-dim-hover);
 
@@ -40,8 +40,8 @@
 :root {
   /* Background */
   --background: #ffffff;
-  --background-alt: #f7f7f7;
-  --background-dim: #f7f7f7;
+  /* --background-dim: #f7f7f7; */
+  --background-dim: #ffffff;
   --background-dim-hover: #eeeeee;
 
   /* Foreground */

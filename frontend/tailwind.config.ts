@@ -11,7 +11,7 @@ const config: Config = {
         extend: {
             colors: {
                 background: "var(--background)",
-                "background-alt": "var(--background-alt)",
+                "background-dim": "var(--background-dim)",
                 foreground: "var(--foreground)",
                 "foreground-secondary": "var(--foreground-secondary)",
                 "foreground-muted": "var(--foreground-muted)",
