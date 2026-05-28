@@ -1,11 +1,18 @@
 "use client";
 
 import { MapPin } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function ContactMap() {
   return (
     <section className="max-w-7xl mx-auto px-6 md:px-12 pb-24">
-      <div className="relative overflow-hidden rounded-sm border border-white/10 bg-black shadow-2xl">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        className="relative overflow-hidden rounded-sm border border-white/10 bg-black shadow-2xl"
+      >
         
         {/* Google Map */}
         <div className="w-full h-[500px] grayscale invert-[90%] contrast-125 brightness-90">
@@ -36,7 +43,13 @@ export default function ContactMap() {
         </div>
 
         {/* Glassmorphism Info Card */}
-        <div className="absolute bottom-8 left-8 max-w-sm rounded-sm border border-white/10 bg-white/10 backdrop-blur-2xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+        <motion.div 
+          initial={{ opacity: 0, y: 20, x: -20 }}
+          whileInView={{ opacity: 1, y: 0, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute bottom-8 left-8 max-w-sm rounded-sm border border-white/10 bg-white/10 backdrop-blur-2xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+        >
           
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center">
@@ -68,8 +81,8 @@ export default function ContactMap() {
           >
             Open in Maps
           </a>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }

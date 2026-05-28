@@ -1,13 +1,20 @@
 "use client";
 
 import { Mail, Clock, MapPin } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function ContactFormSection() {
   return (
     <section className="max-w-7xl mx-auto px-6 md:px-12 pb-24 grid grid-cols-1 lg:grid-cols-12 gap-gutter items-stretch">
       
       {/* FORM */}
-      <div className="lg:col-span-7 h-full">
+      <motion.div 
+        initial={{ opacity: 0, x: -30 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="lg:col-span-7 h-full"
+      >
         <div className="bg-background-dim p-8 md:p-12 rounded-sm border border-border shadow-[0_40px_60px_-15px_rgba(0,0,0,0.04)] h-full">
           <form className="space-y-8 h-full flex flex-col">
             
@@ -49,28 +56,40 @@ export default function ContactFormSection() {
             </button>
           </form>
         </div>
-      </div>
+      </motion.div>
 
       {/* INFO */}
-      <div className="lg:col-span-5 flex flex-col justify-center space-y-10 lg:pl-12 mt-12 lg:mt-0 h-full">
+      <motion.div 
+        initial={{ opacity: 0, x: 30 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+        className="lg:col-span-5 flex flex-col justify-center space-y-10 lg:pl-12 mt-12 lg:mt-0 h-full"
+      >
         
         <div className="bg-background-dim p-8 md:p-12 rounded-sm border border-border shadow-[0_40px_60px_-15px_rgba(0,0,0,0.04)] space-y-10 h-full flex flex-col justify-between">
 
           <div className="space-y-10">
-            <Info icon={<MapPin />} title="Flagship Showroom">
+            <Info icon={<MapPin />} title="Flagship Showroom" delay={0.4}>
               767 Fifth Avenue<br />New York, NY 10153
             </Info>
 
-            <Info icon={<Clock />} title="Experience Hours">
+            <Info icon={<Clock />} title="Experience Hours" delay={0.5}>
               Mon–Fri: 09:00 - 21:00<br />Sat–Sun: 10:00 - 18:00
             </Info>
 
-            <Info icon={<Mail />} title="Direct Inquiries">
+            <Info icon={<Mail />} title="Direct Inquiries" delay={0.6}>
               concierge@aether.tech<br />support@aether.tech
             </Info>
           </div>
 
-          <div className="border-t pt-6">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+            className="border-t pt-6"
+          >
             <p className="text-xs uppercase tracking-widest mb-4 text-on-surface-variant">
               Social Connect
             </p>
@@ -79,10 +98,10 @@ export default function ContactFormSection() {
               <span>X</span>
               <span>YouTube</span>
             </div>
-          </div>
+          </motion.div>
 
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
@@ -91,13 +110,21 @@ function Info({
   icon,
   title,
   children,
+  delay = 0
 }: {
   icon: React.ReactNode;
   title: string;
   children: React.ReactNode;
+  delay?: number
 }) {
   return (
-    <div className="flex gap-4">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay }}
+      className="flex gap-4"
+    >
       <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100">
         {icon}
       </div>
@@ -105,6 +132,6 @@ function Info({
         <h3 className="font-medium text-black">{title}</h3>
         <p className="text-sm text-gray-500 leading-relaxed">{children}</p>
       </div>
-    </div>
+    </motion.div>
   );
 }
