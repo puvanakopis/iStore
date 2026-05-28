@@ -114,7 +114,7 @@ function PhilosophyItem({
       transition={{ duration: 0.5, delay }}
       className="flex gap-4"
     >
-      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm shrink-0">
+      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white shrink-0">
         {icon}
       </div>
       <div>
