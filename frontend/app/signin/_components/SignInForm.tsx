@@ -75,7 +75,7 @@ export default function SignInForm() {
                 <label className="text-xs uppercase tracking-widest text-on-surface-variant font-medium mb-1" htmlFor="password">
                   Password
                 </label>
-                <Link href="#" className="text-[11px] text-foreground-secondary hover:text-black uppercase tracking-widest transition-colors mb-1">
+                <Link href="/forgot-password" title="Forgot Password" className="text-[11px] text-foreground-secondary hover:text-black uppercase tracking-widest transition-colors mb-1">
                   Forgot?
                 </Link>
               </div>
