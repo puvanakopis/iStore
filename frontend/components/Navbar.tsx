@@ -82,10 +82,10 @@ export default function Navbar() {
           <button className="hover:scale-110 transition-transform cursor-pointer">
             <Search size={18} strokeWidth={2} />
           </button>
-          <button className="hover:scale-110 transition-transform cursor-pointer relative">
+          <Link href="/cart" className="hover:scale-110 transition-transform cursor-pointer relative">
             <ShoppingBag size={18} strokeWidth={2} />
             <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">0</span>
-          </button>
+          </Link>
           
           <div 
             className="relative"
@@ -127,13 +127,19 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Button */}
-        <button
-          className="md:hidden text-black p-2 -mr-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile View Icons & Button */}
+        <div className="flex md:hidden items-center gap-4">
+          <Link href="/cart" className="relative p-2 text-black" onClick={() => setMobileMenuOpen(false)}>
+            <ShoppingBag size={22} strokeWidth={2} />
+            <span className="absolute top-1 right-1 bg-black text-white text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-full font-bold">0</span>
+          </Link>
+          <button
+            className="text-black p-2 -mr-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu - Full Screen Apple Aesthetic */}

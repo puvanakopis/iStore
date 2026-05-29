@@ -18,7 +18,7 @@ export default function ProductImage({ images, productName }: ProductImageProps)
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8 }}
-                className="relative aspect-[4/5] rounded-sm md:rounded-sm overflow-hidden bg-gray-50/50 group shadow-sm cursor-zoom-in border border-border/50"
+                className="relative aspect-[4/5] mx-auto rounded-sm overflow-hidden bg-gray-50/50 group cursor-zoom-in border border-border/50"
                 onMouseEnter={() => setIsZoomed(true)}
                 onMouseLeave={() => setIsZoomed(false)}
             >
@@ -30,21 +30,21 @@ export default function ProductImage({ images, productName }: ProductImageProps)
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.5 }}
                         alt={productName}
-                        className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isZoomed ? 'scale-110' : 'scale-100'
+                        className={`w-full h-full object-contain transition-transform duration-700 ease-out ${isZoomed ? 'scale-110' : 'scale-100'
                             }`}
                         src={images[selectedImage]}
                     />
                 </AnimatePresence>
             </motion.div>
 
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 pt-2">
+            <div className="flex flex-wrap gap-3 pb-2 pt-2 max-w-[450px] mx-auto">
                 {images.map((image, index) => (
                     <motion.button
                         key={index}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className={`flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-sm border-2 transition-all duration-300 overflow-hidden bg-gray-50 ${selectedImage === index
-                                ? 'border-primary shadow-md'
+                        className={`w-16 h-16 md:w-20 md:h-20 rounded-sm border-2 transition-all duration-300 overflow-hidden bg-gray-50 ${selectedImage === index
+                                ? 'border-primary'
                                 : 'border-transparent hover:border-gray-200'
                             }`}
                         onClick={() => setSelectedImage(index)}
