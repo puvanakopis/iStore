@@ -1,16 +1,14 @@
 "use client";
 
-import { User, ShoppingBag, Heart, Settings, LogOut, Shield, Bell } from "lucide-react";
+import { User, ShoppingBag, Heart, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
   { icon: User, label: "Personal Info", href: "/profile" },
-  { icon: Shield, label: "Login & Security", href: "/profile/security" },
-  { icon: ShoppingBag, label: "Order History", href: "/profile/orders" },
+  { icon: ShoppingBag, label: "Order History", href: "/orders" },
   { icon: Heart, label: "My Wishlist", href: "/wishlist" },
-  { icon: Bell, label: "Notifications", href: "/profile/notifications" },
-  { icon: Settings, label: "Settings", href: "/profile/settings" },
+  { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
 export default function Sidebar() {
