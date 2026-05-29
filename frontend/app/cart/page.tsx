@@ -23,7 +23,7 @@ const INITIAL_CART = [
     id: 2,
     title: "Apple Watch Series 9",
     price: "Rs. 45,900",
-    imageSrc: "/product/iPhone_16_Pro_Max_03.png", // Reusing for placeholder
+    imageSrc: "/product/iPhone_16_Pro_Max_03.png",
     quantity: 1,
     color: "Midnight",
     storage: "45mm"
@@ -31,98 +31,87 @@ const INITIAL_CART = [
 ];
 
 export default function CartPage() {
-    const [cartItems, setCartItems] = useState(INITIAL_CART);
+  const [cartItems, setCartItems] = useState(INITIAL_CART);
 
-    const updateQuantity = (id: number | string, delta: number) => {
-        setCartItems(prev => prev.map(item => {
-            if (item.id === id) {
-                const newQty = Math.max(1, item.quantity + delta);
-                return { ...item, quantity: newQty };
-            }
-            return item;
-        }));
-    };
+  const updateQuantity = (id: number | string, delta: number) => {
+    setCartItems(prev => prev.map(item => {
+      if (item.id === id) {
+        const newQty = Math.max(1, item.quantity + delta);
+        return { ...item, quantity: newQty };
+      }
+      return item;
+    }));
+  };
 
-    const removeItem = (id: number | string) => {
-        setCartItems(prev => prev.filter(item => item.id !== id));
-    };
+  const removeItem = (id: number | string) => {
+    setCartItems(prev => prev.filter(item => item.id !== id));
+  };
 
-    // Helper to parse "Rs. 399,900" to number
-    const parsePrice = (priceStr: string) => {
-        return parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
-    };
+  // Helper to parse "Rs. 399,900" to number
+  const parsePrice = (priceStr: string) => {
+    return parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
+  };
 
-    const subtotal = cartItems.reduce((acc, item) => {
-        return acc + (parsePrice(item.price) * item.quantity);
-    }, 0);
+  const subtotal = cartItems.reduce((acc, item) => {
+    return acc + (parsePrice(item.price) * item.quantity);
+  }, 0);
 
-    const shipping = 0; // Free shipping
-    const tax = subtotal * 0.18; // 18% GST example
-    const total = subtotal + shipping + tax;
+  const shipping = 0; // Free shipping
+  const tax = subtotal * 0.18; // 18% GST example
+  const total = subtotal + shipping + tax;
 
-    return (
+  return (
     <main className="min-h-screen bg-white pt-24 md:pt-32 pb-20">
       <section className="max-w-7xl mx-auto px-6 md:px-12 mb-16">
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-4 mb-10"
-                >
-                    <Link 
-                        href="/shop" 
-                        className="p-2 hover:bg-background-dim rounded-full transition-colors inline-block md:hidden"
-                    >
-                        <ArrowLeft size={24} />
-                    </Link>
-                    <h1 className="text-[32px] md:text-[48px] font-bold tracking-tight">Review your bag.</h1>
-                </motion.div>
 
-                <AnimatePresence mode="wait">
-                    {cartItems.length > 0 ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:items-start" key="cart-content">
-                            {/* Items List */}
-                            <div className="lg:col-span-8 flex flex-col">
-                                <AnimatePresence mode="popLayout">
-                                    {cartItems.map((item) => (
-                                        <CartItem 
-                                            key={item.id} 
-                                            item={item} 
-                                            onUpdateQuantity={updateQuantity}
-                                            onRemove={removeItem}
-                                        />
-                                    ))}
-                                </AnimatePresence>
-                                <motion.div 
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: 0.5 }}
-                                    className="mt-8"
-                                >
-                                    <Link 
-                                        href="/shop" 
-                                        className="text-primary font-medium flex items-center gap-2 hover:gap-3 transition-all"
-                                    >
-                                        <ArrowLeft size={18} />
-                                        Continue Shopping
-                                    </Link>
-                                </motion.div>
-                            </div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-4 mb-10"
+        >
+          <Link
+            href="/shop"
+            className="p-2 hover:bg-background-dim rounded-full transition-colors"
+          >
+            <ArrowLeft size={24} />
+          </Link>
+          <h1 className="text-[32px] md:text-[48px] font-bold tracking-tight">
+            Cart.
+          </h1>
+        </motion.div>
 
-                            {/* Summary */}
-                            <div className="lg:col-span-4">
-                                <CartSummary 
-                                    subtotal={subtotal}
-                                    shipping={shipping}
-                                    tax={tax}
-                                    total={total}
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        <EmptyCart key="empty-cart" />
-                    )}
+        <AnimatePresence mode="wait">
+          {cartItems.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:items-start" key="cart-content">
+              {/* Items List */}
+              <div className="lg:col-span-7 flex flex-col">
+                <AnimatePresence mode="popLayout">
+                  {cartItems.map((item) => (
+                    <CartItem 
+                      key={item.id} 
+                      item={item} 
+                      onUpdateQuantity={updateQuantity}
+                      onRemove={removeItem}
+                    />
+                  ))}
                 </AnimatePresence>
-            </section>
-        </main>
-    );
+              </div>
+
+              {/* Summary */}
+              <div className="lg:col-span-5">
+                <CartSummary 
+                  subtotal={subtotal}
+                  shipping={shipping}
+                  tax={tax}
+                  total={total}
+                />
+              </div>
+            </div>
+          ) : (
+            <EmptyCart key="empty-cart" />
+          )}
+        </AnimatePresence>
+      </section>
+    </main>
+  );
 }
