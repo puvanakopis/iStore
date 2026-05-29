@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingBag, Menu, X, User } from "lucide-react";
+import { Search, ShoppingBag, Menu, X, User, Heart, Settings, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
@@ -13,8 +13,16 @@ const navLinks = [
   { name: "Contact", href: "/contact" },
 ];
 
+const userLinks = [
+  { icon: User, label: "Personal Info", href: "/profile" },
+  { icon: ShoppingBag, label: "Order History", href: "/orders" },
+  { icon: Heart, label: "My Wishlist", href: "/wishlist" },
+  { icon: Settings, label: "Settings", href: "/settings" },
+];
+
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
@@ -78,9 +86,45 @@ export default function Navbar() {
             <ShoppingBag size={18} strokeWidth={2} />
             <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">0</span>
           </button>
-          <button className="hover:scale-110 transition-transform cursor-pointer">
-            <User size={18} strokeWidth={2} />
-          </button>
+          
+          <div 
+            className="relative"
+            onMouseEnter={() => setUserDropdownOpen(true)}
+            onMouseLeave={() => setUserDropdownOpen(false)}
+          >
+            <button className="hover:scale-110 transition-transform cursor-pointer pt-1">
+              <User size={18} strokeWidth={2} />
+            </button>
+            <AnimatePresence>
+              {userDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute right-0 mt-4 w-64 bg-white rounded-3xl shadow-2xl border border-black/5 overflow-hidden p-2"
+                >
+                  {userLinks.map((link) => (
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      className="flex items-center gap-3 px-4 py-3 text-[13px] font-medium tracking-tight rounded-2xl hover:bg-black/5 transition-all duration-200 group"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-300">
+                        <link.icon size={14} strokeWidth={2} />
+                      </div>
+                      <span className="text-black/70 group-hover:text-black transition-colors">{link.label}</span>
+                    </Link>
+                  ))}
+                  <div className="border-t border-black/5 mt-2 pt-2 px-2">
+                    <button className="w-full text-left px-4 py-3 text-[13px] font-semibold text-red-500 hover:bg-red-50 rounded-2xl transition-all duration-200">
+                      Log Out
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Mobile Button */}
@@ -100,7 +144,7 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="md:hidden fixed top-0 inset-0 bg-white z-40 flex flex-col pt-32 px-10"
+            className="md:hidden fixed top-0 inset-0 bg-white/90 backdrop-blur-2xl z-40 flex flex-col pt-32 px-10"
           >
             <div className="flex flex-col gap-8">
               {navLinks.map((link, i) => {
@@ -122,6 +166,32 @@ export default function Navbar() {
                   </motion.div>
                 );
               })}
+            </div>
+
+            {/* Mobile User Links */}
+            <div className="flex flex-col gap-5 mt-12 pt-12 border-t border-black/5">
+              {userLinks.map((link, i) => (
+                <motion.div
+                  key={link.label}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + i * 0.1 }}
+                >
+                  <Link
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-300">
+                        <link.icon size={18} strokeWidth={2} />
+                      </div>
+                      <span className="text-[18px] font-semibold tracking-tight">{link.label}</span>
+                    </div>
+                    <ChevronRight size={18} className="text-foreground-muted" />
+                  </Link>
+                </motion.div>
+              ))}
             </div>
 
             {/* Bottom Contact-style Footer for Mobile Menu */}
