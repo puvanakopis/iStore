@@ -1,5 +1,6 @@
 export const products = [
     {
+        id: 1,
         title: "iPhone 13",
         subtitle: "The powerful cinematic mode, A15 Bionic chip, and an advanced dual-camera system make iPhone 13 a leap forward.",
         price: "Rs. 199,999",
@@ -118,6 +119,7 @@ export const products = [
         ],
     },
     {
+        id: 2,
         title: "iPhone 13 Pro Max",
         subtitle: "The ultimate iPhone with ProMotion display, Pro camera system, and unmatched battery life powered by A15 Bionic.",
         price: "Rs. 299,999",
@@ -229,6 +231,7 @@ export const products = [
         ],
     },
     {
+        id: 3,
         title: "iPhone 14",
         subtitle: "A powerhouse of durability and performance with Action mode, Crash Detection, and the amazing A15 Bionic chip.",
         price: "Rs. 219,999",
@@ -347,6 +350,7 @@ export const products = [
         ],
     },
     {
+        id: 4,
         title: "iPhone 14 Pro",
         subtitle: "Dynamic Island. A16 Bionic chip. Always-On display. A magical way to interact with iPhone.",
         price: "Rs. 299,999",
@@ -458,6 +462,7 @@ export const products = [
         ],
     },
     {
+        id: 5,
         title: "iPhone 15",
         subtitle: "Dynamic Island. 48MP Main camera. USB-C. A16 Bionic chip. Color-infused glass and aluminum design.",
         price: "Rs. 249,999",
@@ -576,6 +581,7 @@ export const products = [
         ],
     },
     {
+        id: 6,
         title: "iPhone 15 Pro",
         subtitle: "The first iPhone with an aerospace-grade titanium design, powered by the A17 Pro chip and built for pro-level performance.",
         price: "Rs. 329,999",

@@ -8,6 +8,7 @@ import Link from "next/link";
 import StarRating from "@/components/StarRating";
 
 interface ShopProductCardProps {
+  id: number | string;
   title: string;
   price: string;
   imageSrc: string;
@@ -20,6 +21,7 @@ interface ShopProductCardProps {
 }
 
 export default function ShopProductCard({
+  id,
   title,
   price,
   imageSrc,
@@ -61,7 +63,7 @@ export default function ShopProductCard({
         </button>
 
         <Link
-          href={`/shop/${title.toLowerCase().replace(/\s+/g, "-")}`}
+          href={`/products/${id}`}
           className="block w-full h-full p-8"
         >
           <Image
@@ -94,7 +96,7 @@ export default function ShopProductCard({
           </span>
         </div>
 
-        <Link href={`/shop/${title.toLowerCase().replace(/\s+/g, "-")}`}>
+        <Link href={`/products/${id}`}>
           <h3 className="text-[20px] font-bold text-gray-900 mb-1 group-hover:text-primary transition-colors line-clamp-1 tracking-tight">
             {title}
           </h3>

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PackageX } from "lucide-react";
 
 interface Product {
+  id: number | string;
   title: string;
   price: string;
   imageSrc: string;
@@ -51,6 +52,7 @@ export default function ProductGrid({ products }: ProductGridProps) {
             className="h-full"
           >
             <ShopProductCard
+              id={product.id}
               title={product.title}
               price={product.price}
               imageSrc={product.imageSrc}

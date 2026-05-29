@@ -8,6 +8,7 @@ import Link from "next/link";
 import StarRating from "@/components/StarRating";
 
 interface ProductCardProps {
+  id: number | string;
   title: string;
   price: string;
   oldPrice?: string;
@@ -25,6 +26,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({
+  id,
   title,
   price,
   oldPrice,
@@ -77,7 +79,7 @@ export default function ProductCard({
       {/* Image Section */}
       <div className="relative aspect-square w-full bg-gray-50 rounded-2xl overflow-hidden mb-6">
         <Link
-          href={`/shop/${title.toLowerCase().replace(/\s+/g, "-")}`}
+          href={`/products/${id}`}
           className="block w-full h-full"
         >
           <AnimatePresence mode="wait">
@@ -173,7 +175,7 @@ export default function ProductCard({
         )}
 
         {/* Title */}
-        <Link href={`/shop/${title.toLowerCase().replace(/\s+/g, "-")}`}>
+        <Link href={`/products/${id}`}>
           <h3 className="text-[20px] font-bold text-gray-900 mb-1 group-hover:text-black-600 transition-colors line-clamp-1 tracking-tight">
             {title}
           </h3>
