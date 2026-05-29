@@ -1,9 +1,194 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --background: #ffffff;
+@theme inline {
+  /* Background */
+  --color-background: var(--background);
+  --color-background-dim: var(--background-dim);
+  --color-background-dim: var(--background-dim);
+  --color-background-dim-hover: var(--background-dim-hover);
+
+  /* Foreground */
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+
+  /* Primary */
+  --color-primary: var(--primary);
+  --color-primary-text: var(--primary-text);
+
+  /* Secondary */
+  --color-secondary: var(--secondary);
+  --color-secondary-text: var(--secondary-text);
+
+  /* Border */
+  --color-border: var(--border);
+
+  /* Radius system */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-full: var(--radius-full);
+
+  /* Fonts */
+  --font-sans: var(--font-sans);
 }
 
-body {
+
+:root {
+  /* Background */
+  --background: #ffffff;
+  /* --background-dim: #f7f7f7; */
+  --background-dim: #ffffff;
+  --background-dim-hover: #eeeeee;
+
+  /* Foreground */
+  --foreground: #0a0a0a;
+  --foreground-secondary: #333333;
+  --foreground-muted: #666666;
+
+  /* Primary */
+  --primary: #000000;
+  --primary-text: #ffffff;
+
+  /* Secondary */
+  --secondary: #ffffff;
+  --secondary-text: #000000;
+
+  /* Border  */
+  --border: #e5e5e5;
+
+  /* Radius system */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+
+  /* Fonts */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  * {
+    @apply border-border;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold tracking-tight text-foreground leading-tight;
+  }
+
+  p {
+    @apply text-foreground-secondary font-light;
+  }
+}
+
+@layer components {
+  .section-padding {
+    @apply py-24 md:py-32 px-6;
+  }
+
+  .apple-card {
+    @apply bg-white rounded-full border border-transparent shadow-[0_4px_20px_rgba(0_0_0_/_0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0_0_0_/_0.08)] hover:-translate-y-1;
+  }
+
+  .apple-button-primary {
+    @apply bg-black text-white rounded-full px-8 py-4 font-medium transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50;
+  }
+
+  .apple-button-outline {
+    @apply border border-black text-black bg-transparent rounded-full px-8 py-4 font-medium transition-all duration-300 hover:bg-black/5 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
   background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d1d1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+@layer utilities {
+  .apple-shadow {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  }
+
+  .apple-shadow-hover {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .apple-shadow-hover:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+  }
+
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
