@@ -9,8 +9,9 @@ export default function LifestyleBanner() {
   const scale = useTransform(scrollYProgress, [0.8, 1], [0.95, 1.05]);
 
   return (
-    <section className="section-padding bg-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="relative w-full bg-white overflow-hidden py-24 md:py-32">
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -50,7 +51,7 @@ export default function LifestyleBanner() {
               </div>
             </motion.div>
           </div>
-          
+
           {/* Subtle Overlay */}
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-1000 z-10" />
         </motion.div>

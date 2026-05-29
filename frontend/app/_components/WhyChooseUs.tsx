@@ -34,9 +34,10 @@ const features = [
 
 export default function WhyChooseUs() {
   return (
-    <section className="section-padding bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <motion.div 
+    <section className="relative w-full bg-white overflow-hidden py-24 md:py-32">
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -50,7 +51,7 @@ export default function WhyChooseUs() {
             Experience the gold standard in premium Apple retail.
           </p>
         </motion.div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
           {features.map((feature, index) => (
             <motion.div
@@ -61,7 +62,7 @@ export default function WhyChooseUs() {
               transition={{ duration: 0.8, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="bg-background-dim px-6 py-8 rounded-md border border-border flex flex-col items-center text-center group"
             >
-                    {/* Icon */}
+              {/* Icon */}
               <div className="relative w-18 h-18 flex items-center justify-center mb-8">
                 <div className="absolute inset-0 bg-primary/4 rounded-full scale-125 group-hover:scale-150 transition duration-500" />
                 <feature.icon

@@ -37,11 +37,9 @@ const itemVariants: Variants = {
 
 export default function FeaturedPhones() {
   return (
-    <section
-      id="shop"
-      className="section-padding bg-background-dim"
-    >
-      <div className="max-w-7xl mx-auto">
+    <section className="relative w-full bg-white overflow-hidden py-24 md:py-32">
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
