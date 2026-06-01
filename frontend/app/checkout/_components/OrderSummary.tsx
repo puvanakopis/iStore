@@ -26,8 +26,6 @@ export const OrderSummary = ({
   items,
   subtotal,
   shipping,
-  tax,
-  total,
   isLoading,
   onPlaceOrder,
 }: OrderSummaryProps) => {
