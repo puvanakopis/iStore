@@ -114,14 +114,8 @@ export default function SignInForm() {
             <div className="flex-grow border-t border-border"></div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => handleSocialLogin('Apple')}
-              className="flex items-center justify-center gap-2 py-3 px-6 border border-border rounded-full hover:bg-white transition-all duration-300 text-sm font-medium"
-            >
-              <Image src="https://www.svgrepo.com/show/303110/apple-black-logo.svg" className="w-4 h-4" alt="Apple" width={16} height={16} />
-              Apple
-            </button>
+          <div className="grid">
+
             <button
               onClick={() => handleSocialLogin('Google')}
               className="flex items-center justify-center gap-2 py-3 px-6 border border-border rounded-full hover:bg-white transition-all duration-300 text-sm font-medium"
