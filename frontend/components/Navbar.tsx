@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Search, ShoppingBag, Menu, X, User, Heart, Settings, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useAuth } from "../contexts/AuthContext";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -21,6 +22,7 @@ const userLinks = [
 ];
 
 export default function Navbar() {
+  const { user, logout, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -86,45 +88,60 @@ export default function Navbar() {
             <ShoppingBag size={18} strokeWidth={2} />
             <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">0</span>
           </Link>
-          
-          <div 
-            className="relative"
-            onMouseEnter={() => setUserDropdownOpen(true)}
-            onMouseLeave={() => setUserDropdownOpen(false)}
-          >
-            <button className="hover:scale-110 transition-transform cursor-pointer pt-1">
-              <User size={18} strokeWidth={2} />
-            </button>
-            <AnimatePresence>
-              {userDropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute right-0 mt-4 w-64 bg-white rounded-3xl shadow-2xl border border-black/5 overflow-hidden p-2"
-                >
-                  {userLinks.map((link) => (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      className="flex items-center gap-3 px-4 py-3 text-[13px] font-medium tracking-tight rounded-2xl hover:bg-black/5 transition-all duration-200 group"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-300">
-                        <link.icon size={14} strokeWidth={2} />
-                      </div>
-                      <span className="text-black/70 group-hover:text-black transition-colors">{link.label}</span>
-                    </Link>
-                  ))}
-                  <div className="border-t border-black/5 mt-2 pt-2 px-2">
-                    <button className="w-full text-left px-4 py-3 text-[13px] font-semibold text-red-500 hover:bg-red-50 rounded-2xl transition-all duration-200">
-                      Log Out
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+
+          {loading ? (
+            <div className="w-5 h-5 rounded-full border-2 border-black/10 border-t-black animate-spin" />
+          ) : user ? (
+            <div
+              className="relative"
+              onMouseEnter={() => setUserDropdownOpen(true)}
+              onMouseLeave={() => setUserDropdownOpen(false)}
+            >
+              <button className="hover:scale-110 transition-transform cursor-pointer pt-1">
+                <User size={18} strokeWidth={2} />
+              </button>
+              <AnimatePresence>
+                {userDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute right-0 mt-4 w-64 bg-white rounded-3xl shadow-2xl border border-black/5 overflow-hidden p-2"
+                  >
+                    {userLinks.map((link) => (
+                      <Link
+                        key={link.label}
+                        href={link.href}
+                        className="flex items-center gap-3 px-4 py-3 text-[13px] font-medium tracking-tight rounded-2xl hover:bg-black/5 transition-all duration-200 group"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-300">
+                          <link.icon size={14} strokeWidth={2} />
+                        </div>
+                        <span className="text-black/70 group-hover:text-black transition-colors">{link.label}</span>
+                      </Link>
+                    ))}
+                    <div className="border-t border-black/5 mt-2 pt-2 px-2">
+                      <button
+                        onClick={logout}
+                        className="w-full text-left px-4 py-3 text-[13px] font-semibold text-red-500 hover:bg-red-50 rounded-2xl transition-all duration-200"
+                      >
+                        Log Out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <Link
+              href="/signin"
+              className="flex items-center gap-2 hover:opacity-70 transition-opacity cursor-pointer group"
+            >
+              <User size={18} strokeWidth={2} className="text-black" />
+              <span className="text-[13px] font-medium tracking-tight text-black">Sign In</span>
+            </Link>
+          )}
         </div>
 
         {/* Mobile View Icons & Button */}
@@ -175,30 +192,78 @@ export default function Navbar() {
             </div>
 
             {/* Mobile User Links */}
-            <div className="flex flex-col gap-5 mt-12 pt-12 border-t border-black/5">
-              {userLinks.map((link, i) => (
+            {loading ? (
+                <div className="mt-12 pt-12 border-t border-black/5 flex justify-center">
+                    <div className="w-8 h-8 rounded-full border-3 border-black/10 border-t-black animate-spin" />
+                </div>
+            ) : user ? (
+              <div className="flex flex-col gap-5 mt-12 pt-12 border-t border-black/5">
+                {userLinks.map((link, i) => (
+                  <motion.div
+                    key={link.label}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + i * 0.1 }}
+                  >
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-between group"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-300">
+                          <link.icon size={18} strokeWidth={2} />
+                        </div>
+                        <span className="text-[18px] font-semibold tracking-tight">{link.label}</span>
+                      </div>
+                      <ChevronRight size={18} className="text-foreground-muted" />
+                    </Link>
+                  </motion.div>
+                ))}
                 <motion.div
-                  key={link.label}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + i * 0.1 }}
+                  transition={{ delay: 0.5 + userLinks.length * 0.1 }}
+                >
+                  <button
+                    onClick={() => {
+                        logout();
+                        setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center justify-between group w-full text-left"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-all duration-300">
+                        <User size={18} strokeWidth={2} className="text-red-500 group-hover:text-white" />
+                      </div>
+                      <span className="text-[18px] font-semibold tracking-tight text-red-500">Log Out</span>
+                    </div>
+                  </button>
+                </motion.div>
+              </div>
+            ) : (
+              <div className="mt-12 pt-12 border-t border-black/5">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 }}
                 >
                   <Link
-                    href={link.href}
+                    href="/signin"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-300">
-                        <link.icon size={18} strokeWidth={2} />
+                        <User size={18} strokeWidth={2} />
                       </div>
-                      <span className="text-[18px] font-semibold tracking-tight">{link.label}</span>
+                      <span className="text-[18px] font-semibold tracking-tight">Sign In</span>
                     </div>
                     <ChevronRight size={18} className="text-foreground-muted" />
                   </Link>
                 </motion.div>
-              ))}
-            </div>
+              </div>
+            )}
 
             {/* Bottom Contact-style Footer for Mobile Menu */}
             <div className="mt-auto pb-16 flex flex-col gap-10">
@@ -216,7 +281,9 @@ export default function Navbar() {
               <div className="flex items-center gap-6 pt-6 border-t border-black/5">
                 <Search size={22} strokeWidth={1.5} />
                 <ShoppingBag size={22} strokeWidth={1.5} />
-                <User size={22} strokeWidth={1.5} />
+                <Link href={user ? "/profile" : "/signin"} onClick={() => setMobileMenuOpen(false)}>
+                  <User size={22} strokeWidth={1.5} />
+                </Link>
               </div>
             </div>
           </motion.div>

@@ -4,7 +4,7 @@ from app.core.database import get_db
 from app.schemas.auth import Token, Login, Msg, ResetPassword, ForgotPassword
 from app.schemas.user import UserCreate, User as UserSchema
 from app.services import auth_service
-from app.core.security import create_access_token
+from app.core.security import create_access_token, get_current_user
 from app.schemas.otp import OTPVerify
 
 router = APIRouter()
@@ -65,3 +65,8 @@ async def reset_password(data: ResetPassword, db: AsyncIOMotorDatabase = Depends
     if not success:
         raise HTTPException(status_code=400, detail="Invalid or expired OTP")
     return {"msg": "Password updated successfully"}
+
+
+@router.get("/me", response_model=UserSchema)
+async def get_me(current_user: dict = Depends(get_current_user)):
+    return current_user

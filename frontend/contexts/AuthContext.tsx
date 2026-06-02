@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // Store in cookie for middleware access
             Cookies.set('token', access_token, { expires: 7, secure: true, sameSite: 'strict' });
             setUser(user);
-            router.push('/profile');
+            router.push('/');
         } catch (error) {
             console.error('Login failed', error);
             throw error;
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const { access_token, user } = await authService.register(data);
             Cookies.set('token', access_token, { expires: 7, secure: true, sameSite: 'strict' });
             setUser(user);
-            router.push('/profile');
+            router.push('/');
         } catch (error) {
             console.error('Registration failed', error);
             throw error;

@@ -6,10 +6,11 @@ import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/services/auth.service';
+import { useAuth } from '@/contexts/AuthContext';
 import Cookies from 'js-cookie';
 
 export default function SignInForm() {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -34,9 +35,8 @@ export default function SignInForm() {
     setError(null);
 
     try {
-      const response = await authService.login(formData);
-      Cookies.set('token', response.access_token);
-      router.push('/');
+      await login(formData);
+      // login in AuthContext already handles redirect to /profile
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Invalid email or password');
     } finally {
