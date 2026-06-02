@@ -1,5 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
+import certifi
 
 
 class Database:
@@ -11,7 +12,10 @@ db_config = Database()
 
 
 async def connect_to_mongo():
-    db_config.client = AsyncIOMotorClient(settings.MONGODB_URL)
+    db_config.client = AsyncIOMotorClient(
+        settings.MONGODB_URL,
+        tlsCAFile=certifi.where()
+    )
     db_config.db = db_config.client[settings.DATABASE_NAME]
 
 
