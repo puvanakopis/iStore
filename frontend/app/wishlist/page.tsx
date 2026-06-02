@@ -6,7 +6,7 @@ import WishlistProductCard from "./_components/WishlistProductCard";
 import { products } from "@/data/productData";
 import { Heart } from "lucide-react";
 
-export default function WishlistPage() {
+export default function Wishlist() {
   // Simulating wishlist with first 3 products
   const wishlistProducts = products.slice(0, 3);
 

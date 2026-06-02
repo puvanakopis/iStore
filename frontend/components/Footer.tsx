@@ -1,6 +1,7 @@
 "use client";
 
 import { MessageCircle, Camera, Music, X } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 const quickLinks = [
   "About Us",
@@ -43,6 +44,9 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname.startsWith("/admin")) return null;
+
   return (
     <footer className="w-full bg-white text-foreground-muted border-t border-border">
       <div className="max-w-7xl mx-auto px-6 md:px-12 pt-16 pb-12 text-[12px]">

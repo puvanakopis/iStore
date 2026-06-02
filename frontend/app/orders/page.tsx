@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Sidebar from "@/components/Sidebar";
 import { OrderHistoryGrid } from "./_components/OrderHistoryGrid";
 
-export default function OrdersPage() {
+export default function Orders() {
   return (
     <main className="min-h-screen bg-white pt-24 md:pt-32 pb-20">
       <section className="max-w-7xl mx-auto px-6 md:px-12 mb-16">
