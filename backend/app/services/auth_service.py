@@ -1,20 +1,38 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from fastapi import HTTPException, status
 from app.core.security import get_password_hash, verify_password, create_access_token
-from app.services.otp_service import create_otp, verify_otp
-from app.services.email_service import send_otp_email, send_reset_password_email
+from app.utils.otp_service import create_otp, verify_otp, get_pending_signup
+from app.utils.email_service import send_otp_email, send_reset_password_email
 from app.schemas.auth import ResetPassword
 from datetime import datetime
+
+
+from pymongo import ReturnDocument
+
+
+async def get_next_user_id(db: AsyncIOMotorDatabase) -> str:
+    """Get the next user ID (e.g., user_01, user_02)."""
+    counter = await db["counters"].find_one_and_update(
+        {"_id": "user_id"},
+        {"$inc": {"sequence_value": 1}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER
+    )
+    count = counter.get("sequence_value", 1)
+    return f"user_{count:02d}"
 
 
 async def get_user_by_email(db: AsyncIOMotorDatabase, email: str):
     user = await db["users"].find_one({"email": email})
     if user:
-        user["id"] = str(user["_id"])
+        user["id"] = user["_id"]
     return user
 
 
 async def signup_user(db: AsyncIOMotorDatabase, user_in):
+    """
+    Step 1: Check if user exists, hash password, and send OTP.
+    """
     db_user = await get_user_by_email(db, user_in.email)
     if db_user:
         raise HTTPException(
@@ -23,21 +41,19 @@ async def signup_user(db: AsyncIOMotorDatabase, user_in):
         )
 
     hashed_password = get_password_hash(user_in.password)
-    new_user = {
+
+    payload = {
         "email": user_in.email,
         "hashed_password": hashed_password,
-        "full_name": user_in.full_name,
-        "is_active": True,
-        "is_verified": False,
-        "created_at": datetime.utcnow()
+        "first_name": user_in.first_name,
+        "last_name": user_in.last_name,
+        "full_name": user_in.full_name or f"{user_in.first_name} {user_in.last_name}"
     }
-    result = await db["users"].insert_one(new_user)
-    new_user["id"] = str(result.inserted_id)
 
-    otp_code = await create_otp(db, user_in.email, "signup")
+    otp_code = await create_otp(db, user_in.email, "signup", payload=payload)
     send_otp_email(user_in.email, otp_code)
 
-    return new_user
+    return {"email": user_in.email, "msg": "OTP sent successfully. Please verify to complete registration."}
 
 
 async def authenticate_user(db: AsyncIOMotorDatabase, email: str, password: str):
@@ -46,20 +62,30 @@ async def authenticate_user(db: AsyncIOMotorDatabase, email: str, password: str)
         return None
     if not verify_password(password, user["hashed_password"]):
         return None
-    if not user["is_verified"]:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Account not verified. Please verify your email."
-        )
     return user
 
 
 async def verify_signup_otp(db: AsyncIOMotorDatabase, email: str, code: str):
-    if await verify_otp(db, email, code, "signup"):
-        await db["users"].update_one(
-            {"email": email},
-            {"$set": {"is_verified": True}}
-        )
+    """
+    Step 2: Verify OTP and create user account.
+    """
+    pending = await get_pending_signup(db, email, code)
+    if pending and "payload" in pending:
+        payload = pending["payload"]
+        # Create user now
+        user_id = await get_next_user_id(db)
+        new_user = {
+            "_id": user_id,
+            "email": payload["email"],
+            "hashed_password": payload["hashed_password"],
+            "first_name": payload.get("first_name"),
+            "last_name": payload.get("last_name"),
+            "full_name": payload.get("full_name"),
+            "created_at": datetime.utcnow()
+        }
+        await db["users"].insert_one(new_user)
+        # Cleanup OTP
+        await db["otps"].delete_many({"email": email, "purpose": "signup"})
         return True
     return False
 

@@ -9,7 +9,7 @@ from bson import ObjectId
 from app.core.config import settings
 from app.core.database import get_db
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl="/auth/login"
@@ -49,12 +49,10 @@ async def get_current_user(
             detail="Could not validate credentials",
         )
 
-    try:
-        user = await db["users"].find_one({"_id": ObjectId(user_id)})
-    except Exception:
-        user = None
+    user = await db["users"].find_one({"_id": user_id})
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    user["id"] = str(user["_id"])
+
+    user["id"] = user["_id"]
     return user

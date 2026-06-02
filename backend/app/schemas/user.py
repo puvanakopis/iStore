@@ -5,6 +5,8 @@ from datetime import datetime
 
 class UserBase(BaseModel):
     email: EmailStr
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     full_name: Optional[str] = None
 
 
@@ -18,9 +20,6 @@ class UserUpdate(UserBase):
 
 class UserInDBBase(UserBase):
     id: str
-    is_active: bool
-    is_verified: bool
-    created_at: datetime
 
     class Config:
         from_attributes = True

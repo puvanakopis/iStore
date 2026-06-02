@@ -21,15 +21,10 @@ class PyObjectId(ObjectId):
 
 
 class User(BaseModel):
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    id: str = Field(alias="_id")
     email: str
     hashed_password: str
-    full_name: Optional[str] = None
-    is_active: bool = False
-    is_verified: bool = False
-    created_at: datetime = Field(default_factory=datetime.utcnow)
 
     model_config = ConfigDict(
         populate_by_name=True,
-        arbitrary_types_allowed=True,
     )

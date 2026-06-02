@@ -5,14 +5,20 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import Cookies from 'js-cookie';
 
 export default function SignInForm() {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -26,10 +32,16 @@ export default function SignInForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log('Sign in data:', formData);
-    setIsSubmitting(false);
+    setError(null);
+
+    try {
+      await login(formData);
+      // login in AuthContext already handles redirect to /profile
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Invalid email or password');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSocialLogin = (provider: string) => {
@@ -38,7 +50,7 @@ export default function SignInForm() {
 
   return (
     <section className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12 lg:p-24 bg-white">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -53,6 +65,12 @@ export default function SignInForm() {
               Access your personalized iStore experience.
             </p>
           </header>
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-sm text-sm">
+              {error}
+            </div>
+          )}
 
           <form className="space-y-8" onSubmit={handleSubmit}>
             <div className="flex flex-col">
