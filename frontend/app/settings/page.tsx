@@ -8,7 +8,7 @@ import PrivacySection from "./_components/PrivacySection";
 import LoginActivity from "./_components/LoginActivity";
 import AccountDeletion from "./_components/AccountDeletion";
 
-export default function SettingsPage() {
+export default function Settings() {
   return (
     <main className="min-h-screen bg-white pt-24 md:pt-32 pb-20">
       <section className="max-w-7xl mx-auto px-6 md:px-12 mb-16">

@@ -82,7 +82,7 @@ export const formatPrice = (amount: number): string => {
   }).format(amount);
 };
 
-export default function CheckoutPage() {
+export default function Checkout() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 

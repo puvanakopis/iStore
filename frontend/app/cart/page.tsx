@@ -30,7 +30,7 @@ const INITIAL_CART = [
   }
 ];
 
-export default function CartPage() {
+export default function Cart() {
   const [cartItems, setCartItems] = useState(INITIAL_CART);
 
   const updateQuantity = (id: number | string, delta: number) => {
