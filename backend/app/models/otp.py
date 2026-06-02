@@ -25,7 +25,9 @@ class OTP(BaseModel):
     email: str
     code: str
     expires_at: datetime
-    purpose: Optional[str] = None
+    purpose: str
+    # To store password temporarily during signup
+    hashed_password: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     model_config = ConfigDict(
