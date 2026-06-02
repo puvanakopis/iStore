@@ -10,9 +10,10 @@ from app.schemas.otp import OTPVerify
 router = APIRouter()
 
 
-@router.post("/signup", response_model=UserSchema)
+@router.post("/register", response_model=Msg)
 async def signup(user_in: UserCreate, db: AsyncIOMotorDatabase = Depends(get_db)):
-    return await auth_service.signup_user(db, user_in)
+    result = await auth_service.signup_user(db, user_in)
+    return result
 
 
 @router.post("/verify-otp", response_model=Msg)
@@ -21,6 +22,9 @@ async def verify_otp(otp_data: OTPVerify, db: AsyncIOMotorDatabase = Depends(get
     if otp_data.purpose == "signup":
         success = await auth_service.verify_signup_otp(
             db, otp_data.email, otp_data.code)
+    elif otp_data.purpose == "reset_password":
+        from backend.app.utils.otp_service import check_otp
+        success = await check_otp(db, otp_data.email, otp_data.code, "reset_password")
     else:
         raise HTTPException(
             status_code=400, detail="Invalid verification purpose")
@@ -42,7 +46,11 @@ async def login(login_data: Login, db: AsyncIOMotorDatabase = Depends(get_db)):
         )
 
     access_token = create_access_token(subject=user["id"])
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user
+    }
 
 
 @router.post("/forgot-password", response_model=Msg)

@@ -20,6 +20,11 @@ def send_email(email_to: str, subject_template: str = "", html_template: str = "
         mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
     )
     smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
+    if settings.SMTP_PORT == 587:
+        smtp_options["tls"] = True
+    elif settings.SMTP_PORT == 465:
+        smtp_options["ssl"] = True
+
     if settings.SMTP_USER:
         smtp_options["user"] = settings.SMTP_USER
     if settings.SMTP_PASSWORD:
