@@ -80,7 +80,7 @@ export default function AdminNavbar() {
           <div className="flex items-center gap-3 pl-6 border-l border-black/5">
             <div className="text-right hidden sm:block">
               <p className="text-[12px] font-bold text-black leading-tight">
-                {user ? `${user.first_name} ${user.last_name}` : "Admin"}
+                {user ? `${user.first_name}` : "Admin"}
               </p>
               <p className="text-[10px] text-black/40 uppercase tracking-widest font-bold">
                 Manager
