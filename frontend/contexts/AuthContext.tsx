@@ -15,6 +15,7 @@ interface AuthContextType {
     login: (data: LoginRequest) => Promise<void>;
     register: (data: RegisterRequest) => Promise<void>;
     logout: () => void;
+    updateProfile: (data: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,9 +77,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         router.push("/signin");
     };
 
+    const updateProfile = async (data: Partial<User>) => {
+        const updated = await authService.updateMe(data);
+        setUser(updated);
+    };
+
     return (
         <AuthContext.Provider
-            value={{ user, loading, isAdmin, login, register, logout }}
+            value={{ user, loading, isAdmin, login, register, logout, updateProfile }}
         >
             {children}
         </AuthContext.Provider>

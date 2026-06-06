@@ -96,3 +96,50 @@ async def reset_password(db: AsyncIOMotorDatabase, reset_data: ResetPassword):
         )
         return True
     return False
+
+
+async def update_user_profile(db: AsyncIOMotorDatabase, user_id: str, profile_data) -> dict:
+    update_dict = {}
+    
+    # Simple extraction of optional fields
+    for field in ["first_name", "last_name", "phone", "address", 
+                  "email_notifications", "push_notifications", "sms_updates"]:
+        val = getattr(profile_data, field, None)
+        if val is not None:
+            update_dict[field] = val
+            
+    if not update_dict:
+        # No updates, fetch and return
+        user = await db["users"].find_one({"_id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user["id"] = user["_id"]
+        user.pop("hashed_password", None)
+        return user
+
+    # If first_name or last_name changed, recalculate avatar_initials
+    user = await db["users"].find_one({"_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    first_name = update_dict.get("first_name", user.get("first_name", ""))
+    last_name = update_dict.get("last_name", user.get("last_name", ""))
+    
+    initials = ""
+    if first_name:
+        initials += first_name[0].upper()
+    if last_name:
+        initials += last_name[0].upper()
+        
+    if initials:
+        update_dict["avatar_initials"] = initials
+        
+    update_dict["updated_at"] = datetime.utcnow()
+    
+    await db["users"].update_one({"_id": user_id}, {"$set": update_dict})
+    
+    updated_user = await db["users"].find_one({"_id": user_id})
+    updated_user["id"] = updated_user["_id"]
+    updated_user.pop("hashed_password", None)
+    return updated_user
+

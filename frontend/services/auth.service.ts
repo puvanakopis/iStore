@@ -44,4 +44,9 @@ export const authService = {
         const res = await api.get<User>("/auth/me");
         return res.data;
     },
+
+    async updateMe(data: Partial<User>): Promise<User> {
+        const res = await api.put<User>("/auth/me", data);
+        return res.data;
+    },
 };

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.core.database import get_db
 from app.schemas.auth_schema import Token, Login, Msg, ResetPassword, ForgotPassword
-from app.schemas.user_schema import UserCreate, User as UserSchema
+from app.schemas.user_schema import UserCreate, User as UserSchema, UserProfileUpdate
 from app.services import auth_service
 from app.core.security import create_access_token, get_current_user
 from app.schemas.otp_schema import OTPVerify
@@ -70,3 +70,12 @@ async def reset_password(data: ResetPassword, db: AsyncIOMotorDatabase = Depends
 @router.get("/me", response_model=UserSchema)
 async def get_me(current_user: dict = Depends(get_current_user)):
     return current_user
+
+
+@router.put("/me", response_model=UserSchema)
+async def update_me(
+    profile_data: UserProfileUpdate,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    return await auth_service.update_user_profile(db, current_user["id"], profile_data)

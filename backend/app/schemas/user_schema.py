@@ -55,3 +55,13 @@ class UserAdminUpdate(BaseModel):
     status: Optional[str] = None  # "Active" or "Blocked"
 
 
+class UserProfileUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    email_notifications: Optional[bool] = None
+    push_notifications: Optional[bool] = None
+    sms_updates: Optional[bool] = None
+
+

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Bell, Mail, Smartphone } from "lucide-react";
-import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ToggleProps {
   label: string;
@@ -10,11 +10,12 @@ interface ToggleProps {
   enabled: boolean;
   onChange: (val: boolean) => void;
   icon: any;
+  disabled?: boolean;
 }
 
-function Toggle({ label, description, enabled, onChange, icon: Icon }: ToggleProps) {
+function Toggle({ label, description, enabled, onChange, icon: Icon, disabled }: ToggleProps) {
   return (
-    <div className="flex items-center justify-between py-4 group">
+    <div className={`flex items-center justify-between py-4 group ${disabled ? "opacity-50 pointer-events-none" : ""}`}>
       <div className="flex items-start gap-4">
         <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-black group-hover:bg-black group-hover:text-white transition-colors duration-300">
           <Icon size={18} />
@@ -26,6 +27,7 @@ function Toggle({ label, description, enabled, onChange, icon: Icon }: TogglePro
       </div>
       <button
         onClick={() => onChange(!enabled)}
+        disabled={disabled}
         className={`relative w-11 h-6 transition-colors duration-300 rounded-full ${
           enabled ? "bg-black" : "bg-border"
         }`}
@@ -41,11 +43,17 @@ function Toggle({ label, description, enabled, onChange, icon: Icon }: TogglePro
 }
 
 export default function CommunicationSettings() {
-  const [settings, setSettings] = useState({
-    email: true,
-    push: false,
-    sms: true,
-  });
+  const { user, updateProfile } = useAuth();
+
+  const handleToggle = async (key: "email_notifications" | "push_notifications" | "sms_updates", value: boolean) => {
+    try {
+      await updateProfile({
+        [key]: value,
+      });
+    } catch (error) {
+      console.error("Error updating communication preference:", error);
+    }
+  };
 
   return (
     <motion.div
@@ -64,22 +72,22 @@ export default function CommunicationSettings() {
           icon={Mail}
           label="Email Notifications"
           description="Receive order updates and exclusive offers via email."
-          enabled={settings.email}
-          onChange={(val) => setSettings({ ...settings, email: val })}
+          enabled={user?.email_notifications ?? true}
+          onChange={(val) => handleToggle("email_notifications", val)}
         />
         <Toggle
           icon={Bell}
           label="Push Notifications"
           description="Instant alerts via web or mobile devices."
-          enabled={settings.push}
-          onChange={(val) => setSettings({ ...settings, push: val })}
+          enabled={user?.push_notifications ?? false}
+          onChange={(val) => handleToggle("push_notifications", val)}
         />
         <Toggle
           icon={Smartphone}
           label="SMS Updates"
           description="Text messages for critical account and shipping updates."
-          enabled={settings.sms}
-          onChange={(val) => setSettings({ ...settings, sms: val })}
+          enabled={user?.sms_updates ?? false}
+          onChange={(val) => handleToggle("sms_updates", val)}
         />
       </div>
     </motion.div>
