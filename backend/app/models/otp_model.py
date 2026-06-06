@@ -26,7 +26,6 @@ class OTP(BaseModel):
     code: str
     expires_at: datetime
     purpose: str
-    # To store password temporarily during signup
     hashed_password: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 

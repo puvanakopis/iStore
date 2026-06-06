@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.core.database import get_db
-from app.schemas.auth import Token, Login, Msg, ResetPassword, ForgotPassword
-from app.schemas.user import UserCreate, User as UserSchema
+from app.schemas.auth_schema import Token, Login, Msg, ResetPassword, ForgotPassword
+from app.schemas.user_schema import UserCreate, User as UserSchema
 from app.services import auth_service
 from app.core.security import create_access_token, get_current_user
-from app.schemas.otp import OTPVerify
+from app.schemas.otp_schema import OTPVerify
 
 router = APIRouter()
 
@@ -23,7 +23,7 @@ async def verify_otp(otp_data: OTPVerify, db: AsyncIOMotorDatabase = Depends(get
         success = await auth_service.verify_signup_otp(
             db, otp_data.email, otp_data.code)
     elif otp_data.purpose == "reset_password":
-        from backend.app.utils.otp_service import check_otp
+        from app.utils.otp_utils import check_otp
         success = await check_otp(db, otp_data.email, otp_data.code, "reset_password")
     else:
         raise HTTPException(

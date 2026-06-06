@@ -1,9 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import auth
+from app.routes import auth_route
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
-import logging
 import time
 
 app = FastAPI(title=settings.PROJECT_NAME)
@@ -31,14 +30,14 @@ async def shutdown_event():
 # Set up CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with frontend URL
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Include routers
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(auth_route.router, prefix="/auth", tags=["auth"])
 
 
 @app.get("/")

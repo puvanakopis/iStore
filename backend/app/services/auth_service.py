@@ -1,9 +1,9 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from fastapi import HTTPException, status
 from app.core.security import get_password_hash, verify_password, create_access_token
-from app.utils.otp_service import create_otp, verify_otp, get_pending_signup
-from app.utils.email_service import send_otp_email, send_reset_password_email
-from app.schemas.auth import ResetPassword
+from app.utils.otp_utils import create_otp, verify_otp, get_pending_signup
+from app.utils.email_utils import send_otp_email, send_reset_password_email
+from app.schemas.auth_schema import ResetPassword
 from datetime import datetime
 
 
@@ -72,7 +72,6 @@ async def verify_signup_otp(db: AsyncIOMotorDatabase, email: str, code: str):
     pending = await get_pending_signup(db, email, code)
     if pending and "payload" in pending:
         payload = pending["payload"]
-        # Create user now
         user_id = await get_next_user_id(db)
         new_user = {
             "_id": user_id,
@@ -84,7 +83,6 @@ async def verify_signup_otp(db: AsyncIOMotorDatabase, email: str, code: str):
             "created_at": datetime.utcnow()
         }
         await db["users"].insert_one(new_user)
-        # Cleanup OTP
         await db["otps"].delete_many({"email": email, "purpose": "signup"})
         return True
     return False
