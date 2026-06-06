@@ -49,6 +49,7 @@ class Order(BaseModel):
     total: float
     promo_code: Optional[str] = None
     status: str = Field(default="Pending")
+    payment: str = Field(default="Paid")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 

@@ -35,7 +35,8 @@ async def create_order(db: AsyncIOMotorDatabase, user_id: str, order_in) -> dict
         "tax": order_in.tax,
         "total": order_in.total,
         "promo_code": order_in.promo_code,
-        "status": "Pending",
+        "status": getattr(order_in, "status", "Pending") or "Pending",
+        "payment": getattr(order_in, "payment", "Paid") or "Paid",
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()
     }
@@ -65,3 +66,40 @@ async def get_user_orders(db: AsyncIOMotorDatabase, user_id: str) -> list:
         doc["id"] = doc["_id"]
         orders.append(doc)
     return orders
+
+
+async def get_all_orders(db: AsyncIOMotorDatabase) -> list:
+    cursor = db["orders"].find()
+    orders = []
+    async for doc in cursor:
+        doc["id"] = doc["_id"]
+        orders.append(doc)
+    return orders
+
+
+async def update_order(db: AsyncIOMotorDatabase, order_id: str, data) -> dict:
+    update_dict = {}
+    
+    for field, val in data.model_dump(exclude_unset=True).items():
+        if val is not None:
+            update_dict[field] = val
+
+    update_dict["updated_at"] = datetime.utcnow()
+    
+    result = await db["orders"].find_one_and_update(
+        {"_id": order_id},
+        {"$set": update_dict},
+        return_document=ReturnDocument.AFTER
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="Order not found")
+        
+    result["id"] = result["_id"]
+    return result
+
+
+async def delete_order(db: AsyncIOMotorDatabase, order_id: str) -> dict:
+    result = await db["orders"].delete_one({"_id": order_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return {"msg": "Order deleted"}

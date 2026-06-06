@@ -4,8 +4,9 @@ from typing import List
 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.schemas.order_schema import OrderCreate, OrderOut
+from app.schemas.order_schema import OrderCreate, OrderOut, OrderUpdate
 from app.services import order_service
+from app.middleware.auth_middleware import role_required
 
 router = APIRouter()
 
@@ -16,7 +17,7 @@ async def create_order(
     current_user: dict = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    user_id = str(current_user["id"])
+    user_id = order_in.user_id or str(current_user["id"])
     return await order_service.create_order(db, user_id, order_in)
 
 
@@ -27,3 +28,27 @@ async def get_orders(
 ):
     user_id = str(current_user["id"])
     return await order_service.get_user_orders(db, user_id)
+
+
+@router.get("/all", response_model=List[OrderOut], dependencies=[Depends(role_required("admin"))])
+async def get_all_orders(
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    return await order_service.get_all_orders(db)
+
+
+@router.put("/{order_id}", response_model=OrderOut, dependencies=[Depends(role_required("admin"))])
+async def update_order(
+    order_id: str,
+    order_in: OrderUpdate,
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    return await order_service.update_order(db, order_id, order_in)
+
+
+@router.delete("/{order_id}", dependencies=[Depends(role_required("admin"))])
+async def delete_order(
+    order_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    return await order_service.delete_order(db, order_id)

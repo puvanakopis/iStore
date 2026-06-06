@@ -27,10 +27,14 @@ export default function OrdersTable({
   const statuses = ["all", "Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
   const payments = ["all", "Pending", "Paid", "Failed", "Refunded"];
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredOrders = (orders || []).filter(order => {
+    const orderId = (order.id || "").toLowerCase();
+    const customerName = `${order.customer_details?.firstName || ""} ${order.customer_details?.lastName || ""}`.toLowerCase();
+    const customerEmail = (order.customer_details?.email || "").toLowerCase();
+
+    const matchesSearch = orderId.includes(searchTerm.toLowerCase()) ||
+                          customerName.includes(searchTerm.toLowerCase()) ||
+                          customerEmail.includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "all" || order.status === filterStatus;
     const matchesPayment = filterPayment === "all" || order.payment === filterPayment;
     return matchesSearch && matchesStatus && matchesPayment;
@@ -73,12 +77,10 @@ export default function OrdersTable({
   };
 
   const handleViewDetails = (order: Order) => {
-    // Implement view details functionality
     console.log("View order details:", order);
   };
 
   const handleDownloadInvoice = (order: Order) => {
-    // Implement download invoice functionality
     console.log("Download invoice:", order);
   };
 
@@ -178,15 +180,19 @@ export default function OrdersTable({
                 className="hover:bg-gray-50/50 transition-colors duration-200"
               >
                 <td className="px-6 py-4">
-                  <span className="font-semibold text-gray-900">{order.orderId}</span>
+                  <span className="font-semibold text-gray-900">#{order.id.toUpperCase()}</span>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-sm text-gray-600">{order.date}</span>
+                  <span className="text-sm text-gray-600">
+                    {order.created_at ? new Date(order.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "N/A"}
+                  </span>
                 </td>
                 <td className="px-6 py-4">
                   <div>
-                    <p className="font-medium text-gray-900">{order.customer}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{order.customerEmail}</p>
+                    <p className="font-medium text-gray-900">
+                      {`${order.customer_details?.firstName || ""} ${order.customer_details?.lastName || ""}`.trim() || "Guest"}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">{order.customer_details?.email || ""}</p>
                   </div>
                 </td>
                 <td className="px-6 py-4">
@@ -273,7 +279,7 @@ export default function OrdersTable({
             Showing {filteredOrders.length} of {orders.length} orders
           </span>
           <span className="text-gray-500">
-            Total Value: Rs. {formatCurrency(orders.reduce((sum, order) => sum + order.total, 0))}
+            Total Value: Rs. {formatCurrency((orders || []).reduce((sum, order) => sum + order.total, 0))}
           </span>
         </div>
       </div>
