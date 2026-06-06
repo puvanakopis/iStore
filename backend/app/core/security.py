@@ -45,8 +45,9 @@ async def get_current_user(
         user_id: str = payload.get("sub")
     except (JWTError, AttributeError):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     user = await db["users"].find_one({"_id": user_id})

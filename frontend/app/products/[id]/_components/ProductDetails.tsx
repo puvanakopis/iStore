@@ -7,12 +7,15 @@ import StarRating from '@/components/StarRating';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWishlist } from '@/contexts/WishlistContext';
+
 
 interface Product {
     id: string;
     name: string;
     tagline: string;
     price: string;
+    imageSrc?: string;
     rating?: number;
     reviewCount?: number;
     colors: Array<{ name: string; value: string; images?: string[] }>;
@@ -34,6 +37,8 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
     const router = useRouter();
     const { user } = useAuth();
     const { addToCart } = useCart();
+    const { toggleWishlist, isInWishlist } = useWishlist();
+    const inWishlist = isInWishlist(product.id);
 
     const [activeTab, setActiveTab] = useState<TabType>('description');
     const [selectedStorage, setSelectedStorage] = useState(product.storage[0].size);
@@ -88,9 +93,27 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
         }
     };
 
-    const handleFavorite = () => {
-        console.log('Added to favorites:', product.name);
-        // Add your favorites logic here
+    const handleFavorite = async () => {
+        if (!user) {
+            router.push('/signin');
+            return;
+        }
+
+        const activeColorObj = product.colors.find(c => c.name === selectedColor);
+        const imageSrc = (activeColorObj?.images && activeColorObj.images.length > 0)
+            ? activeColorObj.images[0]
+            : product.imageSrc || '';
+
+        try {
+            await toggleWishlist({
+                product_id: product.id,
+                title: product.name,
+                price: product.price,
+                imageSrc: imageSrc,
+            });
+        } catch (err) {
+            console.error("Error toggling wishlist:", err);
+        }
     };
 
     const selectedStoragePrice = product.storage.find(s => s.size === selectedStorage)?.price || product.price;
@@ -207,10 +230,12 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
                     Add to Bag
                 </button>
                 <button
-                    className="p-4 border border-border rounded-full hover:bg-background-dim transition-all duration-300 hover:scale-110 group"
+                    className={`p-4 border rounded-full hover:bg-background-dim transition-all duration-300 hover:scale-110 group ${
+                        inWishlist ? 'border-red-100 text-red-500 bg-red-50/50' : 'border-border text-foreground-secondary'
+                    }`}
                     onClick={handleFavorite}
                 >
-                    <Heart className="group-hover:fill-red-500 group-hover:text-red-500 transition-colors" size={24} />
+                    <Heart className={`${inWishlist ? 'fill-red-500 text-red-500' : 'group-hover:fill-red-500 group-hover:text-red-500'} transition-colors`} size={24} />
                 </button>
             </motion.div>
 
