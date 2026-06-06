@@ -5,6 +5,7 @@ from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 import time
 
+
 app = FastAPI(title=settings.PROJECT_NAME)
 
 
@@ -38,7 +39,6 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth_route.router, prefix="/auth", tags=["auth"])
-
 
 @app.get("/")
 def read_root():

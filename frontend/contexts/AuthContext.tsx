@@ -29,7 +29,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 try {
                     const userData = await authService.getMe();
                     setUser(userData);
-                    console.log('User authenticated:', userData);
                 } catch (error) {
                     console.error('Failed to fetch user', error);
                     Cookies.remove('token');
