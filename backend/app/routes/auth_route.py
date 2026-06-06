@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.core.database import get_db
-from app.schemas.auth_schema import Token, Login, Msg, ResetPassword, ForgotPassword
+from app.schemas.auth_schema import Token, Login, Msg, ResetPassword, ForgotPassword, ChangePassword, DeleteAccountConfirm
 from app.schemas.user_schema import UserCreate, User as UserSchema, UserProfileUpdate
 from app.services import auth_service
 from app.core.security import create_access_token, get_current_user
@@ -78,4 +78,25 @@ async def update_me(
     current_user: dict = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    return await auth_service.update_user_profile(db, current_user["id"], profile_data)
+    return await auth_service.update_user_profile(db, current_user["id"], profile_data)
+
+
+@router.put("/change-password", response_model=Msg)
+async def change_password(
+    data: ChangePassword,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    await auth_service.change_password(db, current_user["id"], data)
+    return {"msg": "Password updated successfully"}
+
+
+@router.delete("/me", response_model=Msg)
+async def delete_me(
+    data: DeleteAccountConfirm,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    await auth_service.delete_user_account(db, current_user["id"], data.email)
+    return {"msg": "Account deleted successfully"}
+

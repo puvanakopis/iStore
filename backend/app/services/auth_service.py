@@ -5,7 +5,7 @@ from pymongo import ReturnDocument
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.utils.otp_utils import create_otp, verify_otp, get_pending_signup
 from app.utils.email_utils import send_otp_email, send_reset_password_email
-from app.schemas.auth_schema import ResetPassword
+from app.schemas.auth_schema import ResetPassword, ChangePassword, DeleteAccountConfirm
 
 
 async def get_next_user_id(db: AsyncIOMotorDatabase) -> str:
@@ -142,4 +142,34 @@ async def update_user_profile(db: AsyncIOMotorDatabase, user_id: str, profile_da
     updated_user["id"] = updated_user["_id"]
     updated_user.pop("hashed_password", None)
     return updated_user
+
+
+async def change_password(db: AsyncIOMotorDatabase, user_id: str, data: ChangePassword) -> bool:
+    user = await db["users"].find_one({"_id": user_id})
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if not verify_password(data.current_password, user["hashed_password"]):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect current password")
+    
+    hashed_password = get_password_hash(data.new_password)
+    await db["users"].update_one(
+        {"_id": user_id},
+        {"$set": {"hashed_password": hashed_password}}
+    )
+    return True
+
+
+async def delete_user_account(db: AsyncIOMotorDatabase, user_id: str, email: str) -> bool:
+    user = await db["users"].find_one({"_id": user_id})
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if user["email"].lower() != email.lower():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email confirmation does not match your registered email")
+    
+    # Delete the user document
+    await db["users"].delete_one({"_id": user_id})
+    # Also delete their cart
+    await db["carts"].delete_one({"user_id": user_id})
+    return True
+
 

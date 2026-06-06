@@ -49,4 +49,16 @@ export const authService = {
         const res = await api.put<User>("/auth/me", data);
         return res.data;
     },
+
+    async changePassword(data: any): Promise<MessageResponse> {
+        const res = await api.put<MessageResponse>("/auth/change-password", data);
+        return res.data;
+    },
+
+    async deleteAccount(email: string): Promise<MessageResponse> {
+        const res = await api.delete<MessageResponse>("/auth/me", {
+            data: { email },
+        });
+        return res.data;
+    },
 };

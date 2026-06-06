@@ -16,7 +16,7 @@ export default function Sidebar() {
 
   return (
     <aside className="w-full lg:w-72 flex flex-col gap-8 h-fit lg:sticky lg:top-32">
-      
+
       {/* Navigation Groups */}
       <div className="flex flex-col gap-2">
         <span className="text-[11px] uppercase tracking-widest text-foreground-muted font-bold px-4 mb-2">
@@ -40,18 +40,16 @@ export default function Sidebar() {
               <Link
                 key={item.label}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group whitespace-nowrap ${
-                  isActive
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group whitespace-nowrap ${isActive
                     ? "bg-black text-white shadow-lg shadow-black/5"
                     : "text-foreground-secondary hover:bg-black/5"
-                }`}
+                  }`}
               >
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-300 ${
-                    isActive
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-300 ${isActive
                       ? "bg-white/10"
                       : "bg-black/5 group-hover:bg-black/10"
-                  }`}
+                    }`}
                 >
                   <Icon
                     size={16}

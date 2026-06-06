@@ -3,9 +3,40 @@
 import { motion } from "framer-motion";
 import { Trash2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { authService } from "@/services/auth.service";
 
 export default function AccountDeletion() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { user, logout } = useAuth();
+
+  const handleDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!user) {
+      setError("You must be logged in to delete your account.");
+      return;
+    }
+
+    if (confirmEmail.trim().toLowerCase() !== user.email.toLowerCase()) {
+      setError("The email entered does not match your registered email address.");
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await authService.deleteAccount(confirmEmail.trim());
+      // Log out user & redirect to signin
+      logout();
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to delete account. Please try again later.");
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <motion.div
@@ -35,39 +66,58 @@ export default function AccountDeletion() {
           from our servers.
         </p>
 
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-sm text-sm">
+            {error}
+          </div>
+        )}
+
         {!showDeleteConfirm ? (
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="border border-red-200 text-red-600 px-8 py-3 rounded-full text-sm font-medium hover:bg-red-50 transition-all flex items-center gap-2"
+            className="border border-red-200 text-red-600 px-8 py-3 rounded-full text-sm font-medium hover:bg-red-50 transition-all flex items-center gap-2 cursor-pointer"
           >
             <Trash2 size={16} />
             Delete Account
           </button>
         ) : (
-          <div className="space-y-4 p-6 bg-red-50 rounded-sm border border-red-100">
+          <form onSubmit={handleDelete} className="space-y-4 p-6 bg-red-50 rounded-sm border border-red-100">
             <p className="text-sm font-medium text-red-800">
               Are you absolutely sure? Type your email to confirm deletion.
             </p>
 
             <input
-              type="text"
-              placeholder="john.doe@icloud.com"
-              className="w-full bg-white border border-red-200 px-4 py-2 rounded-md outline-none focus:ring-2 focus:ring-red-500/20 text-sm"
+              type="email"
+              required
+              value={confirmEmail}
+              onChange={(e) => setConfirmEmail(e.target.value)}
+              placeholder={user?.email || "your.email@example.com"}
+              className="w-full bg-white border border-red-200 px-4 py-2 rounded-md outline-none focus:ring-2 focus:ring-red-500/20 text-sm text-black"
             />
 
             <div className="flex gap-3 pt-2">
               <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="bg-white border border-border px-6 py-2 rounded-full text-sm font-medium hover:bg-black/5 transition-all"
+                type="button"
+                disabled={isDeleting}
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setConfirmEmail("");
+                  setError(null);
+                }}
+                className="bg-white border border-border px-6 py-2 rounded-full text-sm font-medium hover:bg-black/5 transition-all disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
 
-              <button className="bg-red-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-red-700 transition-all">
-                Confirm Deletion
+              <button
+                type="submit"
+                disabled={isDeleting}
+                className="bg-red-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-red-700 transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting ? "Deleting..." : "Confirm Deletion"}
               </button>
             </div>
-          </div>
+          </form>
         )}
       </div>
     </motion.div>
