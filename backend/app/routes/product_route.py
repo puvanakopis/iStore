@@ -8,6 +8,9 @@ from app.middleware.auth_middleware import role_required
 from app.schemas.product_schema import ProductCreate, ProductUpdate
 from app.services import product_service
 
+from app.core.security import get_current_user
+from datetime import datetime
+
 router = APIRouter()
 
 
@@ -46,6 +49,38 @@ async def create_product(
 @router.get("/")
 async def get_products(db: AsyncIOMotorDatabase = Depends(get_db)):
     return await product_service.get_all_products(db)
+
+
+@router.get("/{product_id}/like")
+async def check_like_status(
+    product_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    user_id = str(current_user["id"])
+    like = await db["likes"].find_one({"user_id": user_id, "product_id": product_id})
+    return {"liked": bool(like)}
+
+
+@router.post("/{product_id}/like")
+async def toggle_like_product(
+    product_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    user_id = str(current_user["id"])
+    like = await db["likes"].find_one({"user_id": user_id, "product_id": product_id})
+    if like:
+        await db["likes"].delete_one({"user_id": user_id, "product_id": product_id})
+        liked = False
+    else:
+        await db["likes"].insert_one({
+            "user_id": user_id,
+            "product_id": product_id,
+            "created_at": datetime.utcnow()
+        })
+        liked = True
+    return {"liked": liked}
 
 
 @router.get("/{product_id}")

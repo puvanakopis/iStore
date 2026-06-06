@@ -28,15 +28,15 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased bg-background text-foreground`}
       >
-        <AuthProvider>
-          <ProductProvider>
-            <CartProvider>
-              <Navbar />
-              {children}
-              <Footer />
-            </CartProvider>
-          </ProductProvider>
-        </AuthProvider>
+          <AuthProvider>
+            <ProductProvider>
+              <CartProvider>
+                <Navbar />
+                {children}
+                <Footer />
+              </CartProvider>
+            </ProductProvider>
+          </AuthProvider>
       </body>
     </html>
   );

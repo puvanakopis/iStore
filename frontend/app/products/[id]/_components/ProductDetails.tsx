@@ -110,7 +110,7 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
                     </button>
                 </div>
                 <h1 className="text-[40px] md:text-[56px] font-bold tracking-tight text-foreground leading-[1.1]">{product.name}</h1>
-                
+
                 <div className="flex items-center gap-4">
                     <StarRating rating={product.rating || 0} size={18} />
                     <span className="text-sm font-medium text-foreground-muted">
@@ -140,8 +140,8 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
                         <button
                             key={color.name}
                             className={`w-10 h-10 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 border-2 ${selectedColor === color.name
-                                    ? 'border-primary ring-2 ring-primary ring-offset-2'
-                                    : 'border-border'
+                                ? 'border-primary ring-2 ring-primary ring-offset-2'
+                                : 'border-border'
                                 }`}
                             style={{ backgroundColor: color.value }}
                             onClick={() => handleColorSelect(color.name)}
@@ -166,8 +166,8 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
                         <button
                             key={storage.size}
                             className={`px-5 py-2 rounded-sm border transition-all duration-300 text-left active:scale-[0.98] ${selectedStorage === storage.size
-                                    ? 'border-primary bg-background-dim'
-                                    : 'border-border hover:border-primary'
+                                ? 'border-primary bg-background-dim'
+                                : 'border-border hover:border-primary'
                                 }`}
                             onClick={() => handleStorageSelect(storage.size)}
                         >
@@ -265,8 +265,8 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
                         <button
                             key={tab}
                             className={`pb-4 px-6 md:px-10 font-bold text-[13px] uppercase tracking-[0.15em] transition-all duration-300 border-b-2 whitespace-nowrap ${activeTab === tab
-                                    ? 'text-primary border-primary'
-                                    : 'text-foreground-muted hover:text-black border-transparent'
+                                ? 'text-primary border-primary'
+                                : 'text-foreground-muted hover:text-black border-transparent'
                                 }`}
                             onClick={() => setActiveTab(tab)}
                         >
