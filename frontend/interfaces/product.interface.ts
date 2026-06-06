@@ -30,6 +30,7 @@ export interface ProductSpecifications {
 
 export interface Product {
   id: string;
+  _id?: string;
 
   title: string;
   subtitle?: string;

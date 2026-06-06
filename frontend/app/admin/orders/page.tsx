@@ -168,7 +168,6 @@ export default function AdminOrders() {
         <AdminHeader
           title="Fulfillment"
           subtitle="Monitor and process customer orders across your store"
-          greeting="Manage your orders"
           actions={
             <button
               onClick={handleAddOrder}

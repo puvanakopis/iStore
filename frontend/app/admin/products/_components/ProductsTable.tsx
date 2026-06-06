@@ -1,50 +1,30 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Product } from "../page";
-import { Edit, Trash2, Package, Search, Filter } from "lucide-react";
+import { Product } from "@/interfaces/product.interface";
+import { Edit, Trash2, Package, Search } from "lucide-react";
 import { useState } from "react";
 
 interface ProductsTableProps {
   products: Product[];
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
-  onUpdateStatus: (productId: string, status: Product["status"]) => void;
 }
 
 export default function ProductsTable({ 
   products, 
   onEdit, 
-  onDelete, 
-  onUpdateStatus 
+  onDelete 
 }: ProductsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-
-  const categories = ["all", "iPhone", "Accessories", "Apple Watch", "MacBook"];
-  const statuses = ["all", "In Stock", "Low Stock", "Out of Stock"];
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === "all" || product.category === filterCategory;
-    const matchesStatus = filterStatus === "all" || product.status === filterStatus;
-    return matchesSearch && matchesCategory && matchesStatus;
+    const matchesSearch = 
+      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (product.subtitle && product.subtitle.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.specifications?.chip && product.specifications.chip.toLowerCase().includes(searchTerm.toLowerCase()));
+    return matchesSearch;
   });
-
-  const getStatusColor = (status: Product["status"]) => {
-    switch (status) {
-      case "In Stock":
-        return "bg-green-50 text-green-600";
-      case "Low Stock":
-        return "bg-yellow-50 text-yellow-600";
-      case "Out of Stock":
-        return "bg-red-50 text-red-600";
-      default:
-        return "bg-gray-50 text-gray-600";
-    }
-  };
 
   return (
     <motion.div
@@ -61,45 +41,11 @@ export default function ProductsTable({
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder="Search by title, subtitle, chip..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
             />
-          </div>
-          
-          <div className="flex gap-3">
-            {/* Category Filter */}
-            <div className="relative">
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm appearance-none bg-white"
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>
-                    {cat === "all" ? "All Categories" : cat}
-                  </option>
-                ))}
-              </select>
-              <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            </div>
-
-            {/* Status Filter */}
-            <div className="relative">
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm appearance-none bg-white"
-              >
-                {statuses.map(status => (
-                  <option key={status} value={status}>
-                    {status === "all" ? "All Status" : status}
-                  </option>
-                ))}
-              </select>
-              <Package size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            </div>
           </div>
         </div>
       </div>
@@ -113,16 +59,16 @@ export default function ProductsTable({
                 Product
               </th>
               <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Category
+                Specifications
               </th>
               <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Price
               </th>
               <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Stock
+                Colors
               </th>
               <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Status
+                Storage
               </th>
               <th className="text-right px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Actions
@@ -139,40 +85,71 @@ export default function ProductsTable({
                 className="hover:bg-gray-50/50 transition-colors duration-200"
               >
                 <td className="px-6 py-4">
-                  <div>
-                    <p className="font-semibold text-gray-900">{product.name}</p>
-                    {product.description && (
-                      <p className="text-xs text-gray-500 mt-1">{product.description}</p>
+                  <div className="flex items-center gap-4">
+                    {product.imageSrc && (
+                      <img 
+                        src={product.imageSrc} 
+                        alt={product.imageAlt || product.title} 
+                        className="w-12 h-12 object-contain bg-gray-50 rounded p-1"
+                      />
+                    )}
+                    <div>
+                      <p className="font-semibold text-gray-900">{product.title}</p>
+                      {product.subtitle && (
+                        <p className="text-xs text-gray-500 mt-0.5">{product.subtitle}</p>
+                      )}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-600">
+                  <div className="space-y-0.5">
+                    {product.specifications?.chip && (
+                      <p><span className="font-medium">Chip:</span> {product.specifications.chip}</p>
+                    )}
+                    {product.specifications?.display && (
+                      <p><span className="font-medium">Display:</span> {product.specifications.display}</p>
+                    )}
+                    {product.specifications?.capacity && (
+                      <p><span className="font-medium">Cap:</span> {product.specifications.capacity}</p>
                     )}
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-sm text-gray-600">{product.category}</span>
-                </td>
-                <td className="px-6 py-4">
                   <span className="font-medium text-gray-900">
-                    Rs. {product.price.toLocaleString()}
+                    {product.price}
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`text-sm font-medium ${
-                    product.stock === 0 ? "text-red-600" : 
-                    product.stock < 10 ? "text-yellow-600" : 
-                    "text-gray-900"
-                  }`}>
-                    {product.stock} units
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap max-w-[200px]">
+                    {product.colors && product.colors.length > 0 ? (
+                      product.colors.map((color, idx) => (
+                        <div 
+                          key={idx}
+                          className="w-4 h-4 rounded-full border border-gray-200"
+                          style={{ backgroundColor: color.hex }}
+                          title={color.name}
+                        />
+                      ))
+                    ) : (
+                      <span className="text-xs text-gray-400">None</span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4">
-                  <select
-                    value={product.status}
-                    onChange={(e) => onUpdateStatus(product.id, e.target.value as Product["status"])}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(product.status)} border-0 cursor-pointer focus:ring-2 focus:ring-gray-900`}
-                  >
-                    <option value="In Stock">In Stock</option>
-                    <option value="Low Stock">Low Stock</option>
-                    <option value="Out of Stock">Out of Stock</option>
-                  </select>
+                  <div className="flex flex-wrap gap-1">
+                    {product.storage && product.storage.length > 0 ? (
+                      product.storage.map((st, idx) => (
+                        <span 
+                          key={idx}
+                          className="px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-600 font-medium"
+                        >
+                          {st.size}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-gray-400">None</span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-2">
