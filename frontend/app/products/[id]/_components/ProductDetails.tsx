@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Minus, Plus, Heart, Truck, RotateCcw, Cpu, Camera, Zap, ShieldCheck, Share2, Box } from 'lucide-react';
 import StarRating from '@/components/StarRating';
+import { useRouter } from 'next/navigation';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Product {
     id: string;
@@ -28,6 +31,10 @@ interface ProductDetailsProps {
 type TabType = 'description' | 'specifications' | 'reviews';
 
 export default function ProductDetails({ product, selectedColor, onColorSelect }: ProductDetailsProps) {
+    const router = useRouter();
+    const { user } = useAuth();
+    const { addToCart } = useCart();
+
     const [activeTab, setActiveTab] = useState<TabType>('description');
     const [selectedStorage, setSelectedStorage] = useState(product.storage[0].size);
     const [quantity, setQuantity] = useState(1);
@@ -52,14 +59,33 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
         setSelectedStorage(storageSize);
     };
 
-    const handleAddToBag = () => {
-        console.log('Added to bag:', {
-            product: product.name,
-            color: selectedColor,
-            storage: selectedStorage,
-            quantity,
-        });
-        // Add your cart logic here
+    const handleAddToBag = async () => {
+        if (!user) {
+            router.push('/signin');
+            return;
+        }
+
+        const currentPrice = product.storage.find(s => s.size === selectedStorage)?.price || product.price;
+
+        const activeColorObj = product.colors.find(c => c.name === selectedColor);
+        const imageSrc = (activeColorObj?.images && activeColorObj.images.length > 0)
+            ? activeColorObj.images[0]
+            : product.imageSrc;
+
+        try {
+            await addToCart(
+                product.id,
+                quantity,
+                selectedColor,
+                selectedStorage,
+                product.name,
+                currentPrice,
+                imageSrc
+            );
+            router.push('/cart');
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     const handleFavorite = () => {
@@ -95,7 +121,7 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
                 <p className="text-foreground-secondary text-lg font-light tracking-tight leading-relaxed max-w-md">{product.tagline}</p>
                 <div className="flex items-baseline gap-2 mt-4">
                     <p className="text-4xl font-bold text-foreground">{selectedStoragePrice}</p>
-                    <span className="text-foreground-muted text-sm font-light">or $83.25/mo. for 12 mo.*</span>
+                    <span className="text-foreground-muted text-sm font-light">or Rs. 8,325/mo. for 12 mo.*</span>
                 </div>
             </motion.header>
 
@@ -200,7 +226,7 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
                     </div>
                     <div className="flex flex-col">
                         <span className="font-bold text-foreground">Free Shipping</span>
-                        <span className="text-xs text-foreground-muted">On orders over $1,500</span>
+                        <span className="text-xs text-foreground-muted">On orders over Rs. 150,000</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-foreground-secondary group cursor-default">

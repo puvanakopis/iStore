@@ -76,10 +76,7 @@ export const calculateTotals = (items: CartItem[]) => {
 };
 
 export const formatPrice = (amount: number): string => {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-  }).format(amount);
+  return `Rs ${amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 export default function Checkout() {

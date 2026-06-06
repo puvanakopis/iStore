@@ -37,7 +37,7 @@ const Offers = () => {
                 </h3>
 
                 <p className="text-[16px] md:text-[18px] text-gray-500 font-light max-w-sm mb-6 leading-relaxed">
-                  Get <span className="font-semibold text-gray-900">$180–$650</span> in credit toward iPhone 16 Pro when you trade in a qualifying smartphone.
+                  Get <span className="font-semibold text-gray-900">Rs. 18,000–Rs. 65,000</span> in credit toward iPhone 16 Pro when you trade in a qualifying smartphone.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">

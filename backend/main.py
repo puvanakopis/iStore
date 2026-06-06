@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.routes import auth_route, product_route
+from app.routes import auth_route, product_route, cart_route
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 import time
@@ -43,6 +43,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_route.router, prefix="/auth", tags=["auth"])
 app.include_router(product_route.router, prefix="/products", tags=["products"])
+app.include_router(cart_route.router, prefix="/cart", tags=["cart"])
 
 # Serve uploaded static files
 os.makedirs("uploads", exist_ok=True)

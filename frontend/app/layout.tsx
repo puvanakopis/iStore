@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProductProvider } from "@/contexts/ProductContext";
+import { CartProvider } from "@/contexts/CartContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,9 +30,11 @@ export default function RootLayout({
       >
         <AuthProvider>
           <ProductProvider>
-            <Navbar />
-            {children}
-            <Footer />
+            <CartProvider>
+              <Navbar />
+              {children}
+              <Footer />
+            </CartProvider>
           </ProductProvider>
         </AuthProvider>
       </body>

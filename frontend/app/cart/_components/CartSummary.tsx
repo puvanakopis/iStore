@@ -57,10 +57,7 @@ export default function CartSummary({ subtotal, shipping, tax, total }: CartSumm
   };
 
   const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-    }).format(amount);
+    return `Rs ${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const discountRate = appliedPromo ? (PROMO_CODES[appliedPromo] || 0) : 0;
