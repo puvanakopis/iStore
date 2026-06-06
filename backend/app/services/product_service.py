@@ -27,9 +27,20 @@ async def create_product(db: AsyncIOMotorDatabase, data):
     return product
 
 
-    result = await db["products"].delete_one({"_id": product_id})
+async def get_all_products(db: AsyncIOMotorDatabase):
+    cursor = db["products"].find()
+    products = await cursor.to_list(length=100)
 
-    if result.deleted_count == 0:
+    for p in products:
+        p["_id"] = str(p["_id"])
+
+    return products
+
+
+async def get_product_by_id(db: AsyncIOMotorDatabase, product_id: str):
+    product = await db["products"].find_one({"_id": product_id})
+
+    if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    return {"msg": "Product deleted"}
+    return product
