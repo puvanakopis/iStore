@@ -116,9 +116,8 @@ export default function ShopProductCard({
             e.preventDefault();
             handleWishlistClick();
           }}
-          className={`absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full transition-all duration-300 ${
-            inWishlist ? "text-red-500 hover:bg-white" : "text-gray-400 hover:text-red-500 hover:bg-white"
-          }`}
+          className={`absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full transition-all duration-300 ${inWishlist ? "text-red-500 hover:bg-white" : "text-gray-400 hover:text-red-500 hover:bg-white"
+            }`}
         >
           <Heart
             size={18}
@@ -134,7 +133,9 @@ export default function ShopProductCard({
           <img
             src={imageSrc}
             alt={imageAlt || title}
-            className={`object-contain p-8 transition-all duration-700 ${isHovered ? "scale-110 rotate-2" : "scale-100 rotate-0"
+            className={`w-full h-full object-contain transition-all duration-700 ${isHovered
+                ? "scale-110 rotate-2"
+                : "scale-140 rotate-0"
               }`}
           />
         </Link>

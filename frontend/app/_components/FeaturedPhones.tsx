@@ -2,16 +2,7 @@
 
 import { motion, Variants } from "framer-motion";
 import ProductCard from "./ProductCard";
-import { products as allProducts } from "@/data/productData";
-
-const products = allProducts.slice(0, 4).map(p => ({
-  ...p,
-  images: p.colors?.[0]?.images?.map(img => img.replace("./../public", "")) || [p.imageSrc.replace("./../public", "")],
-  colors: p.colors?.map(color => ({
-    ...color,
-    images: color.images.map(img => img.replace("./../public", ""))
-  }))
-}));
+import { useProducts } from "@/contexts/ProductContext";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -36,6 +27,28 @@ const itemVariants: Variants = {
 };
 
 export default function FeaturedPhones() {
+  const { products: dbProducts, loading } = useProducts();
+
+  if (loading) {
+    return (
+      <section className="relative w-full bg-white overflow-hidden py-24 md:py-32">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-500 text-sm font-medium">Loading products...</p>
+        </div>
+      </section>
+    );
+  }
+
+  const products = dbProducts.slice(0, 4).map(p => ({
+    ...p,
+    images: p.colors?.[0]?.images?.map(img => img.replace("./../public", "")) || [p.imageSrc.replace("./../public", "")],
+    colors: p.colors?.map(color => ({
+      ...color,
+      images: color.images?.map(img => img.replace("./../public", "")) || []
+    }))
+  }));
+
   return (
     <section className="relative w-full bg-white overflow-hidden py-24 md:py-32">
 
@@ -63,7 +76,7 @@ export default function FeaturedPhones() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10"
         >
           {products.map((product) => (
-            <motion.div key={product.title} variants={itemVariants}>
+            <motion.div key={product.id || product.title} variants={itemVariants}>
               <ProductCard {...product} />
             </motion.div>
           ))}
