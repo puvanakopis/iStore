@@ -1,17 +1,14 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from fastapi import HTTPException, status
+from datetime import datetime
+from pymongo import ReturnDocument
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.utils.otp_utils import create_otp, verify_otp, get_pending_signup
 from app.utils.email_utils import send_otp_email, send_reset_password_email
 from app.schemas.auth_schema import ResetPassword
-from datetime import datetime
-
-
-from pymongo import ReturnDocument
 
 
 async def get_next_user_id(db: AsyncIOMotorDatabase) -> str:
-    """Get the next user ID (e.g., user_01, user_02)."""
     counter = await db["counters"].find_one_and_update(
         {"_id": "user_id"},
         {"$inc": {"sequence_value": 1}},
@@ -30,9 +27,6 @@ async def get_user_by_email(db: AsyncIOMotorDatabase, email: str):
 
 
 async def signup_user(db: AsyncIOMotorDatabase, user_in):
-    """
-    Step 1: Check if user exists, hash password, and send OTP.
-    """
     db_user = await get_user_by_email(db, user_in.email)
     if db_user:
         raise HTTPException(
@@ -47,7 +41,6 @@ async def signup_user(db: AsyncIOMotorDatabase, user_in):
         "hashed_password": hashed_password,
         "first_name": user_in.first_name,
         "last_name": user_in.last_name,
-        "full_name": user_in.full_name or f"{user_in.first_name} {user_in.last_name}"
     }
 
     otp_code = await create_otp(db, user_in.email, "signup", payload=payload)
@@ -66,9 +59,6 @@ async def authenticate_user(db: AsyncIOMotorDatabase, email: str, password: str)
 
 
 async def verify_signup_otp(db: AsyncIOMotorDatabase, email: str, code: str):
-    """
-    Step 2: Verify OTP and create user account.
-    """
     pending = await get_pending_signup(db, email, code)
     if pending and "payload" in pending:
         payload = pending["payload"]
@@ -79,7 +69,7 @@ async def verify_signup_otp(db: AsyncIOMotorDatabase, email: str, code: str):
             "hashed_password": payload["hashed_password"],
             "first_name": payload.get("first_name"),
             "last_name": payload.get("last_name"),
-            "full_name": payload.get("full_name"),
+            "role": "user",
             "created_at": datetime.utcnow()
         }
         await db["users"].insert_one(new_user)

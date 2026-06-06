@@ -29,6 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 try {
                     const userData = await authService.getMe();
                     setUser(userData);
+                    console.log('User authenticated:', userData);
                 } catch (error) {
                     console.error('Failed to fetch user', error);
                     Cookies.remove('token');
@@ -43,7 +44,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const login = async (data: LoginRequest) => {
         try {
             const { access_token, user } = await authService.login(data);
-            // Store in cookie for middleware access
             Cookies.set('token', access_token, { expires: 7, secure: true, sameSite: 'strict' });
             setUser(user);
             router.push('/');

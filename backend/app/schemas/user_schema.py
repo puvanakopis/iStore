@@ -7,7 +7,15 @@ class UserBase(BaseModel):
     email: EmailStr
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    full_name: Optional[str] = None
+    role: Optional[str] = "user"
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    avatar_initials: Optional[str] = None
+    member_status: Optional[str] = "standard"
+    member_since: Optional[datetime] = None
+    email_notifications: Optional[bool] = True
+    push_notifications: Optional[bool] = False
+    sms_updates: Optional[bool] = False
 
 
 class UserCreate(UserBase):
@@ -20,6 +28,8 @@ class UserUpdate(UserBase):
 
 class UserInDBBase(UserBase):
     id: str
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -27,3 +37,4 @@ class UserInDBBase(UserBase):
 
 class User(UserInDBBase):
     pass
+

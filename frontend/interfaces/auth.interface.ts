@@ -8,7 +8,6 @@ export interface LoginRequest {
 export interface RegisterRequest extends LoginRequest {
     first_name: string;
     last_name: string;
-    full_name: string;
 }
 
 export interface AuthResponse {
