@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import AdminNavbar from "@/components/admin/AdminNavbar";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProductProvider } from "@/contexts/ProductContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,12 +26,14 @@ export default function AdminLayout({
         className={`${inter.variable} font-sans antialiased bg-background text-foreground`}
       >
         <AuthProvider>
-          <div className="min-h-screen flex flex-col">
-            <AdminNavbar />
-            <main className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
-              {children}
-            </main>
-          </div>
+          <ProductProvider>
+            <div className="min-h-screen flex flex-col">
+              <AdminNavbar />
+              <main className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
+                {children}
+              </main>
+            </div>
+          </ProductProvider>
         </AuthProvider>
       </body>
     </html>

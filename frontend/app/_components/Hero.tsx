@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
@@ -36,7 +36,7 @@ export default function Hero() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-20 md:mb-24">
             <button className="apple-button-primary rounded-full">
-              Buy from $999
+              Buy from Rs. 99,900
             </button>
             <button className="apple-button-outline rounded-full">
               Learn more

@@ -4,15 +4,21 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Minus, Plus, Heart, Truck, RotateCcw, Cpu, Camera, Zap, ShieldCheck, Share2, Box } from 'lucide-react';
 import StarRating from '@/components/StarRating';
+import { useRouter } from 'next/navigation';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useWishlist } from '@/contexts/WishlistContext';
+
 
 interface Product {
     id: string;
     name: string;
     tagline: string;
     price: string;
+    imageSrc?: string;
     rating?: number;
     reviewCount?: number;
-    colors: Array<{ name: string; value: string }>;
+    colors: Array<{ name: string; value: string; images?: string[] }>;
     storage: Array<{ size: string; price: string }>;
     features: Array<{ icon: string; title: string; description: string }>;
     specifications: Array<{ label: string; value: string }>;
@@ -21,13 +27,20 @@ interface Product {
 
 interface ProductDetailsProps {
     product: Product;
+    selectedColor: string;
+    onColorSelect: (colorName: string) => void;
 }
 
 type TabType = 'description' | 'specifications' | 'reviews';
 
-export default function ProductDetails({ product }: ProductDetailsProps) {
+export default function ProductDetails({ product, selectedColor, onColorSelect }: ProductDetailsProps) {
+    const router = useRouter();
+    const { user } = useAuth();
+    const { addToCart } = useCart();
+    const { toggleWishlist, isInWishlist } = useWishlist();
+    const inWishlist = isInWishlist(product.id);
+
     const [activeTab, setActiveTab] = useState<TabType>('description');
-    const [selectedColor, setSelectedColor] = useState(product.colors[0].name);
     const [selectedStorage, setSelectedStorage] = useState(product.storage[0].size);
     const [quantity, setQuantity] = useState(1);
 
@@ -44,26 +57,63 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     const decrementQty = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
     const handleColorSelect = (colorName: string) => {
-        setSelectedColor(colorName);
+        onColorSelect(colorName);
     };
 
     const handleStorageSelect = (storageSize: string) => {
         setSelectedStorage(storageSize);
     };
 
-    const handleAddToBag = () => {
-        console.log('Added to bag:', {
-            product: product.name,
-            color: selectedColor,
-            storage: selectedStorage,
-            quantity,
-        });
-        // Add your cart logic here
+    const handleAddToBag = async () => {
+        if (!user) {
+            router.push('/signin');
+            return;
+        }
+
+        const currentPrice = product.storage.find(s => s.size === selectedStorage)?.price || product.price;
+
+        const activeColorObj = product.colors.find(c => c.name === selectedColor);
+        const imageSrc = (activeColorObj?.images && activeColorObj.images.length > 0)
+            ? activeColorObj.images[0]
+            : product.imageSrc;
+
+        try {
+            await addToCart(
+                product.id,
+                quantity,
+                selectedColor,
+                selectedStorage,
+                product.name,
+                currentPrice,
+                imageSrc
+            );
+            router.push('/cart');
+        } catch (err) {
+            console.error(err);
+        }
     };
 
-    const handleFavorite = () => {
-        console.log('Added to favorites:', product.name);
-        // Add your favorites logic here
+    const handleFavorite = async () => {
+        if (!user) {
+            router.push('/signin');
+            return;
+        }
+
+        const activeColorObj = product.colors.find(c => c.name === selectedColor);
+        const imageSrc = (activeColorObj?.images && activeColorObj.images.length > 0)
+            ? activeColorObj.images[0]
+            : product.imageSrc || '';
+
+        try {
+            await toggleWishlist({
+                product_id: product.id,
+                title: product.name,
+                price: product.price,
+                imageSrc: imageSrc,
+            });
+        } catch (err) {
+            console.error("Error toggling wishlist:", err);
+        }
     };
 
     const selectedStoragePrice = product.storage.find(s => s.size === selectedStorage)?.price || product.price;
@@ -83,7 +133,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     </button>
                 </div>
                 <h1 className="text-[40px] md:text-[56px] font-bold tracking-tight text-foreground leading-[1.1]">{product.name}</h1>
-                
+
                 <div className="flex items-center gap-4">
                     <StarRating rating={product.rating || 0} size={18} />
                     <span className="text-sm font-medium text-foreground-muted">
@@ -94,7 +144,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 <p className="text-foreground-secondary text-lg font-light tracking-tight leading-relaxed max-w-md">{product.tagline}</p>
                 <div className="flex items-baseline gap-2 mt-4">
                     <p className="text-4xl font-bold text-foreground">{selectedStoragePrice}</p>
-                    <span className="text-foreground-muted text-sm font-light">or $83.25/mo. for 12 mo.*</span>
+                    <span className="text-foreground-muted text-sm font-light">or Rs. 8,325/mo. for 12 mo.*</span>
                 </div>
             </motion.header>
 
@@ -113,8 +163,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                         <button
                             key={color.name}
                             className={`w-10 h-10 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 border-2 ${selectedColor === color.name
-                                    ? 'border-primary ring-2 ring-primary ring-offset-2'
-                                    : 'border-border'
+                                ? 'border-primary ring-2 ring-primary ring-offset-2'
+                                : 'border-border'
                                 }`}
                             style={{ backgroundColor: color.value }}
                             onClick={() => handleColorSelect(color.name)}
@@ -139,8 +189,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                         <button
                             key={storage.size}
                             className={`px-5 py-2 rounded-sm border transition-all duration-300 text-left active:scale-[0.98] ${selectedStorage === storage.size
-                                    ? 'border-primary bg-background-dim'
-                                    : 'border-border hover:border-primary'
+                                ? 'border-primary bg-background-dim'
+                                : 'border-border hover:border-primary'
                                 }`}
                             onClick={() => handleStorageSelect(storage.size)}
                         >
@@ -180,10 +230,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     Add to Bag
                 </button>
                 <button
-                    className="p-4 border border-border rounded-full hover:bg-background-dim transition-all duration-300 hover:scale-110 group"
+                    className={`p-4 border rounded-full hover:bg-background-dim transition-all duration-300 hover:scale-110 group ${
+                        inWishlist ? 'border-red-100 text-red-500 bg-red-50/50' : 'border-border text-foreground-secondary'
+                    }`}
                     onClick={handleFavorite}
                 >
-                    <Heart className="group-hover:fill-red-500 group-hover:text-red-500 transition-colors" size={24} />
+                    <Heart className={`${inWishlist ? 'fill-red-500 text-red-500' : 'group-hover:fill-red-500 group-hover:text-red-500'} transition-colors`} size={24} />
                 </button>
             </motion.div>
 
@@ -199,7 +251,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     </div>
                     <div className="flex flex-col">
                         <span className="font-bold text-foreground">Free Shipping</span>
-                        <span className="text-xs text-foreground-muted">On orders over $1,500</span>
+                        <span className="text-xs text-foreground-muted">On orders over Rs. 150,000</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-foreground-secondary group cursor-default">
@@ -238,8 +290,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                         <button
                             key={tab}
                             className={`pb-4 px-6 md:px-10 font-bold text-[13px] uppercase tracking-[0.15em] transition-all duration-300 border-b-2 whitespace-nowrap ${activeTab === tab
-                                    ? 'text-primary border-primary'
-                                    : 'text-foreground-muted hover:text-black border-transparent'
+                                ? 'text-primary border-primary'
+                                : 'text-foreground-muted hover:text-black border-transparent'
                                 }`}
                             onClick={() => setActiveTab(tab)}
                         >

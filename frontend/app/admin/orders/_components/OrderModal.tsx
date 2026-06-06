@@ -34,26 +34,42 @@ export default function OrderModal({
 
   useEffect(() => {
     if (order) {
+      const formattedDate = order.created_at
+        ? new Date(order.created_at).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        : "";
+
+      const customerName = `${order.customer_details?.firstName || ""} ${order.customer_details?.lastName || ""}`.trim() || "Guest";
+      
+      const itemsList = order.items?.map((item) => ({
+        name: item.title,
+        quantity: item.quantity,
+        price: typeof item.price === "string" ? parseInt(item.price.replace(/[^0-9]/g, "")) || 0 : item.price,
+      })) || [];
+
       setFormData({
-        orderId: order.orderId,
-        date: order.date,
-        customer: order.customer,
-        customerEmail: order.customerEmail,
+        orderId: `#${order.id.toUpperCase()}`,
+        date: formattedDate,
+        customer: customerName,
+        customerEmail: order.customer_details?.email || "",
         total: order.total,
         status: order.status,
         payment: order.payment,
-        items: order.items || [],
-        shippingAddress: order.shippingAddress || "",
+        items: itemsList,
+        shippingAddress: order.shipping_address?.address || "",
       });
     } else {
       const today = new Date();
-      const formattedDate = today.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
+      const formattedDate = today.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
       });
       setFormData({
-        orderId: `#ORD-${Math.floor(Math.random() * 10000)}`,
+        orderId: "",
         date: formattedDate,
         customer: "",
         customerEmail: "",
@@ -72,7 +88,44 @@ export default function OrderModal({
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-    onSave({ ...formData, total: calculatedTotal });
+
+    const parts = formData.customer.trim().split(" ");
+    const firstName = parts[0] || "";
+    const lastName = parts.slice(1).join(" ") || "";
+
+    const mappedOrder = {
+      customer_details: {
+        firstName,
+        lastName,
+        email: formData.customerEmail,
+        phone: order?.customer_details?.phone || "+00 000 000 0000",
+      },
+      shipping_address: {
+        address: formData.shippingAddress,
+        city: order?.shipping_address?.city || "N/A",
+        state: order?.shipping_address?.state || "N/A",
+        zipCode: order?.shipping_address?.zipCode || "N/A",
+        country: order?.shipping_address?.country || "N/A",
+      },
+      items: formData.items.map((item) => ({
+        product_id: "manual",
+        title: item.name,
+        price: `Rs. ${item.price.toLocaleString("en-IN")}`,
+        imageSrc: "/product/iPhone_16_Pro_Max_01.png",
+        color: "N/A",
+        storage: "N/A",
+        quantity: item.quantity,
+      })),
+      subtotal: calculatedTotal,
+      discount: order?.discount || 0,
+      shipping: order?.shipping || 0,
+      tax: order?.tax || 0,
+      total: calculatedTotal,
+      status: formData.status,
+      payment: formData.payment,
+    };
+
+    onSave(mappedOrder as any);
     onClose();
   };
 
@@ -94,7 +147,7 @@ export default function OrderModal({
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-IN').format(value);
+    return new Intl.NumberFormat("en-IN").format(value);
   };
 
   return (
@@ -117,9 +170,7 @@ export default function OrderModal({
           >
             <div className="bg-white rounded-sm shadow-xl overflow-hidden">
               <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {order ? "Edit Order" : "Add New Order"}
-                </h2>
+                <h2 className="text-2xl font-bold text-gray-900">Edit Order</h2>
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
@@ -139,10 +190,7 @@ export default function OrderModal({
                       type="text"
                       required
                       value={formData.orderId}
-                      onChange={(e) =>
-                        setFormData({ ...formData, orderId: e.target.value })
-                      }
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 bg-gray-50"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 bg-gray-50 font-semibold"
                       readOnly
                     />
                   </div>
@@ -156,11 +204,8 @@ export default function OrderModal({
                       type="text"
                       required
                       value={formData.date}
-                      onChange={(e) =>
-                        setFormData({ ...formData, date: e.target.value })
-                      }
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                      placeholder="Oct 24, 2023"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 bg-gray-50"
+                      readOnly
                     />
                   </div>
 
@@ -285,7 +330,7 @@ export default function OrderModal({
                         </button>
                       </div>
                     ))}
-                    
+
                     <div className="grid grid-cols-3 gap-2">
                       <input
                         type="text"
@@ -348,7 +393,7 @@ export default function OrderModal({
                     type="submit"
                     className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium"
                   >
-                    {order ? "Update Order" : "Create Order"}
+                    Update Order
                   </button>
                 </div>
               </form>

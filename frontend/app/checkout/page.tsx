@@ -9,6 +9,8 @@ import { ShippingAddress } from "./_components/ShippingAddress";
 import { PaymentMethod } from "./_components/PaymentMethod";
 import { OrderSummary } from "./_components/OrderSummary";
 import { OrderPlacedSuccessfully } from "./_components/OrderPlacedSuccessfully";
+import { useCart } from "../../contexts/CartContext";
+import api from "../../services/api";
 
 // Types
 export interface CheckoutFormData {
@@ -28,7 +30,8 @@ export interface CheckoutFormData {
 }
 
 export interface CartItem {
-  id: number;
+  id: number | string;
+  product_id?: string;
   title: string;
   price: string;
   imageSrc: string;
@@ -37,34 +40,12 @@ export interface CartItem {
   storage: string;
 }
 
-// Mock cart data
-const CHECKOUT_ITEMS: CartItem[] = [
-  {
-    id: 1,
-    title: "iPhone 16 Pro Max",
-    price: "Rs. 399,900",
-    imageSrc: "/product/iPhone_16_Pro_Max_01.png",
-    quantity: 1,
-    color: "Natural Titanium",
-    storage: "256GB",
-  },
-  {
-    id: 2,
-    title: "Apple Watch Series 9",
-    price: "Rs. 45,900",
-    imageSrc: "/product/iPhone_16_Pro_Max_03.png",
-    quantity: 1,
-    color: "Midnight",
-    storage: "45mm",
-  },
-];
-
 // Helper functions
-export const parsePrice = (priceStr: string): number => {
+const parsePrice = (priceStr: string): number => {
   return parseInt(priceStr.replace(/[^0-9]/g, "")) || 0;
 };
 
-export const calculateTotals = (items: CartItem[]) => {
+const calculateTotals = (items: CartItem[]) => {
   const subtotal = items.reduce(
     (acc, item) => acc + parsePrice(item.price) * item.quantity,
     0
@@ -75,34 +56,32 @@ export const calculateTotals = (items: CartItem[]) => {
   return { subtotal, shipping, tax, total };
 };
 
-export const formatPrice = (amount: number): string => {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-  }).format(amount);
+const formatPrice = (amount: number): string => {
+  return `Rs ${amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 export default function Checkout() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { cartItems, clearCart } = useCart();
 
   const [formData, setFormData] = useState<CheckoutFormData>({
-    firstName: "Johnathan",
-    lastName: "Doe",
-    email: "john.doe@icloud.com",
-    phone: "+94 77 123 4567",
-    address: "1 Infinite Loop",
-    city: "Cupertino",
-    state: "CA",
-    zipCode: "95014",
-    country: "United States",
-    cardNumber: "**** **** **** 4242",
-    expiry: "12/28",
-    cvv: "***",
-    cardholder: "Johnathan Doe",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
+    cardNumber: "",
+    expiry: "",
+    cvv: "",
+    cardholder: "",
   });
 
-  const { subtotal, shipping, tax, total } = calculateTotals(CHECKOUT_ITEMS);
+  const { subtotal, shipping, tax, total } = calculateTotals(cartItems);
 
   const handleInputChange = (field: keyof CheckoutFormData, value: string) => {
     setFormData((prev) => ({
@@ -111,11 +90,60 @@ export default function Checkout() {
     }));
   };
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = async (promoCode: string | null, discountAmount: number, activeTotal: number) => {
+    if (cartItems.length === 0) {
+      alert("Your cart is empty.");
+      return;
+    }
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsLoading(false);
-    setOrderPlaced(true);
+    try {
+      // Structure the order data
+      const orderPayload = {
+        customer_details: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+        },
+        shipping_address: {
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: formData.country,
+        },
+        payment_details: {
+          cardholder: formData.cardholder,
+          cardNumber: formData.cardNumber,
+          expiry: formData.expiry,
+          cvv: formData.cvv,
+        },
+        items: cartItems.map(item => ({
+          product_id: item.product_id || String(item.id),
+          title: item.title,
+          price: item.price,
+          imageSrc: item.imageSrc,
+          color: item.color,
+          storage: item.storage,
+          quantity: item.quantity
+        })),
+        subtotal: subtotal,
+        discount: discountAmount,
+        shipping: shipping,
+        tax: (subtotal - discountAmount) * 0.18,
+        total: activeTotal,
+        promo_code: promoCode
+      };
+
+      await api.post("/orders/", orderPayload);
+      await clearCart();
+      setOrderPlaced(true);
+    } catch (error) {
+      console.error("Error placing order:", error);
+      alert("Failed to place order. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (orderPlaced) {
@@ -148,36 +176,46 @@ export default function Checkout() {
           </h1>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
-          {/* Left Column - Forms */}
-          <div className="lg:col-span-7 space-y-10">
-            <CustomerDetails
-              formData={formData}
-              onInputChange={handleInputChange}
-            />
-            <ShippingAddress
-              formData={formData}
-              onInputChange={handleInputChange}
-            />
-            <PaymentMethod
-              formData={formData}
-              onInputChange={handleInputChange}
-            />
+        {cartItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
+            <p className="text-foreground-muted mb-8">Add some products to your cart before checking out.</p>
+            <Link href="/" className="bg-black text-white px-8 py-3 rounded-full font-bold hover:opacity-90 transition-all">
+              Continue Shopping
+            </Link>
           </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+            {/* Left Column - Forms */}
+            <div className="lg:col-span-7 space-y-10">
+              <CustomerDetails
+                formData={formData}
+                onInputChange={handleInputChange}
+              />
+              <ShippingAddress
+                formData={formData}
+                onInputChange={handleInputChange}
+              />
+              <PaymentMethod
+                formData={formData}
+                onInputChange={handleInputChange}
+              />
+            </div>
 
-          {/* Right Column - Order Summary */}
-          <div className="lg:col-span-5">
-            <OrderSummary
-              items={CHECKOUT_ITEMS}
-              subtotal={subtotal}
-              shipping={shipping}
-              tax={tax}
-              total={total}
-              isLoading={isLoading}
-              onPlaceOrder={handlePlaceOrder}
-            />
+            {/* Right Column - Order Summary */}
+            <div className="lg:col-span-5">
+              <OrderSummary
+                items={cartItems}
+                subtotal={subtotal}
+                shipping={shipping}
+                tax={tax}
+                total={total}
+                isLoading={isLoading}
+                onPlaceOrder={handlePlaceOrder}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </section>
     </main>
   );

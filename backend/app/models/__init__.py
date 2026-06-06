@@ -1,2 +1,2 @@
-from .user import User
-from .otp import OTP
+from .user_model import User
+from .otp_model import OTP

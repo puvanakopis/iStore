@@ -6,6 +6,7 @@ import { Search, ShoppingBag, Menu, X, User, Heart, Settings, ChevronRight } fro
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
+import { useCart } from "../contexts/CartContext";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -23,6 +24,8 @@ const userLinks = [
 
 export default function Navbar() {
   const { user, logout, loading } = useAuth();
+  const { cartItems } = useCart();
+  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -88,7 +91,11 @@ export default function Navbar() {
           </button>
           <Link href="/cart" className="hover:scale-110 transition-transform cursor-pointer relative">
             <ShoppingBag size={18} strokeWidth={2} />
-            <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">0</span>
+            {totalItems > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
+                {totalItems}
+              </span>
+            )}
           </Link>
 
           {loading ? (
@@ -150,7 +157,11 @@ export default function Navbar() {
         <div className="flex md:hidden items-center gap-4">
           <Link href="/cart" className="relative p-2 text-black" onClick={() => setMobileMenuOpen(false)}>
             <ShoppingBag size={22} strokeWidth={2} />
-            <span className="absolute top-1 right-1 bg-black text-white text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-full font-bold">0</span>
+            {totalItems > 0 && (
+              <span className="absolute top-1 right-1 bg-black text-white text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-full font-bold">
+                {totalItems}
+              </span>
+            )}
           </Link>
           <button
             className="text-black p-2 -mr-2"

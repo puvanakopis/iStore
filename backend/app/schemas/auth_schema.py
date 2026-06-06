@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from app.schemas.user import User
+from app.schemas.user_schema import User
 
 
 class Token(BaseModel):
@@ -30,3 +30,13 @@ class ResetPassword(BaseModel):
 
 class ForgotPassword(BaseModel):
     email: EmailStr
+
+
+class ChangePassword(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class DeleteAccountConfirm(BaseModel):
+    email: EmailStr
+

@@ -2,10 +2,8 @@
 
 import { motion } from "framer-motion";
 import Sidebar from "@/components/Sidebar";
-
 import PasswordChange from "./_components/PasswordChange";
 import PrivacySection from "./_components/PrivacySection";
-import LoginActivity from "./_components/LoginActivity";
 import AccountDeletion from "./_components/AccountDeletion";
 
 export default function Settings() {
@@ -33,7 +31,6 @@ export default function Settings() {
           <div className="flex-1 space-y-6">
             <PasswordChange />
             <PrivacySection />
-            <LoginActivity />
             <AccountDeletion />
           </div>
         </div>

@@ -1,17 +1,14 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from fastapi import HTTPException, status
-from app.core.security import get_password_hash, verify_password, create_access_token
-from app.utils.otp_service import create_otp, verify_otp, get_pending_signup
-from app.utils.email_service import send_otp_email, send_reset_password_email
-from app.schemas.auth import ResetPassword
 from datetime import datetime
-
-
 from pymongo import ReturnDocument
+from app.core.security import get_password_hash, verify_password, create_access_token
+from app.utils.otp_utils import create_otp, verify_otp, get_pending_signup
+from app.utils.email_utils import send_otp_email, send_reset_password_email
+from app.schemas.auth_schema import ResetPassword, ChangePassword, DeleteAccountConfirm
 
 
 async def get_next_user_id(db: AsyncIOMotorDatabase) -> str:
-    """Get the next user ID (e.g., user_01, user_02)."""
     counter = await db["counters"].find_one_and_update(
         {"_id": "user_id"},
         {"$inc": {"sequence_value": 1}},
@@ -30,9 +27,6 @@ async def get_user_by_email(db: AsyncIOMotorDatabase, email: str):
 
 
 async def signup_user(db: AsyncIOMotorDatabase, user_in):
-    """
-    Step 1: Check if user exists, hash password, and send OTP.
-    """
     db_user = await get_user_by_email(db, user_in.email)
     if db_user:
         raise HTTPException(
@@ -47,7 +41,6 @@ async def signup_user(db: AsyncIOMotorDatabase, user_in):
         "hashed_password": hashed_password,
         "first_name": user_in.first_name,
         "last_name": user_in.last_name,
-        "full_name": user_in.full_name or f"{user_in.first_name} {user_in.last_name}"
     }
 
     otp_code = await create_otp(db, user_in.email, "signup", payload=payload)
@@ -66,13 +59,9 @@ async def authenticate_user(db: AsyncIOMotorDatabase, email: str, password: str)
 
 
 async def verify_signup_otp(db: AsyncIOMotorDatabase, email: str, code: str):
-    """
-    Step 2: Verify OTP and create user account.
-    """
     pending = await get_pending_signup(db, email, code)
     if pending and "payload" in pending:
         payload = pending["payload"]
-        # Create user now
         user_id = await get_next_user_id(db)
         new_user = {
             "_id": user_id,
@@ -80,11 +69,10 @@ async def verify_signup_otp(db: AsyncIOMotorDatabase, email: str, code: str):
             "hashed_password": payload["hashed_password"],
             "first_name": payload.get("first_name"),
             "last_name": payload.get("last_name"),
-            "full_name": payload.get("full_name"),
+            "role": "user",
             "created_at": datetime.utcnow()
         }
         await db["users"].insert_one(new_user)
-        # Cleanup OTP
         await db["otps"].delete_many({"email": email, "purpose": "signup"})
         return True
     return False
@@ -108,3 +96,80 @@ async def reset_password(db: AsyncIOMotorDatabase, reset_data: ResetPassword):
         )
         return True
     return False
+
+
+async def update_user_profile(db: AsyncIOMotorDatabase, user_id: str, profile_data) -> dict:
+    update_dict = {}
+    
+    # Simple extraction of optional fields
+    for field in ["first_name", "last_name", "phone", "address", 
+                  "email_notifications", "push_notifications", "sms_updates"]:
+        val = getattr(profile_data, field, None)
+        if val is not None:
+            update_dict[field] = val
+            
+    if not update_dict:
+        # No updates, fetch and return
+        user = await db["users"].find_one({"_id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user["id"] = user["_id"]
+        user.pop("hashed_password", None)
+        return user
+
+    # If first_name or last_name changed, recalculate avatar_initials
+    user = await db["users"].find_one({"_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    first_name = update_dict.get("first_name", user.get("first_name", ""))
+    last_name = update_dict.get("last_name", user.get("last_name", ""))
+    
+    initials = ""
+    if first_name:
+        initials += first_name[0].upper()
+    if last_name:
+        initials += last_name[0].upper()
+        
+    if initials:
+        update_dict["avatar_initials"] = initials
+        
+    update_dict["updated_at"] = datetime.utcnow()
+    
+    await db["users"].update_one({"_id": user_id}, {"$set": update_dict})
+    
+    updated_user = await db["users"].find_one({"_id": user_id})
+    updated_user["id"] = updated_user["_id"]
+    updated_user.pop("hashed_password", None)
+    return updated_user
+
+
+async def change_password(db: AsyncIOMotorDatabase, user_id: str, data: ChangePassword) -> bool:
+    user = await db["users"].find_one({"_id": user_id})
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if not verify_password(data.current_password, user["hashed_password"]):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect current password")
+    
+    hashed_password = get_password_hash(data.new_password)
+    await db["users"].update_one(
+        {"_id": user_id},
+        {"$set": {"hashed_password": hashed_password}}
+    )
+    return True
+
+
+async def delete_user_account(db: AsyncIOMotorDatabase, user_id: str, email: str) -> bool:
+    user = await db["users"].find_one({"_id": user_id})
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if user["email"].lower() != email.lower():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email confirmation does not match your registered email")
+    
+    # Delete the user document
+    await db["users"].delete_one({"_id": user_id})
+    # Also delete their cart
+    await db["carts"].delete_one({"user_id": user_id})
+    return True
+
+

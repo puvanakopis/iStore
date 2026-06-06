@@ -13,7 +13,7 @@ interface OrderSummaryProps {
   tax: number;
   total: number;
   isLoading: boolean;
-  onPlaceOrder: () => void;
+  onPlaceOrder: (promoCode: string | null, discount: number, total: number) => void;
 }
 
 const PROMO_CODES: Record<string, number> = {
@@ -222,7 +222,7 @@ export const OrderSummary = ({
 
       {/* Place Order Button */}
       <motion.button
-        onClick={onPlaceOrder}
+        onClick={() => onPlaceOrder(appliedPromo, discount, activeTotal)}
         disabled={isLoading}
         className={`w-full bg-black text-white py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all group cursor-pointer ${
           isLoading

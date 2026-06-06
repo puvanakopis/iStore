@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { Minus, Plus, X } from 'lucide-react';
-import Image from 'next/image';
 
 interface CartItemProps {
   item: {
@@ -28,12 +27,11 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }: CartItemP
       className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-6 border-b border-border group"
     >
       {/* Product Image */}
-      <div className="relative w-24 h-24 bg-background-dim rounded-md overflow-hidden flex-shrink-0">
-        <Image
+      <div className="relative w-24 h-24 bg-background-dim rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center">
+        <img
           src={item.imageSrc}
           alt={item.title}
-          fill
-          className="object-contain p-2"
+          className="w-full h-full object-contain p-2"
         />
       </div>
 

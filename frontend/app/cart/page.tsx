@@ -1,53 +1,25 @@
 'use client';
 
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useCart } from '@/contexts/CartContext';
 import CartItem from './_components/CartItem';
 import CartSummary from './_components/CartSummary';
 import EmptyCart from './_components/EmptyCart';
 
-// Mock initial data
-const INITIAL_CART = [
-  {
-    id: 1,
-    title: "iPhone 16 Pro Max",
-    price: "Rs. 399,900",
-    imageSrc: "/product/iPhone_16_Pro_Max_01.png",
-    quantity: 1,
-    color: "Natural Titanium",
-    storage: "256GB"
-  },
-  {
-    id: 2,
-    title: "Apple Watch Series 9",
-    price: "Rs. 45,900",
-    imageSrc: "/product/iPhone_16_Pro_Max_03.png",
-    quantity: 1,
-    color: "Midnight",
-    storage: "45mm"
-  }
-];
 
 export default function Cart() {
-  const [cartItems, setCartItems] = useState(INITIAL_CART);
+  const { cartItems, updateQuantity, removeItem, loading } = useCart();
 
-  const updateQuantity = (id: number | string, delta: number) => {
-    setCartItems(prev => prev.map(item => {
-      if (item.id === id) {
-        const newQty = Math.max(1, item.quantity + delta);
-        return { ...item, quantity: newQty };
-      }
-      return item;
-    }));
-  };
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-white pt-24 md:pt-32 pb-20 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-950"></div>
+      </main>
+    );
+  }
 
-  const removeItem = (id: number | string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
-  };
-
-  // Helper to parse "Rs. 399,900" to number
   const parsePrice = (priceStr: string) => {
     return parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
   };
@@ -56,8 +28,8 @@ export default function Cart() {
     return acc + (parsePrice(item.price) * item.quantity);
   }, 0);
 
-  const shipping = 0; // Free shipping
-  const tax = subtotal * 0.18; // 18% GST example
+  const shipping = 0;
+  const tax = subtotal * 0.1; 
   const total = subtotal + shipping + tax;
 
   return (

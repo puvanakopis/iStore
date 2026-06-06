@@ -6,54 +6,11 @@ import ProductsTable from "./_components/ProductsTable";
 import ProductModal from "./_components/ProductModal";
 import DeleteConfirmModal from "./_components/DeleteConfirmModal";
 import { Plus } from "lucide-react";
-
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  stock: number;
-  status: "In Stock" | "Low Stock" | "Out of Stock";
-  image?: string;
-  description?: string;
-}
-
-const mockProducts: Product[] = [
-  {
-    id: "1",
-    name: "iPhone 15 Pro Max",
-    price: 249900,
-    stock: 45,
-    status: "In Stock",
-    description: "Latest iPhone with A17 Pro chip",
-  },
-  {
-    id: "2",
-    name: "AirPods Pro 2",
-    price: 24900,
-    stock: 8,
-    status: "Low Stock",
-    description: "Active Noise Cancellation",
-  },
-  {
-    id: "3",
-    name: "Apple Watch Ultra 2",
-    price: 89900,
-    stock: 0,
-    status: "Out of Stock",
-    description: "Titanium case, 49mm",
-  },
-  {
-    id: "4",
-    name: "MacBook Pro M3",
-    price: 199900,
-    stock: 15,
-    status: "In Stock",
-    description: "14-inch, 512GB SSD",
-  },
-];
+import { useProducts } from "@/contexts/ProductContext";
+import { Product, ProductCreate, ProductUpdate } from "@/interfaces/product.interface";
 
 export default function AdminProducts() {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const { products, loading, error, createProduct, updateProduct, deleteProduct } = useProducts();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
@@ -74,43 +31,29 @@ export default function AdminProducts() {
     setIsDeleteModalOpen(true);
   };
 
-  const handleSaveProduct = (productData: Omit<Product, "id">) => {
-    if (selectedProduct) {
-      setProducts(
-        products.map((p) =>
-          p.id === selectedProduct.id
-            ? { ...productData, id: selectedProduct.id }
-            : p
-        )
-      );
-    } else {
-      const newProduct: Product = {
-        ...productData,
-        id: Date.now().toString(),
-      };
-      setProducts([...products, newProduct]);
+  const handleSaveProduct = async (productData: ProductCreate | ProductUpdate) => {
+    try {
+      if (selectedProduct) {
+        await updateProduct(selectedProduct.id, productData as ProductUpdate);
+      } else {
+        await createProduct(productData as ProductCreate);
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Error saving product:", err);
     }
-
-    setIsModalOpen(false);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (productToDelete) {
-      setProducts(products.filter((p) => p.id !== productToDelete.id));
-      setIsDeleteModalOpen(false);
-      setProductToDelete(undefined);
+      try {
+        await deleteProduct(productToDelete.id);
+        setIsDeleteModalOpen(false);
+        setProductToDelete(undefined);
+      } catch (err) {
+        console.error("Error deleting product:", err);
+      }
     }
-  };
-
-  const handleUpdateStatus = (
-    productId: string,
-    newStatus: Product["status"]
-  ) => {
-    setProducts(
-      products.map((p) =>
-        p.id === productId ? { ...p, status: newStatus } : p
-      )
-    );
   };
 
   return (
@@ -120,7 +63,6 @@ export default function AdminProducts() {
         <AdminHeader
           title="Product Management"
           subtitle="Manage your product inventory, prices, and availability"
-          greeting="Manage your product catalog"
           actions={
             <button
               onClick={handleAddProduct}
@@ -132,13 +74,25 @@ export default function AdminProducts() {
           }
         />
 
-        {/* Products Table */}
-        <ProductsTable
-          products={products}
-          onEdit={handleEditProduct}
-          onDelete={handleDeleteClick}
-          onUpdateStatus={handleUpdateStatus}
-        />
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="text-gray-500 mt-4 text-sm font-medium">Loading products...</p>
+          </div>
+        ) : (
+          /* Products Table */
+          <ProductsTable
+            products={products}
+            onEdit={handleEditProduct}
+            onDelete={handleDeleteClick}
+          />
+        )}
 
         {/* Add/Edit Modal */}
         <ProductModal
@@ -153,7 +107,7 @@ export default function AdminProducts() {
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={handleConfirmDelete}
-          productName={productToDelete?.name}
+          productName={productToDelete?.title}
         />
       </div>
     </main>

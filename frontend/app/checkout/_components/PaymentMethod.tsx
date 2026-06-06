@@ -3,14 +3,40 @@
 import { motion } from "framer-motion";
 import { CreditCard, Lock, ShieldCheck, User } from "lucide-react";
 import { FormField } from "./FormField";
-import { CheckoutFormData } from "../CheckoutPage";
+import { CheckoutFormData } from "../page";
 
 interface PaymentMethodProps {
   formData: CheckoutFormData;
   onInputChange: (field: keyof CheckoutFormData, value: string) => void;
 }
 
-export const PaymentMethod = ({ formData, onInputChange }: PaymentMethodProps) => {
+export const PaymentMethod = ({
+  formData,
+  onInputChange,
+}: PaymentMethodProps) => {
+
+  const handleCardNumberChange = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 16);
+
+    const formatted = digits.replace(/(\d{4})/g, "$1 ").trim();
+
+    onInputChange("cardNumber", formatted);
+  };
+
+  const handleExpiryChange = (value: string) => {
+    let cleaned = value.replace(/\D/g, "").slice(0, 4);
+
+    if (cleaned.length >= 3) {
+      cleaned = cleaned.slice(0, 2) + "/" + cleaned.slice(2);
+    }
+
+    const [mm] = cleaned.split("/");
+
+    if (mm && Number(mm) > 12) return;
+
+    onInputChange("expiry", cleaned);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -37,24 +63,29 @@ export const PaymentMethod = ({ formData, onInputChange }: PaymentMethodProps) =
             id="cardNumber"
             value={formData.cardNumber}
             icon={CreditCard}
-            onChange={(value) => onInputChange("cardNumber", value)}
+            onChange={handleCardNumberChange}
           />
+
           <div className="grid grid-cols-2 gap-4">
             <FormField
-              label="Expiry"
+              label="Expiry (MM/YY)"
               id="expiry"
               value={formData.expiry}
-              onChange={(value) => onInputChange("expiry", value)}
+              onChange={handleExpiryChange}
             />
+
             <FormField
               label="CVV"
               id="cvv"
               type="password"
               value={formData.cvv}
-              onChange={(value) => onInputChange("cvv", value)}
+              onChange={(value) =>
+                onInputChange("cvv", value.replace(/\D/g, "").slice(0, 4))
+              }
             />
           </div>
         </div>
+
         <FormField
           label="Cardholder Name"
           id="cardholder"

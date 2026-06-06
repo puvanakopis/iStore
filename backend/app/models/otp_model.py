@@ -20,11 +20,16 @@ class PyObjectId(ObjectId):
         return {"type": "string"}
 
 
-class User(BaseModel):
-    id: str = Field(alias="_id")
+class OTP(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
     email: str
-    hashed_password: str
+    code: str
+    expires_at: datetime
+    purpose: str
+    hashed_password: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
     model_config = ConfigDict(
         populate_by_name=True,
+        arbitrary_types_allowed=True,
     )

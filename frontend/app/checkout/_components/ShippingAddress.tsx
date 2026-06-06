@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { MapPin } from "lucide-react";
 import { FormField } from "./FormField";
-import { CheckoutFormData } from "../CheckoutPage";
+import { CheckoutFormData } from "../page";
 
 interface ShippingAddressProps {
   formData: CheckoutFormData;

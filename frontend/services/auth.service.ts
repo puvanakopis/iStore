@@ -1,35 +1,64 @@
-import api from './api';
-import { LoginRequest, RegisterRequest, AuthResponse } from '../interfaces/auth.interface';
-import { User } from '../interfaces/user.interface';
+import api from "./api";
+import {
+    LoginRequest,
+    RegisterRequest,
+    AuthResponse,
+    MessageResponse,
+    VerifyOtpRequest,
+} from "../interfaces/auth.interface";
+import { User } from "../interfaces/user.interface";
 
 export const authService = {
     async login(data: LoginRequest): Promise<AuthResponse> {
-        const response = await api.post<AuthResponse>('/auth/login', data);
-        return response.data;
+        const res = await api.post<AuthResponse>("/auth/login", data);
+        return res.data;
     },
 
-    async register(data: RegisterRequest): Promise<{ email: string; msg: string }> {
-        const response = await api.post<{ email: string; msg: string }>('/auth/register', data);
-        return response.data;
+    async register(data: RegisterRequest): Promise<MessageResponse> {
+        const res = await api.post<MessageResponse>("/auth/register", data);
+        return res.data;
     },
 
-    async verifyOtp(data: { email: string; code: string; purpose: string }): Promise<{ msg: string }> {
-        const response = await api.post<{ msg: string }>('/auth/verify-otp', data);
-        return response.data;
+    async verifyOtp(data: VerifyOtpRequest): Promise<MessageResponse> {
+        const res = await api.post<MessageResponse>("/auth/verify-otp", data);
+        return res.data;
     },
 
-    async forgotPassword(email: string): Promise<{ msg: string }> {
-        const response = await api.post<{ msg: string }>('/auth/forgot-password', { email });
-        return response.data;
+    async forgotPassword(email: string): Promise<MessageResponse> {
+        const res = await api.post<MessageResponse>("/auth/forgot-password", {
+            email,
+        });
+        return res.data;
     },
 
-    async resetPassword(data: any): Promise<{ msg: string }> {
-        const response = await api.post<{ msg: string }>('/auth/reset-password', data);
-        return response.data;
+    async resetPassword(data: {
+        email: string;
+        otp_code: string;
+        new_password: string;
+    }): Promise<MessageResponse> {
+        const res = await api.post<MessageResponse>("/auth/reset-password", data);
+        return res.data;
     },
 
     async getMe(): Promise<User> {
-        const response = await api.get<User>('/auth/me');
-        return response.data;
+        const res = await api.get<User>("/auth/me");
+        return res.data;
+    },
+
+    async updateMe(data: Partial<User>): Promise<User> {
+        const res = await api.put<User>("/auth/me", data);
+        return res.data;
+    },
+
+    async changePassword(data: any): Promise<MessageResponse> {
+        const res = await api.put<MessageResponse>("/auth/change-password", data);
+        return res.data;
+    },
+
+    async deleteAccount(email: string): Promise<MessageResponse> {
+        const res = await api.delete<MessageResponse>("/auth/me", {
+            data: { email },
+        });
+        return res.data;
     },
 };

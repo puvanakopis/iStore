@@ -1,87 +1,98 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User } from '../interfaces/user.interface';
-import { authService } from '../services/auth.service';
-import { LoginRequest, RegisterRequest } from '../interfaces/auth.interface';
-import { useRouter } from 'next/navigation';
-import Cookies from 'js-cookie';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { User } from "../interfaces/user.interface";
+import { authService } from "../services/auth.service";
+import { LoginRequest, RegisterRequest } from "../interfaces/auth.interface";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
+    isAdmin: boolean;
+
     login: (data: LoginRequest) => Promise<void>;
     register: (data: RegisterRequest) => Promise<void>;
     logout: () => void;
+    updateProfile: (data: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+
     const router = useRouter();
 
+    const isAdmin = user?.role === "admin";
+
     useEffect(() => {
-        const initializeAuth = async () => {
-            const token = Cookies.get('token');
-            if (token) {
-                try {
-                    const userData = await authService.getMe();
-                    setUser(userData);
-                } catch (error) {
-                    console.error('Failed to fetch user', error);
-                    Cookies.remove('token');
-                }
+        const init = async () => {
+            const token = Cookies.get("token");
+
+            if (!token) {
+                setLoading(false);
+                return;
             }
-            setLoading(false);
+
+            try {
+                const me = await authService.getMe();
+                setUser(me);
+            } catch {
+                Cookies.remove("token");
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
         };
 
-        initializeAuth();
+        init();
     }, []);
 
     const login = async (data: LoginRequest) => {
-        try {
-            const { access_token, user } = await authService.login(data);
-            // Store in cookie for middleware access
-            Cookies.set('token', access_token, { expires: 7, secure: true, sameSite: 'strict' });
-            setUser(user);
-            router.push('/');
-        } catch (error) {
-            console.error('Login failed', error);
-            throw error;
-        }
+        const res = await authService.login(data);
+
+        Cookies.set("token", res.access_token, {
+            expires: 7,
+            secure: true,
+            sameSite: "strict",
+        });
+
+        setUser(res.user);
+        router.push("/");
     };
 
     const register = async (data: RegisterRequest) => {
-        try {
-            const { access_token, user } = await authService.register(data);
-            Cookies.set('token', access_token, { expires: 7, secure: true, sameSite: 'strict' });
-            setUser(user);
-            router.push('/');
-        } catch (error) {
-            console.error('Registration failed', error);
-            throw error;
-        }
+        await authService.register(data);
+
+        // IMPORTANT: no token here
+        router.push("/verify-otp?email=" + data.email);
     };
 
     const logout = () => {
-        Cookies.remove('token');
+        Cookies.remove("token");
         setUser(null);
-        router.push('/signin');
+        router.push("/signin");
+    };
+
+    const updateProfile = async (data: Partial<User>) => {
+        const updated = await authService.updateMe(data);
+        setUser(updated);
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+        <AuthContext.Provider
+            value={{ user, loading, isAdmin, login, register, logout, updateProfile }}
+        >
             {children}
         </AuthContext.Provider>
     );
 };
 
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+    return ctx;
 };

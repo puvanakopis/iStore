@@ -3,7 +3,20 @@
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Award } from "lucide-react";
 
+import { useAuth } from "@/contexts/AuthContext";
+
 export default function ProfileBentoCard() {
+  const { user } = useAuth();
+
+  const displayName = user ? `${user.first_name} ${user.last_name}`.trim() : "Loading...";
+  const initials = user?.avatar_initials || 
+    (user && user.first_name ? `${user.first_name[0] || ''}${user.last_name[0] || ''}`.toUpperCase() : "U");
+  
+  const memberStatus = user?.member_status ? user.member_status.charAt(0).toUpperCase() + user.member_status.slice(1) : "Standard";
+  const memberSinceYear = user?.member_since 
+    ? new Date(user.member_since).getFullYear() 
+    : (user?.created_at ? new Date(user.created_at).getFullYear() : new Date().getFullYear());
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -12,15 +25,15 @@ export default function ProfileBentoCard() {
       className="bg-white p-8 rounded-sm border border-border shadow-[0_4px_24px_rgba(0,0,0,0.02)]"
     >
       {/* 1:1 split layout */}
-      <div className="flex items-stretch">
+      <div className="flex flex-col md:flex-row items-stretch gap-6 md:gap-0">
         {/* LEFT SIDE - IMAGE */}
-        <div className="w-1/2 flex items-center justify-center relative">
+        <div className="w-full md:w-1/2 flex items-center justify-center relative">
           <div className="relative group">
             {/* BIG BOX IMAGE */}
             <div className="w-56 h-56 rounded-sm border border-border p-2 group-hover:border-black transition-colors duration-300 shadow-sm">
               <div className="w-full h-full rounded-sm bg-black/5 flex items-center justify-center">
                 <span className="text-5xl font-bold text-foreground-secondary">
-                  JD
+                  {initials}
                 </span>
               </div>
             </div>
@@ -33,14 +46,14 @@ export default function ProfileBentoCard() {
         </div>
 
         {/* RIGHT SIDE - DETAILS */}
-        <div className="w-1/2 pl-8 flex flex-col justify-center">
+        <div className="w-full md:w-1/2 pl-0 md:pl-8 flex flex-col justify-center">
           {/* Name */}
           <div className="mb-7">
             <h2 className="text-3xl font-bold tracking-tight">
-              Johnathan Doe
+              {displayName}
             </h2>
             <p className="text-sm text-foreground-secondary font-light mt-1">
-              Platinum Elite Member since 2024
+              {memberStatus} Member since {memberSinceYear}
             </p>
           </div>
 
@@ -50,8 +63,8 @@ export default function ProfileBentoCard() {
               <div className="w-11 h-11 rounded-xl bg-black/5 flex items-center justify-center text-black group-hover:bg-black group-hover:text-white transition-colors duration-300">
                 <Mail size={18} />
               </div>
-              <span className="text-sm font-light text-foreground-secondary group-hover:text-black transition-colors">
-                john.doe@icloud.com
+              <span className="text-sm font-light text-foreground-secondary group-hover:text-black transition-colors break-all">
+                {user?.email || "No Email"}
               </span>
             </div>
 
@@ -60,7 +73,7 @@ export default function ProfileBentoCard() {
                 <Phone size={18} />
               </div>
               <span className="text-sm font-light text-foreground-secondary group-hover:text-black transition-colors">
-                +1 (555) 000-0000
+                {user?.phone || "Not Provided"}
               </span>
             </div>
 
@@ -69,7 +82,7 @@ export default function ProfileBentoCard() {
                 <MapPin size={18} />
               </div>
               <span className="text-sm font-light text-foreground-secondary group-hover:text-black transition-colors">
-                San Francisco, CA
+                {user?.address || "No Address Saved"}
               </span>
             </div>
           </div>
