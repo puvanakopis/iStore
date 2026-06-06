@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { User, Mail, Phone } from "lucide-react";
 import { FormField } from "./FormField";
-import { CheckoutFormData } from "../CheckoutPage";
+import { CheckoutFormData } from "../page";
 
 interface CustomerDetailsProps {
   formData: CheckoutFormData;

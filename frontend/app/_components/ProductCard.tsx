@@ -45,7 +45,7 @@ export default function ProductCard({
   const currentImages =
     colors && colors.length > 0
       ? colors[selectedColorIndex].images
-      : initialImages;
+      : (initialImages && initialImages.length > 0 ? initialImages : ["/product/iPhone_16_Pro_Max_01.png"]);
 
   const selectColor = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();

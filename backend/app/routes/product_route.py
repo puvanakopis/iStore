@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+import uuid
+import os
+import shutil
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.core.database import get_db
 from app.middleware.auth_middleware import role_required
@@ -6,6 +9,30 @@ from app.schemas.product_schema import ProductCreate, ProductUpdate
 from app.services import product_service
 
 router = APIRouter()
+
+
+@router.post("/upload", dependencies=[Depends(role_required("admin"))])
+async def upload_image(file: UploadFile = File(...)):
+    # Validate file type is an image
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    # Generate unique filename to avoid collision
+    file_extension = os.path.splitext(file.filename)[1]
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    
+    upload_dir = "uploads"
+    os.makedirs(upload_dir, exist_ok=True)
+    filepath = os.path.join(upload_dir, unique_filename)
+    
+    try:
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Could not save file: {str(e)}")
+        
+    return {"url": f"http://localhost:8000/uploads/{unique_filename}"}
+
 
 
 @router.post("/", dependencies=[Depends(role_required("admin"))])

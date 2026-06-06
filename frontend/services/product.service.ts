@@ -22,8 +22,6 @@ export const productService = {
   },
 
   async create(data: ProductCreate): Promise<Product> {
-    // This will automatically include the token via the api interceptor
-    // But we need to handle 403 errors properly
     try {
       const res = await api.post<any>("/products/", data);
       return mapProduct(res.data);
@@ -63,6 +61,27 @@ export const productService = {
       }
       if (error.response?.status === 401) {
         throw new Error("Please login to delete products");
+      }
+      throw error;
+    }
+  },
+
+  async upload(file: File): Promise<{ url: string }> {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await api.post<{ url: string }>("/products/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return res.data;
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        throw new Error("Admin access required to upload images");
+      }
+      if (error.response?.status === 401) {
+        throw new Error("Please login to upload images");
       }
       throw error;
     }

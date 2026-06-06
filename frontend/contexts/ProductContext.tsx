@@ -17,7 +17,6 @@ interface ProductContextType {
   updateProduct: (id: string, data: ProductUpdate) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
 
-  // Helper to know if admin actions are available
   canModifyProducts: boolean;
 }
 
@@ -32,7 +31,7 @@ export const ProductProvider = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { user, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const canModifyProducts = isAdmin;
 
   const fetchProducts = async () => {

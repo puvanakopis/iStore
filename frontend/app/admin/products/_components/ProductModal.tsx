@@ -3,7 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Product, ProductColor, ProductStorage, ProductFeature } from "@/interfaces/product.interface";
 import { useState, useEffect } from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, Upload, Edit } from "lucide-react";
+import { productService } from "@/services/product.service";
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -38,9 +39,66 @@ export default function ProductModal({
   });
 
   // Temporary States for adding list items
-  const [newColor, setNewColor] = useState({ name: "", hex: "#000000", images: "" });
+  // Temporary States for adding list items
+  const [newColor, setNewColor] = useState<{ name: string; hex: string; images: string[] }>({ name: "", hex: "#000000", images: [] });
   const [newStorage, setNewStorage] = useState({ size: "", price: "" });
   const [newFeature, setNewFeature] = useState({ title: "", description: "", icon: "Smartphone" });
+
+  const [isColorUploading, setIsColorUploading] = useState(false);
+  const [colorUploadError, setColorUploadError] = useState<string | null>(null);
+
+  const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
+  const [editingStorageIndex, setEditingStorageIndex] = useState<number | null>(null);
+  const [editingFeatureIndex, setEditingFeatureIndex] = useState<number | null>(null);
+
+
+  // Upload States
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const result = await productService.upload(file);
+      setFormData((prev) => ({
+        ...prev,
+        imageSrc: result.url,
+      }));
+    } catch (err: any) {
+      setUploadError(err.message || "Failed to upload image");
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleColorFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsColorUploading(true);
+    setColorUploadError(null);
+    try {
+      const uploadPromises = Array.from(files).map((file) => productService.upload(file));
+      const results = await Promise.all(uploadPromises);
+      const urls = results.map((res) => res.url);
+      setNewColor((prev) => ({
+        ...prev,
+        images: [...prev.images, ...urls],
+      }));
+    } catch (err: any) {
+      setColorUploadError(err.message || "Failed to upload color images");
+      console.error(err);
+    } finally {
+      setIsColorUploading(false);
+    }
+  };
+
+
 
   useEffect(() => {
     if (product) {
@@ -84,6 +142,10 @@ export default function ProductModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.imageSrc) {
+      setUploadError("Product image is required");
+      return;
+    }
     onSave(formData);
     onClose();
   };
@@ -91,14 +153,28 @@ export default function ProductModal({
   // List Modification Handlers
   const addColor = () => {
     if (!newColor.name) return;
-    const imagesArray = newColor.images
-      ? newColor.images.split(",").map((img) => img.trim())
-      : [];
-    setFormData((prev) => ({
-      ...prev,
-      colors: [...prev.colors, { name: newColor.name, hex: newColor.hex, images: imagesArray }],
-    }));
-    setNewColor({ name: "", hex: "#000000", images: "" });
+    setFormData((prev) => {
+      let updatedColors = [...prev.colors];
+      if (editingColorIndex !== null) {
+        updatedColors[editingColorIndex] = { name: newColor.name, hex: newColor.hex, images: newColor.images };
+      } else {
+        updatedColors.push({ name: newColor.name, hex: newColor.hex, images: newColor.images });
+      }
+      return { ...prev, colors: updatedColors };
+    });
+    setNewColor({ name: "", hex: "#000000", images: [] });
+    setEditingColorIndex(null);
+  };
+
+  const startEditColor = (index: number) => {
+    const color = formData.colors[index];
+    setNewColor({ name: color.name, hex: color.hex, images: color.images || [] });
+    setEditingColorIndex(index);
+  };
+
+  const cancelEditColor = () => {
+    setNewColor({ name: "", hex: "#000000", images: [] });
+    setEditingColorIndex(null);
   };
 
   const removeColor = (index: number) => {
@@ -106,15 +182,35 @@ export default function ProductModal({
       ...prev,
       colors: prev.colors.filter((_, idx) => idx !== index),
     }));
+    if (editingColorIndex === index) {
+      cancelEditColor();
+    }
   };
 
   const addStorage = () => {
     if (!newStorage.size || !newStorage.price) return;
-    setFormData((prev) => ({
-      ...prev,
-      storage: [...prev.storage, { size: newStorage.size, price: newStorage.price }],
-    }));
+    setFormData((prev) => {
+      let updatedStorage = [...prev.storage];
+      if (editingStorageIndex !== null) {
+        updatedStorage[editingStorageIndex] = { size: newStorage.size, price: newStorage.price };
+      } else {
+        updatedStorage.push({ size: newStorage.size, price: newStorage.price });
+      }
+      return { ...prev, storage: updatedStorage };
+    });
     setNewStorage({ size: "", price: "" });
+    setEditingStorageIndex(null);
+  };
+
+  const startEditStorage = (index: number) => {
+    const st = formData.storage[index];
+    setNewStorage({ size: st.size, price: st.price });
+    setEditingStorageIndex(index);
+  };
+
+  const cancelEditStorage = () => {
+    setNewStorage({ size: "", price: "" });
+    setEditingStorageIndex(null);
   };
 
   const removeStorage = (index: number) => {
@@ -122,15 +218,35 @@ export default function ProductModal({
       ...prev,
       storage: prev.storage.filter((_, idx) => idx !== index),
     }));
+    if (editingStorageIndex === index) {
+      cancelEditStorage();
+    }
   };
 
   const addFeature = () => {
     if (!newFeature.title || !newFeature.description) return;
-    setFormData((prev) => ({
-      ...prev,
-      features: [...prev.features, newFeature],
-    }));
+    setFormData((prev) => {
+      let updatedFeatures = [...prev.features];
+      if (editingFeatureIndex !== null) {
+        updatedFeatures[editingFeatureIndex] = newFeature;
+      } else {
+        updatedFeatures.push(newFeature);
+      }
+      return { ...prev, features: updatedFeatures };
+    });
     setNewFeature({ title: "", description: "", icon: "Smartphone" });
+    setEditingFeatureIndex(null);
+  };
+
+  const startEditFeature = (index: number) => {
+    const f = formData.features[index];
+    setNewFeature({ title: f.title, description: f.description, icon: f.icon || "Smartphone" });
+    setEditingFeatureIndex(index);
+  };
+
+  const cancelEditFeature = () => {
+    setNewFeature({ title: "", description: "", icon: "Smartphone" });
+    setEditingFeatureIndex(null);
   };
 
   const removeFeature = (index: number) => {
@@ -138,6 +254,9 @@ export default function ProductModal({
       ...prev,
       features: prev.features.filter((_, idx) => idx !== index),
     }));
+    if (editingFeatureIndex === index) {
+      cancelEditFeature();
+    }
   };
 
   return (
@@ -233,20 +352,65 @@ export default function ProductModal({
                       />
                     </div>
 
-                    <div>
+                    <div className="sm:col-span-2">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Primary Image Source URL *
+                        Product Image *
                       </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.imageSrc}
-                        onChange={(e) =>
-                          setFormData({ ...formData, imageSrc: e.target.value })
-                        }
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                        placeholder="e.g., /images/iphone15promax.png"
-                      />
+                      <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-200 border-dashed rounded-lg hover:border-gray-300 transition-colors relative bg-gray-50/20">
+                        <div className="space-y-1 text-center w-full">
+                          {formData.imageSrc ? (
+                            <div className="relative inline-block">
+                              <img
+                                src={formData.imageSrc}
+                                alt="Preview"
+                                className="mx-auto h-32 w-auto object-contain rounded-md"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setFormData({ ...formData, imageSrc: "" })}
+                                className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 shadow transition-colors"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-2">
+                              <Upload className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                              <div className="flex text-sm text-gray-600">
+                                <label
+                                  htmlFor="file-upload"
+                                  className="relative cursor-pointer bg-white rounded-md font-semibold text-gray-900 hover:text-gray-800 focus-within:outline-none"
+                                >
+                                  <span className="underline">Upload a file</span>
+                                  <input
+                                    id="file-upload"
+                                    name="file-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    className="sr-only"
+                                    onChange={handleFileChange}
+                                    disabled={isUploading}
+                                  />
+                                </label>
+                                <p className="pl-1">or drag and drop</p>
+                              </div>
+                              <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 10MB</p>
+                            </div>
+                          )}
+
+                          {isUploading && (
+                            <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center rounded-lg">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                              <p className="text-xs font-semibold text-gray-900 mt-2">Uploading image...</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {uploadError && (
+                        <p className="text-sm text-red-600 mt-2">{uploadError}</p>
+                      )}
+
                     </div>
 
                     <div>
@@ -363,64 +527,128 @@ export default function ProductModal({
                             <p className="text-xs text-gray-500">{color.hex} | {color.images.length} images</p>
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => removeColor(index)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => startEditColor(index)}
+                            className="p-1.5 text-gray-400 hover:text-gray-900 transition-colors"
+                            title="Edit Color"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeColor(index)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                            title="Delete Color"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
 
                   {/* Add Color Sub-form */}
-                  <div className="p-4 border border-dashed border-gray-200 rounded-lg bg-gray-50/30 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Color Name</label>
-                      <input
-                        type="text"
-                        value={newColor.name}
-                        onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
-                        className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
-                        placeholder="Natural Titanium"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Color Hex Code</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={newColor.hex}
-                          onChange={(e) => setNewColor({ ...newColor, hex: e.target.value })}
-                          className="w-10 h-8 border border-gray-200 rounded cursor-pointer"
-                        />
+                  <div className="p-4 border border-dashed border-gray-200 rounded-lg bg-gray-50/30 flex flex-col gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Color Name</label>
                         <input
                           type="text"
-                          value={newColor.hex}
-                          onChange={(e) => setNewColor({ ...newColor, hex: e.target.value })}
-                          className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
-                          placeholder="#aabbcc"
+                          value={newColor.name}
+                          onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
+                          className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="Natural Titanium"
                         />
                       </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Color Hex Code</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="color"
+                            value={newColor.hex}
+                            onChange={(e) => setNewColor({ ...newColor, hex: e.target.value })}
+                            className="w-10 h-8 border border-gray-200 rounded cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={newColor.hex}
+                            onChange={(e) => setNewColor({ ...newColor, hex: e.target.value })}
+                            className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            placeholder="#aabbcc"
+                          />
+                        </div>
+                      </div>
                     </div>
+
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Image URLs (comma-separated)</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={newColor.images}
-                          onChange={(e) => setNewColor({ ...newColor, images: e.target.value })}
-                          className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
-                          placeholder="/img1.png, /img2.png"
-                        />
-                        <button
-                          type="button"
-                          onClick={addColor}
-                          className="p-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-                        >
-                          <Plus size={16} />
-                        </button>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Color Images</label>
+                      <div className="mt-1 flex flex-col gap-3">
+                        {/* Selected images preview list */}
+                        {newColor.images.length > 0 && (
+                          <div className="flex flex-wrap gap-2 p-2 bg-white rounded-lg border border-gray-100">
+                            {newColor.images.map((img, idx) => (
+                              <div key={idx} className="relative w-16 h-16 border border-gray-200 rounded bg-gray-50 flex items-center justify-center p-1">
+                                <img src={img} alt="preview" className="max-w-full max-h-full object-contain" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setNewColor((prev) => ({
+                                      ...prev,
+                                      images: prev.images.filter((_, i) => i !== idx),
+                                    }));
+                                  }}
+                                  className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full p-0.5 hover:bg-red-700 shadow"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <label
+                              htmlFor="color-files-upload"
+                              className="relative cursor-pointer flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors bg-white text-sm font-semibold text-gray-700"
+                            >
+                              <Upload size={16} />
+                              <span>{isColorUploading ? "Uploading..." : "Upload Color Images"}</span>
+                              <input
+                                id="color-files-upload"
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                className="sr-only"
+                                onChange={handleColorFilesChange}
+                                disabled={isColorUploading}
+                              />
+                            </label>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={addColor}
+                            className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm h-[40px] flex items-center justify-center gap-1"
+                          >
+                            {editingColorIndex !== null ? <Edit size={16} /> : <Plus size={16} />}
+                            {editingColorIndex !== null ? "Update Color" : "Add Color"}
+                          </button>
+                          {editingColorIndex !== null && (
+                            <button
+                              type="button"
+                              onClick={cancelEditColor}
+                              className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm h-[40px]"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+
+                        {colorUploadError && (
+                          <p className="text-xs text-red-600 mt-1">{colorUploadError}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -440,13 +668,24 @@ export default function ProductModal({
                           <p className="font-semibold text-gray-900">{st.size}</p>
                           <p className="text-xs text-gray-500">Price: {st.price}</p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => removeStorage(index)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => startEditStorage(index)}
+                            className="p-1.5 text-gray-400 hover:text-gray-900 transition-colors"
+                            title="Edit Storage"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeStorage(index)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                            title="Delete Storage"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -474,13 +713,25 @@ export default function ProductModal({
                       />
                     </div>
                     <div>
-                      <button
-                        type="button"
-                        onClick={addStorage}
-                        className="w-full py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-1.5 text-sm font-medium"
-                      >
-                        <Plus size={16} /> Add Storage
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={addStorage}
+                          className="flex-1 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-1.5 text-sm font-medium"
+                        >
+                          {editingStorageIndex !== null ? <Edit size={16} /> : <Plus size={16} />}
+                          {editingStorageIndex !== null ? "Update" : "Add Storage"}
+                        </button>
+                        {editingStorageIndex !== null && (
+                          <button
+                            type="button"
+                            onClick={cancelEditStorage}
+                            className="px-3 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

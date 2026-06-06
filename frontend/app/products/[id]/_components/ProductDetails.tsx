@@ -12,7 +12,7 @@ interface Product {
     price: string;
     rating?: number;
     reviewCount?: number;
-    colors: Array<{ name: string; value: string }>;
+    colors: Array<{ name: string; value: string; images?: string[] }>;
     storage: Array<{ size: string; price: string }>;
     features: Array<{ icon: string; title: string; description: string }>;
     specifications: Array<{ label: string; value: string }>;
@@ -21,13 +21,14 @@ interface Product {
 
 interface ProductDetailsProps {
     product: Product;
+    selectedColor: string;
+    onColorSelect: (colorName: string) => void;
 }
 
 type TabType = 'description' | 'specifications' | 'reviews';
 
-export default function ProductDetails({ product }: ProductDetailsProps) {
+export default function ProductDetails({ product, selectedColor, onColorSelect }: ProductDetailsProps) {
     const [activeTab, setActiveTab] = useState<TabType>('description');
-    const [selectedColor, setSelectedColor] = useState(product.colors[0].name);
     const [selectedStorage, setSelectedStorage] = useState(product.storage[0].size);
     const [quantity, setQuantity] = useState(1);
 
@@ -44,7 +45,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     const decrementQty = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
     const handleColorSelect = (colorName: string) => {
-        setSelectedColor(colorName);
+        onColorSelect(colorName);
     };
 
     const handleStorageSelect = (storageSize: string) => {

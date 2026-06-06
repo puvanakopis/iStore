@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProductImageProps {
@@ -11,6 +11,10 @@ interface ProductImageProps {
 export default function ProductImage({ images, productName }: ProductImageProps) {
     const [selectedImage, setSelectedImage] = useState(0);
     const [isZoomed, setIsZoomed] = useState(false);
+
+    useEffect(() => {
+        setSelectedImage(0);
+    }, [images]);
 
     return (
         <div className="space-y-6">

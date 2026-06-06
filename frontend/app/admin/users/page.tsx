@@ -113,7 +113,6 @@ export default function AdminUsers() {
         <AdminHeader
           title="Community"
           subtitle="Manage your customers and administrative personnel"
-          greeting="Manage your user community"
         />
 
         {/* Users Table */}

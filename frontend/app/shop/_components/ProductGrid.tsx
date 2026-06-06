@@ -9,7 +9,7 @@ interface Product {
   title: string;
   price: string;
   imageSrc: string;
-  imageAlt: string;
+  imageAlt?: string;
   rating?: number;
   reviewCount?: number;
   isNew?: boolean;
@@ -43,7 +43,7 @@ export default function ProductGrid({ products }: ProductGridProps) {
       <AnimatePresence mode="popLayout">
         {products.map((product, index) => (
           <motion.div
-            key={product.title}
+            key={product.id}
             layout
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}

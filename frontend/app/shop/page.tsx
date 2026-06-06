@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { products } from "@/data/productData";
 import ProductGrid from "./_components/ProductGrid";
 import FilterSidebar from "./_components/FilterSidebar";
 import { SlidersHorizontal, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useProducts } from "@/contexts/ProductContext";
 
 export type FilterState = {
   models: string[];
@@ -15,11 +15,12 @@ export type FilterState = {
 };
 
 export default function Shop() {
+  const { products, loading } = useProducts();
   const [filters, setFilters] = useState<FilterState>({
     models: [],
     colors: [],
     storage: [],
-    priceRange: [0, 500000],
+    priceRange: [0, 1000000],
   });
 
   const [sortBy, setSortBy] = useState("featured");
@@ -51,27 +52,28 @@ export default function Shop() {
 
     // Filter by Price
     result = result.filter((p) => {
-      const price = parseInt(p.price.replace(/[^\d]/g, ""));
+      if (!p.price) return false;
+      const price = parseInt(p.price.replace(/[^\d]/g, "")) || 0;
       return price >= filters.priceRange[0] && price <= filters.priceRange[1];
     });
 
     // Sort Logic
     if (sortBy === "price-low") {
       result.sort((a, b) => {
-        const priceA = parseInt(a.price.replace(/[^\d]/g, ""));
-        const priceB = parseInt(b.price.replace(/[^\d]/g, ""));
+        const priceA = parseInt((a.price || "").replace(/[^\d]/g, "")) || 0;
+        const priceB = parseInt((b.price || "").replace(/[^\d]/g, "")) || 0;
         return priceA - priceB;
       });
     } else if (sortBy === "price-high") {
       result.sort((a, b) => {
-        const priceA = parseInt(a.price.replace(/[^\d]/g, ""));
-        const priceB = parseInt(b.price.replace(/[^\d]/g, ""));
+        const priceA = parseInt((a.price || "").replace(/[^\d]/g, "")) || 0;
+        const priceB = parseInt((b.price || "").replace(/[^\d]/g, "")) || 0;
         return priceB - priceA;
       });
     }
 
     return result;
-  }, [filters, sortBy]);
+  }, [products, filters, sortBy]);
 
   return (
     <main className="min-h-screen bg-white pt-24 md:pt-32 pb-20">
@@ -172,7 +174,14 @@ export default function Shop() {
               </div>
             </div>
 
-            <ProductGrid products={filteredProducts} />
+            {loading ? (
+              <div className="text-center py-20">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900 mx-auto"></div>
+                <p className="text-gray-500 mt-4 text-sm font-medium">Loading products...</p>
+              </div>
+            ) : (
+              <ProductGrid products={filteredProducts} />
+            )}
           </div>
         </div>
       </section>

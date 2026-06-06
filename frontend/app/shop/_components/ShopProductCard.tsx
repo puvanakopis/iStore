@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ShoppingCart, Heart, Eye } from "lucide-react";
@@ -12,7 +11,7 @@ interface ShopProductCardProps {
   title: string;
   price: string;
   imageSrc: string;
-  imageAlt: string;
+  imageAlt?: string;
   rating?: number;
   reviewCount?: number;
   isNew?: boolean;
@@ -66,10 +65,9 @@ export default function ShopProductCard({
           href={`/products/${id}`}
           className="block w-full h-full p-8"
         >
-          <Image
+          <img
             src={imageSrc}
-            alt={imageAlt}
-            fill
+            alt={imageAlt || title}
             className={`object-contain p-8 transition-all duration-700 ${isHovered ? "scale-110 rotate-2" : "scale-100 rotate-0"
               }`}
           />
@@ -121,7 +119,7 @@ export default function ShopProductCard({
               e.preventDefault();
               onAddToCart?.();
             }}
-            className="w-10 h-10 bg-primary text-white rounded-2xl flex items-center justify-center hover:bg-primary hover:scale-105 active:scale-95 transition-all duration-300 group/btn"
+            className="w-10 h-10 bg-white border border-border text-gray-900 rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 group/btn overflow-hidden relative shadow-sm"
           >
             <ShoppingCart
               size={18}
