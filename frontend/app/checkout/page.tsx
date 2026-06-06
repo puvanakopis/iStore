@@ -41,11 +41,11 @@ export interface CartItem {
 }
 
 // Helper functions
-export const parsePrice = (priceStr: string): number => {
+const parsePrice = (priceStr: string): number => {
   return parseInt(priceStr.replace(/[^0-9]/g, "")) || 0;
 };
 
-export const calculateTotals = (items: CartItem[]) => {
+const calculateTotals = (items: CartItem[]) => {
   const subtotal = items.reduce(
     (acc, item) => acc + parsePrice(item.price) * item.quantity,
     0
@@ -56,7 +56,7 @@ export const calculateTotals = (items: CartItem[]) => {
   return { subtotal, shipping, tax, total };
 };
 
-export const formatPrice = (amount: number): string => {
+const formatPrice = (amount: number): string => {
   return `Rs ${amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 

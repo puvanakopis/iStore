@@ -60,7 +60,7 @@ async def create_order(db: AsyncIOMotorDatabase, user_id: str, order_in) -> dict
 
 
 async def get_user_orders(db: AsyncIOMotorDatabase, user_id: str) -> list:
-    cursor = db["orders"].find({"user_id": user_id})
+    cursor = db["orders"].find({"user_id": user_id}).sort("created_at", -1)
     orders = []
     async for doc in cursor:
         doc["id"] = doc["_id"]
@@ -69,7 +69,7 @@ async def get_user_orders(db: AsyncIOMotorDatabase, user_id: str) -> list:
 
 
 async def get_all_orders(db: AsyncIOMotorDatabase) -> list:
-    cursor = db["orders"].find()
+    cursor = db["orders"].find().sort("created_at", -1)
     orders = []
     async for doc in cursor:
         doc["id"] = doc["_id"]
