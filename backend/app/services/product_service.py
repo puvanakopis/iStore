@@ -44,3 +44,30 @@ async def get_product_by_id(db: AsyncIOMotorDatabase, product_id: str):
         raise HTTPException(status_code=404, detail="Product not found")
 
     return product
+
+
+async def update_product(db: AsyncIOMotorDatabase, product_id: str, data):
+    update_data = {
+        k: v for k, v in data.model_dump().items() if v is not None
+    }
+
+    update_data["updated_at"] = datetime.utcnow()
+
+    result = await db["products"].update_one(
+        {"_id": product_id},
+        {"$set": update_data}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    return await db["products"].find_one({"_id": product_id})
+
+
+async def delete_product(db: AsyncIOMotorDatabase, product_id: str):
+    result = await db["products"].delete_one({"_id": product_id})
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    return {"msg": "Product deleted"}

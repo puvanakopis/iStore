@@ -28,3 +28,19 @@ async def get_product(
 ):
     return await product_service.get_product_by_id(db, product_id)
 
+
+@router.put("/{product_id}", dependencies=[Depends(role_required("admin"))])
+async def update_product(
+    product_id: str,
+    data: ProductUpdate,
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    return await product_service.update_product(db, product_id, data)
+
+
+@router.delete("/{product_id}", dependencies=[Depends(role_required("admin"))])
+async def delete_product(
+    product_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    return await product_service.delete_product(db, product_id)
