@@ -6,10 +6,10 @@ export interface User {
   role: UserRole;
   first_name: string;
   last_name: string;
-  phone?: string;
-  address?: string;
-  avatar_initials?: string;
-  member_status?: string;
+  phone?: string | null;
+  address?: string | null;
+  avatar_initials?: string | null;
+  member_status?: string | null;
   member_since?: string | null;
   email_notifications: boolean;
   push_notifications: boolean;
