@@ -1,72 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
 import UsersTable from "./_components/UsersTable";
 import UserModal from "./_components/UserModal";
 import DeleteConfirmModal from "./_components/DeleteConfirmModal";
+import { userService, AdminUser as User } from "@/services/user.service";
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: "Admin" | "Customer";
-  spent: number;
-  status: "Active" | "Blocked";
-  avatar?: string;
-}
-
-const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    role: "Admin",
-    spent: 450000,
-    status: "Active",
-  },
-  {
-    id: "2",
-    name: "Sarah Smith",
-    email: "sarah@example.com",
-    role: "Customer",
-    spent: 120000,
-    status: "Active",
-  },
-  {
-    id: "3",
-    name: "Michael Chen",
-    email: "mike@example.com",
-    role: "Customer",
-    spent: 0,
-    status: "Blocked",
-  },
-  {
-    id: "4",
-    name: "Emily Brown",
-    email: "emily@example.com",
-    role: "Customer",
-    spent: 89000,
-    status: "Active",
-  },
-  {
-    id: "5",
-    name: "David Wilson",
-    email: "david@example.com",
-    role: "Customer",
-    spent: 250000,
-    status: "Active",
-  },
-];
+export type { User };
 
 export default function AdminUsers() {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | undefined>();
   const [userToDelete, setUserToDelete] = useState<User | undefined>();
 
-  // No add user function - as requested
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const data = await userService.getAll();
+      setUsers(data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
     setIsModalOpen(true);
@@ -77,33 +45,38 @@ export default function AdminUsers() {
     setIsDeleteModalOpen(true);
   };
 
-  const handleSaveUser = (userData: Omit<User, "id">) => {
+  const handleSaveUser = async (userData: Omit<User, "id">) => {
     if (selectedUser) {
-      setUsers(
-        users.map((u) =>
-          u.id === selectedUser.id
-            ? { ...userData, id: selectedUser.id }
-            : u
-        )
-      );
+      try {
+        const updated = await userService.update(selectedUser.id, userData);
+        setUsers(users.map((u) => (u.id === selectedUser.id ? updated : u)));
+      } catch (err: any) {
+        alert(err.message || "Failed to update user");
+      }
     }
     setIsModalOpen(false);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (userToDelete) {
-      setUsers(users.filter((u) => u.id !== userToDelete.id));
+      try {
+        await userService.remove(userToDelete.id);
+        setUsers(users.filter((u) => u.id !== userToDelete.id));
+      } catch (err: any) {
+        alert(err.message || "Failed to delete user");
+      }
       setIsDeleteModalOpen(false);
       setUserToDelete(undefined);
     }
   };
 
-  const handleUpdateStatus = (userId: string, newStatus: User["status"]) => {
-    setUsers(
-      users.map((u) =>
-        u.id === userId ? { ...u, status: newStatus } : u
-      )
-    );
+  const handleUpdateStatus = async (userId: string, newStatus: User["status"]) => {
+    try {
+      const updated = await userService.update(userId, { status: newStatus });
+      setUsers(users.map((u) => (u.id === userId ? updated : u)));
+    } catch (err: any) {
+      alert(err.message || "Failed to update user status");
+    }
   };
 
   return (
@@ -111,17 +84,29 @@ export default function AdminUsers() {
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Page Header - No Add User button */}
         <AdminHeader
-          title="Community"
+          title="Users Management"
           subtitle="Manage your customers and administrative personnel"
         />
 
-        {/* Users Table */}
-        <UsersTable
-          users={users}
-          onEdit={handleEditUser}
-          onDelete={handleDeleteClick}
-          onUpdateStatus={handleUpdateStatus}
-        />
+        {error && (
+          <div className="bg-red-50 text-red-600 p-4 rounded-sm border border-red-100 text-sm">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 font-medium animate-pulse">Loading users...</p>
+          </div>
+        ) : (
+          /* Users Table */
+          <UsersTable
+            users={users}
+            onEdit={handleEditUser}
+            onDelete={handleDeleteClick}
+            onUpdateStatus={handleUpdateStatus}
+          />
+        )}
 
         {/* Edit Modal - No add functionality */}
         <UserModal

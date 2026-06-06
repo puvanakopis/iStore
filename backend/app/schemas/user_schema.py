@@ -38,3 +38,20 @@ class UserInDBBase(UserBase):
 class User(UserInDBBase):
     pass
 
+
+class UserAdminResponse(BaseModel):
+    id: str
+    name: str
+    email: EmailStr
+    role: str  # "Admin" or "Customer"
+    spent: float = 0.0
+    status: str  # "Active" or "Blocked"
+
+
+class UserAdminUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    role: Optional[str] = None  # "Admin" or "Customer"
+    status: Optional[str] = None  # "Active" or "Blocked"
+
+
