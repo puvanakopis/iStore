@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProductProvider } from "@/contexts/ProductContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,9 +28,11 @@ export default function RootLayout({
         className={`${inter.variable} font-sans antialiased bg-background text-foreground`}
       >
         <AuthProvider>
-          <Navbar />
-          {children}
-          <Footer />
+          <ProductProvider>
+            <Navbar />
+            {children}
+            <Footer />
+          </ProductProvider>
         </AuthProvider>
       </body>
     </html>
