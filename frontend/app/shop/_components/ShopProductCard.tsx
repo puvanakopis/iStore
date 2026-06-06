@@ -5,6 +5,11 @@ import { motion } from "framer-motion";
 import { ShoppingCart, Heart, Eye } from "lucide-react";
 import Link from "next/link";
 import StarRating from "@/components/StarRating";
+import { useWishlist } from "@/contexts/WishlistContext";
+import { useCart } from "@/contexts/CartContext";
+import { useProducts } from "@/contexts/ProductContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 interface ShopProductCardProps {
   id: number | string;
@@ -32,6 +37,65 @@ export default function ShopProductCard({
   onToggleWishlist,
 }: ShopProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const { products } = useProducts();
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const inWishlist = isInWishlist(id.toString());
+
+  const handleWishlistClick = async () => {
+    if (onToggleWishlist) {
+      onToggleWishlist();
+      return;
+    }
+    if (!user) {
+      router.push("/signin");
+      return;
+    }
+    try {
+      await toggleWishlist({
+        product_id: id.toString(),
+        title,
+        price,
+        imageSrc,
+        imageAlt: imageAlt || title,
+      });
+    } catch (err) {
+      console.error("Error toggling wishlist:", err);
+    }
+  };
+
+  const handleAddToCartClick = async () => {
+    if (onAddToCart) {
+      onAddToCart();
+      return;
+    }
+    if (!user) {
+      router.push("/signin");
+      return;
+    }
+    const fullProduct = products.find((p) => p.id === id.toString());
+    const color = fullProduct?.colors?.[0]?.name || "Default";
+    const storage = fullProduct?.storage?.[0]?.size || "Base";
+    const currentPrice = fullProduct?.storage?.[0]?.price || price;
+
+    try {
+      await addToCart(
+        id.toString(),
+        1,
+        color,
+        storage,
+        title,
+        currentPrice,
+        imageSrc
+      );
+      router.push("/cart");
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+    }
+  };
 
   return (
     <motion.div
@@ -50,14 +114,16 @@ export default function ShopProductCard({
         <button
           onClick={(e) => {
             e.preventDefault();
-            onToggleWishlist?.();
+            handleWishlistClick();
           }}
-          className="absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full text-gray-400 hover:text-red-500 hover:bg-white transition-all duration-300"
+          className={`absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full transition-all duration-300 ${
+            inWishlist ? "text-red-500 hover:bg-white" : "text-gray-400 hover:text-red-500 hover:bg-white"
+          }`}
         >
           <Heart
             size={18}
-            fill={isHovered ? "currentColor" : "none"}
-            className={isHovered ? "scale-110" : ""}
+            fill={inWishlist ? "currentColor" : (isHovered ? "currentColor" : "none")}
+            className={isHovered || inWishlist ? "scale-110" : ""}
           />
         </button>
 
@@ -117,7 +183,7 @@ export default function ShopProductCard({
           <button
             onClick={(e) => {
               e.preventDefault();
-              onAddToCart?.();
+              handleAddToCartClick();
             }}
             className="w-10 h-10 bg-white border border-border text-gray-900 rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 group/btn overflow-hidden relative shadow-sm"
           >
