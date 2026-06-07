@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProductProvider } from "@/contexts/ProductContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
+import { SearchProvider } from "@/contexts/SearchContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,17 +30,19 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased bg-background text-foreground`}
       >
-          <AuthProvider>
-            <ProductProvider>
-              <WishlistProvider>
-                <CartProvider>
+        <AuthProvider>
+          <ProductProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <SearchProvider>
                   <Navbar />
                   {children}
                   <Footer />
-                </CartProvider>
-              </WishlistProvider>
-            </ProductProvider>
-          </AuthProvider>
+                </SearchProvider>
+              </CartProvider>
+            </WishlistProvider>
+          </ProductProvider>
+        </AuthProvider>
       </body>
     </html>
   );

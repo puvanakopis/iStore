@@ -3,6 +3,7 @@ import {
   Product,
   ProductCreate,
   ProductUpdate,
+  SearchResponse,
 } from "../interfaces/product.interface";
 
 const mapProduct = (p: any): Product => ({
@@ -11,8 +12,23 @@ const mapProduct = (p: any): Product => ({
 });
 
 export const productService = {
-  async getAll(): Promise<Product[]> {
-    const res = await api.get<any[]>("/products/");
+  async getAll(skip: number = 0, limit: number = 100): Promise<Product[]> {
+    const res = await api.get<any[]>(`/products/?skip=${skip}&limit=${limit}`);
+    return res.data.map(mapProduct);
+  },
+
+  async search(query: string, limit: number = 10): Promise<SearchResponse> {
+    const res = await api.get<SearchResponse>(`/products/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+    return res.data;
+  },
+
+  async getRecommendations(productId: string, limit: number = 5): Promise<Product[]> {
+    const res = await api.get<any[]>(`/products/recommendations/${productId}?limit=${limit}`);
+    return res.data.map(mapProduct);
+  },
+
+  async getTrending(limit: number = 6): Promise<Product[]> {
+    const res = await api.get<any[]>(`/products/trending?limit=${limit}`);
     return res.data.map(mapProduct);
   },
 
@@ -85,5 +101,15 @@ export const productService = {
       }
       throw error;
     }
+  },
+
+  async toggleLike(productId: string): Promise<{ liked: boolean }> {
+    const res = await api.post<{ liked: boolean }>(`/products/${productId}/like`);
+    return res.data;
+  },
+
+  async checkLikeStatus(productId: string): Promise<{ liked: boolean }> {
+    const res = await api.get<{ liked: boolean }>(`/products/${productId}/like`);
+    return res.data;
   },
 };

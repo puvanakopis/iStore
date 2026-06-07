@@ -1,26 +1,24 @@
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Query
 import uuid
 import os
 import shutil
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.core.database import get_db
 from app.middleware.auth_middleware import role_required
-from app.schemas.product_schema import ProductCreate, ProductUpdate
+from app.schemas.product_schema import ProductCreate, ProductUpdate, SearchResponse
 from app.services import product_service
-
 from app.core.security import get_current_user
 from datetime import datetime
+from typing import Optional, List
 
 router = APIRouter()
 
 
 @router.post("/upload", dependencies=[Depends(role_required("admin"))])
 async def upload_image(file: UploadFile = File(...)):
-    # Validate file type is an image
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
     
-    # Generate unique filename to avoid collision
     file_extension = os.path.splitext(file.filename)[1]
     unique_filename = f"{uuid.uuid4()}{file_extension}"
     
@@ -37,7 +35,6 @@ async def upload_image(file: UploadFile = File(...)):
     return {"url": f"http://localhost:8000/uploads/{unique_filename}"}
 
 
-
 @router.post("/", dependencies=[Depends(role_required("admin"))])
 async def create_product(
     data: ProductCreate,
@@ -47,8 +44,41 @@ async def create_product(
 
 
 @router.get("/")
-async def get_products(db: AsyncIOMotorDatabase = Depends(get_db)):
-    return await product_service.get_all_products(db)
+async def get_products(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=200),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    return await product_service.get_all_products(db, skip, limit)
+
+
+@router.get("/search")
+async def search_products(
+    q: str = Query("", min_length=1),
+    limit: int = Query(10, ge=1, le=50),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Search products by title, subtitle, or category"""
+    return await product_service.search_products(db, q, limit)
+
+
+@router.get("/recommendations/{product_id}")
+async def get_recommendations(
+    product_id: str,
+    limit: int = Query(5, ge=1, le=10),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Get related/recommended products based on the current product"""
+    return await product_service.get_recommendations(db, product_id, limit)
+
+
+@router.get("/trending")
+async def get_trending_products(
+    limit: int = Query(6, ge=1, le=20),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Get trending products (most liked/purchased)"""
+    return await product_service.get_trending_products(db, limit)
 
 
 @router.get("/{product_id}/like")
@@ -57,7 +87,7 @@ async def check_like_status(
     current_user: dict = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    user_id = str(current_user["id"])
+    user_id = str(current_user["_id"])
     like = await db["likes"].find_one({"user_id": user_id, "product_id": product_id})
     return {"liked": bool(like)}
 
@@ -68,7 +98,7 @@ async def toggle_like_product(
     current_user: dict = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    user_id = str(current_user["id"])
+    user_id = str(current_user["_id"])
     like = await db["likes"].find_one({"user_id": user_id, "product_id": product_id})
     if like:
         await db["likes"].delete_one({"user_id": user_id, "product_id": product_id})

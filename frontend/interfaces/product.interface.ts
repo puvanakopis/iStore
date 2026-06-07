@@ -19,6 +19,7 @@ export interface ProductReview {
   name: string;
   rating: number;
   comment: string;
+  created_at?: string;
 }
 
 export interface ProductSpecifications {
@@ -26,28 +27,42 @@ export interface ProductSpecifications {
   capacity?: string;
   display?: string;
   chip?: string;
+  camera?: string;
+  battery?: string;
 }
 
 export interface Product {
   id: string;
-  _id?: string;
-
   title: string;
   subtitle?: string;
   price: string;
-
   imageSrc: string;
   imageAlt?: string;
-
+  category?: string;
+  tags?: string[];
   colors: ProductColor[];
   storage: ProductStorage[];
   features: ProductFeature[];
-
   specifications?: ProductSpecifications;
   reviews: ProductReview[];
-
+  like_count?: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface SearchResult {
+  id: string;
+  title: string;
+  subtitle?: string;
+  price: string;
+  imageSrc: string;
+  category?: string;
+}
+
+export interface SearchResponse {
+  query: string;
+  results: SearchResult[];
+  total: number;
 }
 
 export interface ProductCreate {
@@ -56,7 +71,8 @@ export interface ProductCreate {
   price: string;
   imageSrc: string;
   imageAlt?: string;
-
+  category?: string;
+  tags?: string[];
   colors?: ProductColor[];
   storage?: ProductStorage[];
   features?: ProductFeature[];
@@ -70,7 +86,8 @@ export interface ProductUpdate {
   price?: string;
   imageSrc?: string;
   imageAlt?: string;
-
+  category?: string;
+  tags?: string[];
   colors?: ProductColor[];
   storage?: ProductStorage[];
   features?: ProductFeature[];
