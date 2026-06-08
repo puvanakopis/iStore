@@ -53,7 +53,7 @@ export default function Hero() {
           className="relative w-full max-w-[900px] h-[400px] md:h-[600px]"
         >
           <Image
-            src="/product/iPhone_16_Pro_Max_01.png"
+            src="/iPhone_01.png"
             alt="iPhone 16 Pro Max"
             fill
             className="object-contain"

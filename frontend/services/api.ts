@@ -31,7 +31,7 @@ api.interceptors.response.use(
             // Handle unauthorized (logout, redirect, etc.)
             Cookies.remove('token');
             if (typeof window !== 'undefined') {
-                window.location.href = '/signin';
+                window.location.href = '/';
             }
         }
         return Promise.reject(error);

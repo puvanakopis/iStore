@@ -36,14 +36,14 @@ export default function OrderModal({
     if (order) {
       const formattedDate = order.created_at
         ? new Date(order.created_at).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
         : "";
 
       const customerName = `${order.customer_details?.firstName || ""} ${order.customer_details?.lastName || ""}`.trim() || "Guest";
-      
+
       const itemsList = order.items?.map((item) => ({
         name: item.title,
         quantity: item.quantity,
@@ -111,7 +111,7 @@ export default function OrderModal({
         product_id: "manual",
         title: item.name,
         price: `Rs. ${item.price.toLocaleString("en-IN")}`,
-        imageSrc: "/product/iPhone_16_Pro_Max_01.png",
+        imageSrc: "/iPhone_01.png",
         color: "N/A",
         storage: "N/A",
         quantity: item.quantity,
