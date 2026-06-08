@@ -3,9 +3,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Chatbot from "@/components/Chatbot";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProductProvider } from "@/contexts/ProductContext";
-import { CartProvider } from "@/contexts/CartContext";
+import { CheckoutProvider } from "@/contexts/CheckoutContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { SearchProvider } from "@/contexts/SearchContext";
 
@@ -33,13 +34,14 @@ export default function RootLayout({
         <AuthProvider>
           <ProductProvider>
             <WishlistProvider>
-              <CartProvider>
+              <CheckoutProvider>
                 <SearchProvider>
                   <Navbar />
                   {children}
                   <Footer />
+                  <Chatbot />
                 </SearchProvider>
-              </CartProvider>
+              </CheckoutProvider>
             </WishlistProvider>
           </ProductProvider>
         </AuthProvider>

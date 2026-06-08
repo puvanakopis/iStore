@@ -1,6 +1,7 @@
-from pydantic_settings import BaseSettings
-from pydantic import ConfigDict
 from typing import Optional
+
+from pydantic_settings import BaseSettings
+from pydantic import AliasChoices, ConfigDict, Field
 
 
 class Settings(BaseSettings):
@@ -24,9 +25,48 @@ class Settings(BaseSettings):
     EMAILS_FROM_EMAIL: str = "noreply@istore.com"
     EMAILS_FROM_NAME: str = "iStore"
 
+    # Groq only
+    GROQ_API_KEY: str
+
+    # Model settings (locked to Groq)
+    # Prefer llama-3.1-8b-instant — higher rate limits than 70b models on free tier.
+    MODEL_PROVIDER: str = "groq"
+    MODEL_NAME: str = Field(
+        default="llama-3.1-8b-instant",
+        validation_alias=AliasChoices("MODEL_NAME", "LLM_MODEL_NAME"),
+    )
+
+    API_BASE_URL: str = "http://localhost:8000"
+
     USE_MOCK_EMAIL: bool = True
 
-    model_config = ConfigDict(env_file=".env", extra="ignore")
+    model_config = ConfigDict(
+        env_file=".env",
+        extra="ignore",
+        populate_by_name=True,
+    )
 
 
 settings = Settings()
+
+_llm_cache: dict[float, object] = {}
+
+
+def get_llm(temperature: float = 0.0):
+    """Return a cached Groq Chat LLM instance (one client per temperature)."""
+    from langchain_groq import ChatGroq
+
+    if temperature in _llm_cache:
+        return _llm_cache[temperature]
+
+    if not settings.GROQ_API_KEY:
+        raise ValueError("GROQ_API_KEY is required but not set")
+
+    llm = ChatGroq(
+        model=settings.MODEL_NAME,
+        temperature=temperature,
+        groq_api_key=settings.GROQ_API_KEY,
+        max_retries=2,
+    )
+    _llm_cache[temperature] = llm
+    return llm

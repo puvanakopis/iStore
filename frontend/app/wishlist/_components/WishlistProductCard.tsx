@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ShoppingCart, X } from "lucide-react";
 import Link from "next/link";
 import StarRating from "@/components/StarRating";
+import { resolveImageSrc } from "@/utils/image";
 
 interface WishlistProductCardProps {
   id: number | string;
@@ -29,6 +30,7 @@ export default function WishlistProductCard({
   onAddToCart,
 }: WishlistProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const resolvedImageSrc = resolveImageSrc(imageSrc);
 
   return (
     <motion.div
@@ -45,7 +47,7 @@ export default function WishlistProductCard({
         <div className="relative w-32 h-32 md:w-40 md:h-40 bg-black/5 rounded-sm flex-shrink-0 flex items-center justify-center p-4">
           <Link href={`/products/${id}`} className="block w-full h-full relative">
             <Image
-              src={imageSrc}
+              src={resolvedImageSrc}
               alt={imageAlt}
               fill
               className={`object-contain transition-transform duration-700 ease-[0.16, 1, 0.3, 1] ${
@@ -91,7 +93,7 @@ export default function WishlistProductCard({
               className="flex items-center justify-center gap-2 bg-black text-white px-8 py-3 rounded-full text-sm font-bold hover:scale-[1.05] active:scale-[0.95] transition-all min-w-[140px] whitespace-nowrap"
             >
               <ShoppingCart size={16} />
-              <span className="whitespace-nowrap">Add to Cart</span>
+              <span className="whitespace-nowrap">Checkout</span>
             </button>
 
             <button

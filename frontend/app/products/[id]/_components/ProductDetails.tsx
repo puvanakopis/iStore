@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Minus, Plus, Heart, Truck, RotateCcw, Cpu, Camera, Zap, ShieldCheck, Share2, Box } from 'lucide-react';
 import StarRating from '@/components/StarRating';
 import { useRouter } from 'next/navigation';
-import { useCart } from '@/contexts/CartContext';
+import { useCheckout } from '@/contexts/CheckoutContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 
@@ -36,7 +36,7 @@ type TabType = 'description' | 'specifications' | 'reviews';
 export default function ProductDetails({ product, selectedColor, onColorSelect }: ProductDetailsProps) {
     const router = useRouter();
     const { user } = useAuth();
-    const { addToCart } = useCart();
+    const { startCheckout } = useCheckout();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const inWishlist = isInWishlist(product.id);
 
@@ -64,7 +64,7 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
         setSelectedStorage(storageSize);
     };
 
-    const handleAddToBag = async () => {
+    const handleCheckout = () => {
         if (!user) {
             router.push('/signin');
             return;
@@ -75,22 +75,17 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
         const activeColorObj = product.colors.find(c => c.name === selectedColor);
         const imageSrc = (activeColorObj?.images && activeColorObj.images.length > 0)
             ? activeColorObj.images[0]
-            : product.imageSrc;
+            : product.imageSrc || '';
 
-        try {
-            await addToCart(
-                product.id,
-                quantity,
-                selectedColor,
-                selectedStorage,
-                product.name,
-                currentPrice,
-                imageSrc
-            );
-            router.push('/cart');
-        } catch (err) {
-            console.error(err);
-        }
+        startCheckout({
+            product_id: product.id,
+            quantity,
+            color: selectedColor,
+            storage: selectedStorage,
+            title: product.name,
+            price: currentPrice,
+            imageSrc,
+        });
     };
 
     const handleFavorite = async () => {
@@ -225,9 +220,9 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
                 </div>
                 <button
                     className="flex-grow bg-primary text-white py-4 rounded-full font-bold hover:translate-y-[-2px] active:scale-95 transition-all duration-300"
-                    onClick={handleAddToBag}
+                    onClick={handleCheckout}
                 >
-                    Add to Bag
+                    Checkout
                 </button>
                 <button
                     className={`p-4 border rounded-full hover:bg-background-dim transition-all duration-300 hover:scale-110 group ${

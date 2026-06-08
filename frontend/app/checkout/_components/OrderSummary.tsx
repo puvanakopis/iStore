@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronDown, Tag, X } from "lucide-react";
 import Image from "next/image";
-import { CartItem, formatPrice } from "../page";
+import { CheckoutLineItem } from "../page";
 
 interface OrderSummaryProps {
-  items: CartItem[];
+  items: CheckoutLineItem[];
   subtotal: number;
   shipping: number;
   tax: number;
@@ -116,7 +116,7 @@ export const OrderSummary = ({
         <div className="flex justify-between text-sm text-foreground-secondary">
           <span>Subtotal</span>
           <span className="font-medium text-foreground">
-            {formatPrice(subtotal)}
+            {(subtotal)}
           </span>
         </div>
 
@@ -124,7 +124,7 @@ export const OrderSummary = ({
           <div className="flex justify-between text-sm text-foreground-secondary">
             <span>Discount ({appliedPromo})</span>
             <span className="font-medium text-green-600">
-              -{formatPrice(discount)}
+              -{(discount)}
             </span>
           </div>
         )}
@@ -132,21 +132,21 @@ export const OrderSummary = ({
         <div className="flex justify-between text-sm text-foreground-secondary">
           <span>Shipping</span>
           <span className="font-medium text-green-600">
-            {shipping === 0 ? "FREE" : formatPrice(shipping)}
+            {shipping === 0 ? "FREE" : (shipping)}
           </span>
         </div>
 
         <div className="flex justify-between text-sm text-foreground-secondary">
           <span>Estimated Tax (18% GST)</span>
           <span className="font-medium text-foreground">
-            {formatPrice(activeTax)}
+            {(activeTax)}
           </span>
         </div>
 
         <div className="pt-3 border-t border-border flex justify-between">
           <span className="text-base font-bold">Total</span>
           <span className="text-xl font-bold text-primary">
-            {formatPrice(activeTotal)}
+            {(activeTotal)}
           </span>
         </div>
       </div>

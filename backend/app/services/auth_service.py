@@ -168,8 +168,6 @@ async def delete_user_account(db: AsyncIOMotorDatabase, user_id: str, email: str
     
     # Delete the user document
     await db["users"].delete_one({"_id": user_id})
-    # Also delete their cart
-    await db["carts"].delete_one({"user_id": user_id})
     return True
 
 

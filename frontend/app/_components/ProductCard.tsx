@@ -6,7 +6,7 @@ import { Heart, Eye, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import StarRating from "@/components/StarRating";
 import { useWishlist } from "@/contexts/WishlistContext";
-import { useCart } from "@/contexts/CartContext";
+import { useCheckout } from "@/contexts/CheckoutContext";
 import { useProducts } from "@/contexts/ProductContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -48,7 +48,7 @@ export default function ProductCard({
   const [isHovered, setIsHovered] = useState(false);
 
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { startCheckout } = useCheckout();
   const { products } = useProducts();
   const { user } = useAuth();
   const router = useRouter();
@@ -85,7 +85,7 @@ export default function ProductCard({
     }
   };
 
-  const handleAddToCartClick = async () => {
+  const handleCheckoutClick = () => {
     if (!user) {
       router.push("/signin");
       return;
@@ -95,20 +95,15 @@ export default function ProductCard({
     const storage = fullProduct?.storage?.[0]?.size || "Base";
     const currentPrice = fullProduct?.storage?.[0]?.price || price;
 
-    try {
-      await addToCart(
-        id.toString(),
-        1,
-        color,
-        storage,
-        title,
-        currentPrice,
-        displayImage
-      );
-      router.push("/cart");
-    } catch (err) {
-      console.error("Error adding to cart:", err);
-    }
+    startCheckout({
+      product_id: id.toString(),
+      quantity: 1,
+      color,
+      storage,
+      title,
+      price: currentPrice,
+      imageSrc: displayImage,
+    });
   };
 
   return (
@@ -257,7 +252,7 @@ export default function ProductCard({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleAddToCartClick();
+            handleCheckoutClick();
           }}
           className="w-10 h-10 bg-white border border-border text-gray-900 rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 group/btn overflow-hidden relative shadow-sm"
         >

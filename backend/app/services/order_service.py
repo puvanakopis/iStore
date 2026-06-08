@@ -43,17 +43,6 @@ async def create_order(db: AsyncIOMotorDatabase, user_id: str, order_in) -> dict
     
     await db["orders"].insert_one(order_data)
     
-    # Clear user's cart in the DB upon successful order creation
-    await db["carts"].update_one(
-        {"user_id": user_id},
-        {
-            "$set": {
-                "items": [],
-                "updated_at": datetime.utcnow()
-            }
-        }
-    )
-    
     # Return formatted with string id alias matching Pydantic expectations
     order_data["id"] = order_data["_id"]
     return order_data

@@ -5,7 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import WishlistProductCard from "./_components/WishlistProductCard";
 import { Heart } from "lucide-react";
 import { useWishlist } from "@/contexts/WishlistContext";
-import { useCart } from "@/contexts/CartContext";
+import { useCheckout } from "@/contexts/CheckoutContext";
 import { useProducts } from "@/contexts/ProductContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -13,43 +13,39 @@ import Link from "next/link";
 
 export default function Wishlist() {
   const { wishlistItems, removeFromWishlist, loading: wishlistLoading } = useWishlist();
-  const { addToCart } = useCart();
+  const { startCheckout } = useCheckout();
   const { products } = useProducts();
   const { user } = useAuth();
   const router = useRouter();
 
-  const handleAddToCart = async (productId: string) => {
+  const handleCheckout = async (productId: string) => {
     if (!user) {
       router.push("/signin");
       return;
     }
 
-    // Find the full product details from Products context to retrieve color/storage defaults
     const fullProduct = products.find((p) => p.id === productId);
     const wishlistProduct = wishlistItems.find((item) => item.product_id === productId);
 
     if (!wishlistProduct) return;
 
-    // Pick first color and storage from fullProduct, or fall back to defaults
     const color = fullProduct?.colors?.[0]?.name || "Default";
     const storage = fullProduct?.storage?.[0]?.size || "Base";
     const price = fullProduct?.storage?.[0]?.price || wishlistProduct.price;
 
     try {
-      await addToCart(
-        productId,
-        1,
+      await removeFromWishlist(productId);
+      startCheckout({
+        product_id: productId,
+        quantity: 1,
         color,
         storage,
-        wishlistProduct.title,
+        title: wishlistProduct.title,
         price,
-        wishlistProduct.imageSrc
-      );
-      // Optional: remove from wishlist after adding to cart
-      await removeFromWishlist(productId);
-      router.push("/cart");
+        imageSrc: wishlistProduct.imageSrc,
+      });
     } catch (err) {
-      console.error("Failed to add wishlist item to cart:", err);
+      console.error("Failed to start checkout from wishlist:", err);
     }
   };
 
@@ -89,7 +85,7 @@ export default function Wishlist() {
                     imageSrc={item.imageSrc}
                     imageAlt={item.imageAlt || item.title}
                     onRemove={() => removeFromWishlist(item.product_id)}
-                    onAddToCart={() => handleAddToCart(item.product_id)}
+                    onAddToCart={() => handleCheckout(item.product_id)}
                   />
                 ))}
               </div>

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import api from "../../../services/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCart } from "@/contexts/CartContext";
+import { useCheckout } from "@/contexts/CheckoutContext";
 
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
@@ -54,25 +54,24 @@ const cleanImageSrc = (src: string) => {
 };
 
 export default function OrderCard({ order }: { order: any }) {
-  const { addToCart } = useCart();
+  const { startCheckout } = useCheckout();
   const [buyingAgain, setBuyingAgain] = useState<string | null>(null);
 
-  const handleBuyAgain = async (item: any) => {
+  const handleBuyAgain = (item: any) => {
     setBuyingAgain(item.product_id);
     try {
-      await addToCart(
-        item.product_id,
-        1,
-        item.color,
-        item.storage || "128GB",
-        item.title,
-        item.price,
-        item.imageSrc
-      );
-      alert(`${item.title} added to bag successfully.`);
+      startCheckout({
+        product_id: item.product_id,
+        quantity: 1,
+        color: item.color,
+        storage: item.storage || "128GB",
+        title: item.title,
+        price: item.price,
+        imageSrc: item.imageSrc,
+      });
     } catch (error) {
-      console.error("Error adding item to cart:", error);
-      alert("Failed to add item to bag. Please try again.");
+      console.error("Error starting checkout:", error);
+      alert("Failed to start checkout. Please try again.");
     } finally {
       setBuyingAgain(null);
     }

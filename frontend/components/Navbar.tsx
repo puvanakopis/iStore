@@ -6,7 +6,7 @@ import { Search, ShoppingBag, Menu, X, User, Heart, Settings, ChevronRight, Tren
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
-import { useCart } from "../contexts/CartContext";
+import { useCheckout } from "../contexts/CheckoutContext";
 import { useSearch } from "../contexts/SearchContext";
 
 const navLinks = [
@@ -25,7 +25,7 @@ const userLinks = [
 
 export default function Navbar() {
   const { user, logout, loading } = useAuth();
-  const { cartItems } = useCart();
+  const { checkoutItem } = useCheckout();
   const {
     searchResults,
     isSearching,
@@ -37,7 +37,7 @@ export default function Navbar() {
     removeRecentSearch
   } = useSearch();
 
-  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const hasCheckoutItem = !!checkoutItem;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -161,11 +161,11 @@ export default function Navbar() {
             >
               <Search size={18} strokeWidth={2} />
             </button>
-            <Link href="/cart" className="hover:scale-110 transition-transform cursor-pointer relative">
+            <Link href="/checkout" className="hover:scale-110 transition-transform cursor-pointer relative">
               <ShoppingBag size={18} strokeWidth={2} />
-              {totalItems > 0 && (
+              {hasCheckoutItem && (
                 <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
-                  {totalItems}
+                  1
                 </span>
               )}
             </Link>
@@ -233,11 +233,11 @@ export default function Navbar() {
             >
               <Search size={22} strokeWidth={2} />
             </button>
-            <Link href="/cart" className="relative p-2 text-black" onClick={() => setMobileMenuOpen(false)}>
+            <Link href="/checkout" className="relative p-2 text-black" onClick={() => setMobileMenuOpen(false)}>
               <ShoppingBag size={22} strokeWidth={2} />
-              {totalItems > 0 && (
+              {hasCheckoutItem && (
                 <span className="absolute top-1 right-1 bg-black text-white text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-full font-bold">
-                  {totalItems}
+                  1
                 </span>
               )}
             </Link>
