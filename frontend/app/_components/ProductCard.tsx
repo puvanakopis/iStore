@@ -174,8 +174,9 @@ export default function ProductCard({
             className={`absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 transition-all duration-300 ${isHovered ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
               }`}
           >
-            <button className="bg-white text-gray-900 px-4 py-2 rounded-xl text-xs font-bold shadow-xl hover:bg-gray-900 hover:text-white transition-colors flex items-center gap-2">
-              <Eye size={14} /> View Details
+            <button className="bg-white text-gray-900 px-4 py-2 rounded-xl text-xs font-bold shadow-xl hover:bg-gray-900 hover:text-white transition-colors flex flex-row items-center justify-center gap-2 whitespace-nowrap">
+              <Eye size={14} />
+              <span>View Details</span>
             </button>
           </div>
         </div>
