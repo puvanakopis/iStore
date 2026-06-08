@@ -1,4 +1,4 @@
-const PLACEHOLDER = "/product/iPhone_16_Pro_Max_01.png";
+const PLACEHOLDER = "/iPhone_01.png";
 
 function isValidImageSrc(src: string): boolean {
   if (src.startsWith("/")) return true;

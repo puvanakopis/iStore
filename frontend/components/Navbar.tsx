@@ -48,7 +48,6 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  if (pathname.startsWith("/admin")) return null;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -506,7 +505,7 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <p className="text-black/40 mb-2">No results found for "{searchQuery}"</p>
+                    <p className="text-black/40 mb-2">No results found for {searchQuery}</p>
                     <p className="text-sm text-black/30">Try searching with different keywords</p>
                   </div>
                 )}

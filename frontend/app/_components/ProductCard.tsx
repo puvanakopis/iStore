@@ -58,7 +58,7 @@ export default function ProductCard({
   const currentImages =
     colors && colors.length > 0
       ? colors[selectedColorIndex].images
-      : (initialImages && initialImages.length > 0 ? initialImages : ["/product/iPhone_16_Pro_Max_01.png"]);
+      : (initialImages && initialImages.length > 0 ? initialImages : ["/iPhone_01.png"]);
 
   const displayImage = imageSrc || currentImages[0];
 
@@ -128,8 +128,8 @@ export default function ProductCard({
               src={displayImage}
               alt={imageAlt || title}
               className={`w-full h-full object-contain transition-all duration-700 ${isHovered
-                  ? "scale-110 rotate-2"
-                  : "scale-100 rotate-0"
+                ? "scale-110 rotate-2"
+                : "scale-100 rotate-0"
                 }`}
             />
           </Link>
@@ -154,9 +154,8 @@ export default function ProductCard({
 
           {/* Favorite Icon */}
           <button
-            className={`absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full transition-all duration-300 shadow-sm ${
-              inWishlist ? "text-red-500 hover:bg-white" : "text-gray-400 hover:text-red-500 hover:bg-white"
-            }`}
+            className={`absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full transition-all duration-300 shadow-sm ${inWishlist ? "text-red-500 hover:bg-white" : "text-gray-400 hover:text-red-500 hover:bg-white"
+              }`}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
