@@ -54,7 +54,7 @@ const Offers = () => {
               <div className="absolute bottom-0 left-0 right-0 h-[280px] md:h-[320px] pointer-events-none">
                 <div className="relative w-full h-full">
                   <Image
-                    src="/product/iPhone_16_Pro_Max_02.png"
+                    src="/iPhone_02.png"
                     alt="iPhone Trade In"
                     fill
                     className="object-contain object-bottom transition-all duration-700 group-hover:scale-105 group-hover:translate-y-[-8px]"
@@ -107,7 +107,7 @@ const Offers = () => {
               <div className="absolute bottom-0 left-0 right-0 h-[280px] md:h-[320px] pointer-events-none">
                 <div className="relative w-full h-full">
                   <Image
-                    src="/product/iPhone_16_Pro_Max_03.png"
+                    src="/iPhone_03.png"
                     alt="iStore Card"
                     fill
                     className="object-contain object-bottom transition-all duration-700 group-hover:scale-105 group-hover:translate-y-[-8px]"

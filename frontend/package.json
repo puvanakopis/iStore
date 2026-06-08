@@ -12,6 +12,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "axios": "^1.16.1",
     "framer-motion": "^12.40.0",
+    "jose": "^6.2.3",
     "js-cookie": "^3.0.8",
     "lucide-react": "^1.16.0",
     "next": "16.2.6",
