@@ -56,6 +56,7 @@ export default function Hero() {
             src="/iPhone_01.png"
             alt="iPhone 16 Pro Max"
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 80vw, 900px"
             className="object-contain"
             priority
           />

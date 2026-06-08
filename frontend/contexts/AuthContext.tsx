@@ -67,13 +67,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const register = async (data: RegisterRequest) => {
         await authService.register(data);
 
+        // IMPORTANT: no token here
         router.push("/verify-otp?email=" + data.email);
     };
 
     const logout = () => {
         Cookies.remove("token");
         setUser(null);
-        router.push("/");
+        router.push("/signin");
     };
 
     const updateProfile = async (data: Partial<User>) => {
