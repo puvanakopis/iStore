@@ -118,8 +118,8 @@ export default function Navbar() {
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled
-            ? "bg-white/80 backdrop-blur-xl border-b border-black/5 h-16"
-            : "bg-transparent h-20"
+          ? "bg-white/80 backdrop-blur-xl border-b border-black/5 h-16"
+          : "bg-transparent h-20"
           }`}
       >
         <div className="relative flex justify-between items-center h-full px-6 md:px-12 max-w-7xl mx-auto">
@@ -140,8 +140,8 @@ export default function Navbar() {
                   key={link.name}
                   href={link.href}
                   className={`text-[13px] font-medium tracking-tight transition-all duration-300 relative py-1 px-1 group ${isActive
-                      ? "text-black"
-                      : "text-foreground-muted hover:text-black"
+                    ? "text-black"
+                    : "text-foreground-muted hover:text-black"
                     }`}
                 >
                   {link.name}
