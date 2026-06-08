@@ -22,7 +22,7 @@ export default function LifestyleBanner() {
           {/* Background Image with Parallax */}
           <motion.div style={{ scale }} className="absolute inset-0 z-0">
             <Image
-              src="/iPhone_05.png"
+              src="/iPhone_04.png"
               alt="iPhone 16 Pro Lifestyle"
               fill
               className="object-contain md:object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-1000"
