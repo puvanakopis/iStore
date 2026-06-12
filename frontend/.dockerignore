@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Next.js build output
+.next/
+out/
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+
+# Git
+.git/
+.gitignore
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Editor directories
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

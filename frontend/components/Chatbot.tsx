@@ -28,7 +28,7 @@ export default function Chatbot() {
       setMessages([
         {
           role: "assistant",
-          content: `Hi ${user ? user.firstName : ""}! Welcome to iStore Customer Support. I am your AI assistant. I can help you search products, manage your wishlist, checkout products, and track orders.`
+          content: `Hi ${user ? user.first_name : ""}! Welcome to iStore Customer Support. I am your AI assistant. I can help you search products, manage your wishlist, checkout products, and track orders.`
         }
       ]);
     }
