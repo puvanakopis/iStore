@@ -1,6 +1,8 @@
 # iStore – AI-Powered E‑commerce Platform
 
-iStore is a full‑stack e‑commerce platform for a premium Apple reseller. It combines a modern Next.js frontend with a FastAPI backend that leverages LangChain agents to provide a conversational shopping assistant. Customers can browse products, manage wishlists, place orders, and track their order history – all through natural language.
+iStore is a full‑stack e‑commerce platform for a premium Apple reseller. It combines a modern **Next.js** frontend with a **FastAPI** backend that leverages **LangChain agents** to provide a conversational shopping assistant. Customers can browse products, manage wishlists, place orders, and track their order history — all through natural language.
+
+The entire stack is **Dockerized** and ready to run with a single `docker compose up` command.
 
 ---
 
@@ -12,77 +14,208 @@ iStore is a full‑stack e‑commerce platform for a premium Apple reseller. It 
 - **Wishlist Agent** – Add/remove items, view and clear wishlist.
 
 - **Authentication & Security** – JWT‑based auth, OTP email verification, password reset.
-- **Complete E‑commerce Backend** – Product, order, user & wishlist management (MongoDB).
+- **Complete E‑commerce Backend** – Product, order, user & wishlist management (MongoDB Atlas).
 - **Modern Frontend** – Next.js 14 (App Router), Tailwind CSS, fully responsive.
 - **Admin Dashboard** – Role‑based access for managing products, users & orders.
 - **RESTful APIs** – Clear separation of routes for auth, products, orders, users, wishlist.
+- **Docker Ready** – Multi‑stage Dockerfiles + Docker Compose for one-command deployment.
 
 ---
 
 ## 🧱 Tech Stack
 
 ### Frontend
-- Next.js 14 (App Router)
-- Tailwind CSS
-- TypeScript
-- React Context for state & auth
+- **Next.js 14** (App Router, standalone output)
+- **Tailwind CSS**
+- **TypeScript**
+- **React Context** for state & auth
+- **Node.js 20** (Alpine) runtime image
 
 ### Backend
-- FastAPI (Python 3.10+)
-- MongoDB + Motor (async driver)
-- LangChain (classic agents, tool calling)
-- Groq (LLM inference – fast Mixtral/LLaMA3)
-- JWT for authentication
-- Pydantic v2 + email‑validator
+- **FastAPI** (Python 3.13+)
+- **MongoDB Atlas** + Motor (async driver)
+- **LangChain** (agents, tool calling) + **LangGraph**
+- **Groq** (LLM inference – LLaMA 3.1)
+- **JWT** for authentication (python-jose)
+- **Pydantic v2** + email‑validator
+- **uv** for fast dependency management
+- **Python 3.13‑slim** runtime image
 
 ### AI Agent Tools
 - Custom tools for product search, order placement, wishlist operations.
 - ContextVars to pass user identity & chat history to tools.
 - Smart routing between specialist agents (detects intent via regex + conversation flow).
 
+### Infrastructure
+- **Docker** (multi-stage builds)
+- **Docker Compose** (orchestration with health checks)
+- **MongoDB Atlas** (cloud database)
+
 ---
 
 ## 📂 Project Structure
 
 ```
-istore/
+iStore/
+├── docker-compose.yml       # Orchestrates backend + frontend containers
+├── .dockerignore            # Root-level Docker ignore rules
+├── README.md
+│
 ├── frontend/                # Next.js application
+│   ├── Dockerfile           # 3-stage: deps → builder → runtime
+│   ├── .dockerignore
 │   ├── app/                 # App router pages & layouts
 │   ├── components/          # Reusable UI components
 │   ├── contexts/            # Auth & cart contexts
 │   ├── interfaces/          # TypeScript types
 │   ├── services/            # API service layer
+│   ├── utils/               # Utility helpers
 │   └── public/              # Static assets
 │
-├── backend/
-│   ├── app/
-│   │   ├── agent/           # LangChain agents & tools
-│   │   │   ├── agents/      # Product, Order, Wishlist, Main Router
-│   │   │   ├── tools/       # Order, product, wishlist tools
-│   │   │   └── utils.py
-│   │   ├── core/            # Config, DB, security, LLM factory
-│   │   ├── middleware/      # Auth middleware
-│   │   ├── models/          # MongoDB models (ODM)
-│   │   ├── routes/          # FastAPI route modules
-│   │   ├── schemas/         # Pydantic schemas
-│   │   ├── services/        # Business logic
-│   │   └── utils/           # OTP helpers, sanitization
-│   ├── uploads/             # Product images (admin uploads)
-│   ├── .env                 # Environment variables
-│   └── main.py              # FastAPI entrypoint
-│
-└── README.md
+└── backend/
+    ├── Dockerfile           # 2-stage: builder → runtime
+    ├── .dockerignore
+    ├── pyproject.toml       # uv dependencies
+    ├── uv.lock              # Locked dependency tree
+    ├── uploads/             # Product images (mounted as volume)
+    └── app/
+        ├── main.py          # FastAPI entrypoint
+        ├── agent/           # LangChain agents & tools
+        │   ├── agents/      # Product, Order, Wishlist, Main Router
+        │   ├── tools/       # Order, product, wishlist tools
+        │   └── utils.py
+        ├── core/            # Config, DB, security, LLM factory
+        ├── middleware/      # Auth middleware
+        ├── models/          # MongoDB models
+        ├── routes/          # FastAPI route modules
+        ├── schemas/         # Pydantic schemas
+        ├── services/        # Business logic
+        └── utils/           # OTP helpers, sanitization
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🐳 Docker Deployment (Recommended)
+
+This is the fastest way to get the full stack running locally.
 
 ### Prerequisites
-- Node.js 18+ and npm/pnpm
-- Python 3.10+
-- MongoDB instance (local or Atlas)
-- Groq API key (for LLM)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+- A MongoDB Atlas connection string
+- A Groq API key
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/puvanakopis/istore.git
+cd istore
+```
+
+### 2. Configure the backend environment
+Create the file `backend/.env`:
+```ini
+# MongoDB Atlas
+MONGODB_URL=mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/?appName=Cluster0
+DATABASE_NAME=istore_db
+
+# JWT
+SECRET_KEY=your_jwt_secret_key_change_me
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# OTP
+OTP_EXPIRE_MINUTES=10
+
+# Email (Gmail SMTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_gmail_app_password
+EMAILS_FROM_EMAIL=your_email@gmail.com
+EMAILS_FROM_NAME=iStore
+USE_MOCK_EMAIL=False
+
+# Groq AI
+MODEL_PROVIDER=groq
+LLM_MODEL_NAME=llama-3.1-8b-instant
+GROQ_API_KEY=your_groq_api_key
+```
+
+### 3. Build and start all services
+```bash
+docker compose up --build
+```
+
+| Service | URL |
+|---------|-----|
+| Frontend (Next.js) | http://localhost:3000 |
+| Backend (FastAPI) | http://localhost:8000 |
+| API Docs (Swagger) | http://localhost:8000/docs |
+
+### 4. Stop all services
+```bash
+docker compose down
+```
+
+### Useful Docker Commands
+
+```bash
+# Run in detached (background) mode
+docker compose up --build -d
+
+# View live logs
+docker compose logs -f
+
+# View logs for a specific service
+docker compose logs -f backend
+docker compose logs -f frontend
+
+# Rebuild only one service
+docker compose up --build backend
+
+# Remove containers and volumes
+docker compose down -v
+```
+
+### Docker Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│                  istore_network                  │
+│                                                  │
+│  ┌──────────────────┐    ┌───────────────────┐  │
+│  │  istore_frontend │    │  istore_backend   │  │
+│  │  Next.js :3000   │───▶│  FastAPI   :8000  │  │
+│  │  (node:20-alpine)│    │  (python3.13-slim)│  │
+│  └──────────────────┘    └───────────────────┘  │
+│                                  │               │
+│                          ┌───────▼───────┐       │
+│                          │ ./backend/    │       │
+│                          │ uploads/      │       │
+│                          │ (bind mount)  │       │
+│                          └───────────────┘       │
+└─────────────────────────────────────────────────┘
+                           │
+                    ┌──────▼──────┐
+                    │ MongoDB     │
+                    │ Atlas Cloud │
+                    └─────────────┘
+```
+
+**Key details:**
+- Both services share `istore_network` (bridge driver).
+- Frontend waits for the backend to pass its health check before starting (`depends_on: condition: service_healthy`).
+- The `backend/uploads/` directory is bind-mounted into the container so uploaded product images persist across restarts.
+- The frontend image is built with `NEXT_PUBLIC_API_URL=http://localhost:8000` baked in at build time.
+
+---
+
+## 🚀 Manual Setup (Without Docker)
+
+### Prerequisites
+- Node.js 18+ and npm
+- Python 3.13+
+- MongoDB Atlas account (or local MongoDB)
+- Groq API key
 
 ### Backend Setup
 
@@ -92,40 +225,30 @@ git clone https://github.com/puvanakopis/istore.git
 cd istore/backend
 ```
 
-2. **Create virtual environment**
+2. **Install uv (fast Python package manager)**
 ```bash
-python -m venv .venv
-source .venv/bin/activate   # Linux/macOS
-.venv\Scripts\activate      # Windows
+pip install uv
 ```
 
-3. **Install dependencies**
+3. **Create virtual environment & install dependencies**
 ```bash
 uv sync
 ```
-> If `requirements.txt` is missing, install manually:
-> `uv add fastapi uvicorn motor python-dotenv langchain langchain-classic langchain-core groq pydantic python-jose passlib bcrypt email-validator pillow`
 
-4. **Environment variables** – create `.env` in `backend/`:
-```ini
-MONGO_URI=mongodb://localhost:27017
-DB_NAME=istore
-SECRET_KEY=your_jwt_secret_key_change_me
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-GROQ_API_KEY=your_groq_api_key
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
-FRONTEND_URL=http://localhost:3000
+4. **Activate virtual environment**
+```bash
+# Linux/macOS
+source .venv/bin/activate
+
+# Windows
+.venv\Scripts\activate
 ```
 
-5. **Run MongoDB** (local or start Atlas cluster)
+5. **Create `backend/.env`** – see the [Docker env template](#2-configure-the-backend-environment) above.
 
 6. **Start the backend server**
 ```bash
-uvicorn main:app --reload --port 8000
+uvicorn app.main:app --reload --port 8000
 ```
 > API docs available at http://localhost:8000/docs
 
@@ -139,11 +262,9 @@ cd ../frontend
 2. **Install dependencies**
 ```bash
 npm install
-# or
-pnpm install
 ```
 
-3. **Environment variables** – create `.env.local` in `frontend/`:
+3. **Create `.env.local` in `frontend/`:**
 ```ini
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
@@ -158,7 +279,7 @@ Open http://localhost:3000
 
 ## 🤖 AI Agent Architecture
 
-The assistant uses a hierarchical agent design to reduce latency and cost:
+The assistant uses a **hierarchical agent design** to reduce latency and cost:
 
 - **Main Router Agent** – Decides which specialist to call (or replies directly). Uses regex + conversation history to detect ongoing flows.
 - **Product Agent** – Handles `list_products`, `search_products`, `get_product_details`, `get_trending_products`, `get_recommendations`.
@@ -285,10 +406,12 @@ The assistant uses a hierarchical agent design to reduce latency and cost:
 
 ## 🔧 Development Tips
 
-- **Testing agents locally** – Use `backend/tests/test_agent.py` (if created) or run `curl` against `/chat/chat`.
+- **Testing agents locally** – Use `curl` against `/chat/chat` or the Swagger UI at http://localhost:8000/docs.
 - **Adding new tools** – Place them in `app/agent/tools/`, register in the corresponding agent's `TOOLS` list.
-- **Changing LLM** – Edit `app/core/config.py` → `get_llm()` (supports Groq, OpenAI, or any LangChain LLM).
-- **Admin access** – Set a user's `role` to `"admin"` in MongoDB to access admin endpoints.
+- **Changing LLM** – Edit `app/core/config.py` → `get_llm()` (supports Groq, OpenAI, or any LangChain-compatible LLM).
+- **Admin access** – Set a user's `role` to `"admin"` in MongoDB to unlock admin endpoints.
+- **Product images** – Uploaded via `/products/upload` and served as static files from `backend/uploads/`. In Docker, this directory is bind-mounted so images persist across container restarts.
+- **Mock emails** – Set `USE_MOCK_EMAIL=True` in `.env` to skip actual SMTP during development.
 
 ---
 
@@ -313,7 +436,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 **Name:** Puvanakopis  
 **GitHub:** [@puvanakopis](https://github.com/puvanakopis)  
 **LinkedIn:** [Puvanakopis](https://www.linkedin.com/in/puvanakopis/)  
-**Email:** puvanakopis@gamil.com
+**Email:** puvanakopis@gmail.com
 
 ---
 
