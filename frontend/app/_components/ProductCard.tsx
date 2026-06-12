@@ -19,7 +19,7 @@ interface ProductCardProps {
   saveAmount?: string;
   images: string[];
   imageSrc?: string;
-  imageAlt: string;
+  imageAlt?: string;
   badge?: string;
   rating?: number;
   reviewCount?: number;
