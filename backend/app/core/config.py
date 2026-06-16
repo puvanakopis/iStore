@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     EMAILS_FROM_NAME: str = "iStore"
 
     # Groq only
-    GROQ_API_KEY: str
+    GROQ_API_KEY: Optional[str] = None
 
     # Model settings (locked to Groq)
     # Prefer llama-3.1-8b-instant — higher rate limits than 70b models on free tier.
@@ -53,20 +53,23 @@ _llm_cache: dict[float, object] = {}
 
 
 def get_llm(temperature: float = 0.0):
-    """Return a cached Groq Chat LLM instance (one client per temperature)."""
+    """Return a cached Groq Chat LLM instance (one client per temperature and key)."""
     from langchain_groq import ChatGroq
+    from app.agent.tools.auth import groq_api_key_var
 
-    if temperature in _llm_cache:
-        return _llm_cache[temperature]
+    api_key = groq_api_key_var.get()
+    if not api_key:
+        raise ValueError("GROQ_API_KEY is required but not set in the chatbot context")
 
-    if not settings.GROQ_API_KEY:
-        raise ValueError("GROQ_API_KEY is required but not set")
+    cache_key = (temperature, api_key)
+    if cache_key in _llm_cache:
+        return _llm_cache[cache_key]
 
     llm = ChatGroq(
         model=settings.MODEL_NAME,
         temperature=temperature,
-        groq_api_key=settings.GROQ_API_KEY,
+        groq_api_key=api_key,
         max_retries=2,
     )
-    _llm_cache[temperature] = llm
+    _llm_cache[cache_key] = llm
     return llm
