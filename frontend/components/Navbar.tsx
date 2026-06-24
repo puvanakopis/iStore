@@ -96,6 +96,10 @@ export default function Navbar() {
     return () => clearTimeout(delayDebounce);
   }, [searchQuery, performSearch, clearSearch]);
 
+  useEffect(() => {
+    setUserDropdownOpen(false);
+  }, [pathname, user]);
+
   const handleSearch = (query: string) => {
     if (query.trim() === "") return;
     setSearchOpen(false);

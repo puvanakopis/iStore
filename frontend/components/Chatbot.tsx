@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, X, Send, Bot, User, Loader2 } from "lucide-react";
+import { MessageSquare, X, Send, Bot, User, Loader2, Settings } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
@@ -21,6 +21,15 @@ export default function Chatbot() {
   const [isLoading, setIsLoading] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [groqKey, setGroqKey] = useState("");
+
+  // Load Groq API Key from localStorage
+  useEffect(() => {
+    const savedKey = localStorage.getItem("groq_api_key");
+    if (savedKey) {
+      setGroqKey(savedKey);
+    }
+  }, []);
 
   // Initialize with a welcome message
   useEffect(() => {
@@ -59,6 +68,10 @@ export default function Chatbot() {
       const response = await api.post("/agent/chat", {
         message: userMessage,
         history: historyPayload
+      }, {
+        headers: {
+          "X-Groq-Api-Key": groqKey
+        }
       });
 
       setMessages((prev) => [
@@ -106,7 +119,7 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="w-[380px] h-[550px] max-h-[85vh] bg-white/95 backdrop-blur-xl border border-black/5 rounded-3xl shadow-2xl overflow-hidden flex flex-col mb-4"
+            className="w-[380px] h-[550px] max-h-[85vh] bg-white/95 backdrop-blur-xl border border-black/5 rounded-3xl shadow-2xl overflow-hidden flex flex-col mb-4 relative"
           >
             {/* Header */}
             <div className="bg-black text-white p-5 flex items-center justify-between">
@@ -126,10 +139,28 @@ export default function Chatbot() {
 
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white"
               >
                 <X size={16} />
               </button>
+            </div>
+
+            {/* Integrated GROQ API KEY Input Banner */}
+            <div className="bg-gray-100 border-b border-black/5 px-4 py-2.5 flex items-center gap-2">
+              <span className="text-[10px] font-semibold text-black/60 shrink-0">
+                GROQ KEY:
+              </span>
+              <input
+                type="password"
+                value={groqKey}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setGroqKey(val);
+                  localStorage.setItem("groq_api_key", val);
+                }}
+                placeholder="Enter gsk_..."
+                className="flex-1 min-w-0 bg-white border border-black/10 rounded-xl px-3 py-1.5 text-[11px] outline-none focus:border-black transition-colors"
+              />
             </div>
 
             {/* Messages */}
