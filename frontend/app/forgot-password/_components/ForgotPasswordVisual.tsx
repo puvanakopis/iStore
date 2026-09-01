@@ -14,6 +14,7 @@ export default function ForgotPasswordVisual() {
           alt="Security Access"
           src="/bg_image.png"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           priority
           className="object-cover"
         />

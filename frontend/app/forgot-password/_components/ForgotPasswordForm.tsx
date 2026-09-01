@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, Lock, Mail, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Lock, Mail, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { authService } from '@/services/auth.service';
 
@@ -11,6 +11,8 @@ export default function ForgotPasswordForm() {
   const [otpCode, setOtpCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [step, setStep] = useState<'email' | 'otp' | 'password' | 'success'>('email');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -238,27 +240,45 @@ export default function ForgotPasswordForm() {
                       <label className="text-xs uppercase tracking-widest text-on-surface-variant font-medium mb-1" htmlFor="new-password">
                         New Password
                       </label>
-                      <input
-                        id="new-password"
-                        className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                      />
+                      <div className="relative">
+                        <input
+                          id="new-password"
+                          className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors pr-10"
+                          type={showNewPassword ? "text" : "password"}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
+                        >
+                          {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </div>
                     <div className="flex flex-col">
                       <label className="text-xs uppercase tracking-widest text-on-surface-variant font-medium mb-1" htmlFor="confirm-password">
                         Confirm New Password
                       </label>
-                      <input
-                        id="confirm-password"
-                        className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                      />
+                      <div className="relative">
+                        <input
+                          id="confirm-password"
+                          className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors pr-10"
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
+                        >
+                          {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </div>
                   </div>
 

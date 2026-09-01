@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, X, Send, Bot, User, Loader2, Settings } from "lucide-react";
+import { MessageSquare, X, Send, Bot, User, Loader2, Settings, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
@@ -22,6 +22,7 @@ export default function Chatbot() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [groqKey, setGroqKey] = useState("");
+  const [showGroqKey, setShowGroqKey] = useState(false);
 
   // Load Groq API Key from localStorage
   useEffect(() => {
@@ -65,14 +66,19 @@ export default function Chatbot() {
     try {
       const historyPayload = newMessages.slice(1, -1);
 
-      const response = await api.post("/agent/chat", {
-        message: userMessage,
-        history: historyPayload
-      }, {
-        headers: {
-          "X-Groq-Api-Key": groqKey
-        }
-      });
+      const headers: Record<string, string> = {};
+      if (groqKey && groqKey.trim()) {
+        headers["X-Groq-Api-Key"] = groqKey.trim();
+      }
+
+      const response = await api.post(
+        "/agent/chat",
+        {
+          message: userMessage,
+          history: historyPayload
+        },
+        { headers }
+      );
 
       setMessages((prev) => [
         ...prev,
@@ -81,8 +87,7 @@ export default function Chatbot() {
     } catch (error: any) {
       const status = error.response?.status;
       const detail = error.response?.data?.detail;
-      let errorMsg =
-        "Sorry, I couldn't reach the agent server. Please make sure the backend is running on port 8000.";
+      let errorMsg = "";
 
       if (status === 429) {
         errorMsg =
@@ -93,6 +98,9 @@ export default function Chatbot() {
           : detail;
       } else if (detail) {
         errorMsg = JSON.stringify(detail);
+      } else {
+        errorMsg =
+          "Sorry, I couldn't reach the agent server. Please make sure the backend is running on port 8000.";
       }
 
       setMessages((prev) => [
@@ -150,17 +158,27 @@ export default function Chatbot() {
               <span className="text-[10px] font-semibold text-black/60 shrink-0">
                 GROQ KEY:
               </span>
-              <input
-                type="password"
-                value={groqKey}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setGroqKey(val);
-                  localStorage.setItem("groq_api_key", val);
-                }}
-                placeholder="Enter gsk_..."
-                className="flex-1 min-w-0 bg-white border border-black/10 rounded-xl px-3 py-1.5 text-[11px] outline-none focus:border-black transition-colors"
-              />
+              <div className="relative flex-1 min-w-0 flex items-center">
+                <input
+                  type={showGroqKey ? "text" : "password"}
+                  value={groqKey}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setGroqKey(val);
+                    localStorage.setItem("groq_api_key", val);
+                  }}
+                  placeholder="Enter gsk_..."
+                  className="w-full bg-white border border-black/10 rounded-xl pl-3 pr-8 py-1.5 text-[11px] outline-none focus:border-black transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowGroqKey(!showGroqKey)}
+                  className="absolute right-2 text-black/50 hover:text-black transition-colors p-1"
+                  title={showGroqKey ? "Hide Key" : "Show Key"}
+                >
+                  {showGroqKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
             </div>
 
             {/* Messages */}

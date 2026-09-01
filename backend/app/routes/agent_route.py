@@ -47,15 +47,16 @@ async def chat_with_agent(
     db: AsyncIOMotorDatabase = Depends(get_db),
     x_groq_api_key: Optional[str] = Header(None)
 ):
-    if not x_groq_api_key or not x_groq_api_key.strip():
+    api_key = (x_groq_api_key or "").strip() or (settings.GROQ_API_KEY or "").strip()
+    if not api_key:
         raise HTTPException(
             status_code=400,
-            detail="GROQ_API_KEY is not set. Please set a valid Groq API key in the Chatbot settings."
+            detail="GROQ_API_KEY is not set. Please set a valid Groq API key in backend .env or Chatbot settings."
         )
 
     # Set the ContextVar for the current request context
     token_token = current_user_var.set(current_user)
-    groq_key_token = groq_api_key_var.set(x_groq_api_key.strip())
+    groq_key_token = groq_api_key_var.set(api_key)
 
     # Convert chat history to LangChain format
     langchain_history = []

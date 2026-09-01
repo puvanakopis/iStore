@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     # Database
     MONGODB_URL: str
-    DATABASE_NAME: str
+    DATABASE_NAME: str = "istore_db"
 
     # OTP
     OTP_EXPIRE_MINUTES: int = 10
@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     # Prefer llama-3.1-8b-instant — higher rate limits than 70b models on free tier.
     MODEL_PROVIDER: str = "groq"
     MODEL_NAME: str = Field(
-        default="llama-3.1-8b-instant",
+        default="openai/gpt-oss-120b",
         validation_alias=AliasChoices("MODEL_NAME", "LLM_MODEL_NAME"),
     )
 
