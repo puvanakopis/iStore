@@ -94,7 +94,7 @@ export default function ShopProductCard({
 
   return (
     <motion.div
-      className="group bg-[#fbfbfd] rounded-3xl p-5 transition-all duration-500 border border-gray-200/80 hover:border-gray-300 flex flex-col h-full"
+      className="group rounded-sm p-5 transition-all duration-500 border border-gray-200/80 hover:border-gray-300 flex flex-col h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

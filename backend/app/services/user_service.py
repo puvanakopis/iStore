@@ -98,4 +98,8 @@ async def delete_user(db: AsyncIOMotorDatabase, user_id: str):
         raise HTTPException(status_code=404, detail="User not found")
         
     await db["users"].delete_one({"_id": user_id})
+    await db["wishlists"].delete_many({"user_id": str(user_id)})
+    if "email" in user and user["email"]:
+        await db["otps"].delete_many({"email": user["email"].lower()})
+    await db["likes"].delete_many({"user_id": str(user_id)})
     return {"msg": "User deleted successfully"}

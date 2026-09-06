@@ -166,8 +166,11 @@ async def delete_user_account(db: AsyncIOMotorDatabase, user_id: str, email: str
     if user["email"].lower() != email.lower():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email confirmation does not match your registered email")
     
-    # Delete the user document
+    # Delete the user document and associated user data
     await db["users"].delete_one({"_id": user_id})
+    await db["wishlists"].delete_many({"user_id": str(user_id)})
+    await db["otps"].delete_many({"email": email.lower()})
+    await db["likes"].delete_many({"user_id": str(user_id)})
     return True
 
 

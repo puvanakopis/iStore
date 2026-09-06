@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Shield, Lock, Key, Eye, EyeOff } from "lucide-react";
+import { Lock, Key, Eye, EyeOff } from "lucide-react";
 import { authService } from "@/services/auth.service";
 
 export default function PasswordChange() {
