@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Minus, Plus, Heart, Truck, RotateCcw, Cpu, Camera, Zap, ShieldCheck, Share2, Box } from 'lucide-react';
 import StarRating from '@/components/StarRating';
+import ShareModal from '@/components/ShareModal';
 import { useRouter } from 'next/navigation';
 import { useCheckout } from '@/contexts/CheckoutContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,6 +44,7 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
     const [activeTab, setActiveTab] = useState<TabType>('description');
     const [selectedStorage, setSelectedStorage] = useState(product.storage[0].size);
     const [quantity, setQuantity] = useState(1);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const getFeatureIcon = (icon: string) => {
         switch (icon) {
@@ -123,7 +125,11 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
             >
                 <div className="flex items-center justify-between">
                     <span className="bg-primary text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-tighter">New Arrival</span>
-                    <button className="p-2 hover:bg-background-dim rounded-sm transition-colors text-foreground-muted hover:text-primary">
+                    <button 
+                        onClick={() => setIsShareModalOpen(true)}
+                        title="Share Product"
+                        className="p-2 hover:bg-background-dim rounded-sm transition-colors text-foreground-muted hover:text-primary active:scale-95"
+                    >
                         <Share2 size={20} />
                     </button>
                 </div>
@@ -360,6 +366,17 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
           scrollbar-width: none;
         }
       `}</style>
+
+            {/* Share Modal */}
+            <ShareModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                title={product.name}
+                text={`Discover ${product.name} - ${product.tagline || ''}`}
+                image={
+                    (product.colors.find(c => c.name === selectedColor)?.images?.[0]) || product.imageSrc
+                }
+            />
         </div>
     );
 }

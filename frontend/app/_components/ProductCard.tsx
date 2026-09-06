@@ -118,7 +118,7 @@ export default function ProductCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.35 }}
-      className="group relative w-full bg-white rounded-sm p-4 transition-all duration-500 border border-border hover:border-gray-300 cursor-pointer flex flex-col h-full justify-between"
+      className="group relative w-full bg-[#fbfbfd] rounded-3xl p-5 transition-all duration-500 border border-gray-200/80 hover:border-gray-300 cursor-pointer flex flex-col h-full justify-between"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

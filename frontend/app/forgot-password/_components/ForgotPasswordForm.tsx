@@ -96,9 +96,6 @@ export default function ForgotPasswordForm() {
                 transition={{ duration: 0.5 }}
               >
                 <header className="mb-10">
-                  <div className="w-12 h-12 bg-black/5 rounded-full flex items-center justify-center mb-6">
-                    <Mail size={24} className="text-black" />
-                  </div>
                   <h2 className="text-[32px] font-bold tracking-tight mb-2">
                     Forgot Password?
                   </h2>

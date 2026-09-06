@@ -115,7 +115,7 @@ export default function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-[92vh] md:min-h-screen w-full bg-white overflow-hidden flex flex-col items-center justify-between pt-20 md:pt-28 pb-12 px-4 sm:px-6 md:px-12 select-none"
+      className="relative min-h-[92vh] md:min-h-screen w-full bg-white overflow-hidden flex flex-col items-center justify-between pt-20 md:pt-28 pb-12 px-4 sm:px-6 md:px-12"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -171,7 +171,7 @@ export default function Hero() {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-10">
-            <Link href="/shop" className="w-full sm:w-auto">
+            <Link href="products/product_01" className="w-full sm:w-auto">
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}

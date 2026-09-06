@@ -39,7 +39,7 @@ export default function WishlistProductCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
-      className="group bg-white rounded-sm border border-border p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)]"
+      className="group bg-[#fbfbfd] rounded-3xl border border-gray-200/80 hover:border-gray-300 transition-all duration-500 p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
