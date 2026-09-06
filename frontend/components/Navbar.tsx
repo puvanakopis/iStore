@@ -76,13 +76,23 @@ export default function Navbar() {
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 100);
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          setSearchOpen(false);
+          setSearchQuery("");
+          clearSearch();
+        }
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = "unset";
+        window.removeEventListener("keydown", handleKeyDown);
+      };
     } else {
       document.body.style.overflow = "unset";
     }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [searchOpen]);
+  }, [searchOpen, clearSearch]);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -105,7 +115,7 @@ export default function Navbar() {
     setSearchOpen(false);
     setSearchQuery("");
     clearSearch();
-    router.push(`/search?q=${encodeURIComponent(query)}`);
+    router.push(`/shop?search=${encodeURIComponent(query)}`);
   };
 
   const handleResultClick = (resultId: string) => {

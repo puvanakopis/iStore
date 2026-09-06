@@ -20,10 +20,10 @@ interface SearchContextType {
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
 const POPULAR_SEARCHES = [
-    "iPhone 16 Pro Max",
-    "iPhone 16 Pro",
-    "iPhone 15 Pro",
-    "iPhone 14 Pro Max",
+    "iPhone 16",
+    "iPhone 15",
+    "iPhone 14",
+    "iPhone 13",
 ];
 export const SearchProvider = ({ children }: { children: React.ReactNode }) => {
     const [searchQuery, setSearchQuery] = useState("");

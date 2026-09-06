@@ -182,7 +182,7 @@ export default function Hero() {
               </motion.button>
             </Link>
 
-            <Link href="/products" className="w-full sm:w-auto">
+            <Link href="products/product_01" className="w-full sm:w-auto">
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}

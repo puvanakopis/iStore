@@ -43,21 +43,15 @@ async def get_all_products(db: AsyncIOMotorDatabase, skip: int = 0, limit: int =
 
 
 async def search_products(db: AsyncIOMotorDatabase, query: str, limit: int = 10):
-    if not query:
+    if not query or not query.strip():
         return {"query": query, "results": [], "total": 0}
     
+    clean_query = query.strip()
+    search_results = []
+    
+    # Try regex search first for instant partial prefix/substring matching
+    regex = re.compile(re.escape(clean_query), re.IGNORECASE)
     try:
-        await db["products"].create_index([("title", TEXT), ("subtitle", TEXT), ("category", TEXT), ("tags", TEXT)])
-    except:
-        pass
-    
-    search_results = await db["products"].find(
-        {"$text": {"$search": query}},
-        {"score": {"$meta": "textScore"}}
-    ).sort([("score", {"$meta": "textScore"})]).limit(limit).to_list(length=limit)
-    
-    if not search_results:
-        regex = re.compile(re.escape(query), re.IGNORECASE)
         search_results = await db["products"].find({
             "$or": [
                 {"title": regex},
@@ -66,6 +60,18 @@ async def search_products(db: AsyncIOMotorDatabase, query: str, limit: int = 10)
                 {"tags": regex}
             ]
         }).limit(limit).to_list(length=limit)
+    except Exception as e:
+        search_results = []
+
+    # If regex returns no results, try MongoDB text search if text index exists
+    if not search_results:
+        try:
+            search_results = await db["products"].find(
+                {"$text": {"$search": clean_query}},
+                {"score": {"$meta": "textScore"}}
+            ).sort([("score", {"$meta": "textScore"})]).limit(limit).to_list(length=limit)
+        except Exception:
+            pass
     
     results = []
     for p in search_results:

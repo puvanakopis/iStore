@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import ProductGrid from "./_components/ProductGrid";
 import FilterSidebar from "./_components/FilterSidebar";
 import { SlidersHorizontal, ChevronDown } from "lucide-react";
@@ -14,8 +15,11 @@ export type FilterState = {
   priceRange: [number, number];
 };
 
-export default function Shop() {
+function ShopContent() {
   const { products, loading } = useProducts();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("search") || searchParams.get("q") || "";
+
   const [filters, setFilters] = useState<FilterState>({
     models: [],
     colors: [],
@@ -28,6 +32,17 @@ export default function Shop() {
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
+
+    // Filter by search query from URL if present
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (p) =>
+          p.title?.toLowerCase().includes(q) ||
+          p.subtitle?.toLowerCase().includes(q) ||
+          p.category?.toLowerCase().includes(q)
+      );
+    }
 
     // Filter by Model
     if (filters.models.length > 0) {
@@ -73,7 +88,7 @@ export default function Shop() {
     }
 
     return result;
-  }, [products, filters, sortBy]);
+  }, [products, filters, sortBy, searchQuery]);
 
   return (
     <main className="min-h-screen bg-white pt-24 md:pt-32 pb-20">
@@ -231,5 +246,17 @@ export default function Shop() {
         )}
       </AnimatePresence>
     </main>
+  );
+}
+
+export default function Shop() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900 mx-auto"></div>
+      </div>
+    }>
+      <ShopContent />
+    </Suspense>
   );
 }
