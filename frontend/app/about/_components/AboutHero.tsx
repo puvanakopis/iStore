@@ -23,8 +23,8 @@ export default function AboutHero() {
             Redefining Premium Retail
           </h1>
           <p className="text-[21px] md:text-[24px] font-light text-foreground-secondary max-w-3xl mx-auto mb-12 tracking-tight leading-relaxed text-pretty">
-            At iStore, we don&apos;t just sell devices. We curate experiences. 
-            Since our inception, we have been committed to bringing the best of Apple 
+            At iStore, we don&apos;t just sell devices. We curate experiences.
+            Since our inception, we have been committed to bringing the best of Apple
             to your hands with a focus on design, service, and innovation.
           </p>
         </motion.div>

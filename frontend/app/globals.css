@@ -5,7 +5,6 @@
   /* Background */
   --color-background: var(--background);
   --color-background-dim: var(--background-dim);
-  --color-background-dim: var(--background-dim);
   --color-background-dim-hover: var(--background-dim-hover);
 
   /* Foreground */
@@ -40,14 +39,13 @@
 :root {
   /* Background */
   --background: #ffffff;
-  /* --background-dim: #f7f7f7; */
-  --background-dim: #ffffff;
-  --background-dim-hover: #eeeeee;
+  --background-dim: #fbfbfd;
+  --background-dim-hover: #f5f5f7;
 
   /* Foreground */
-  --foreground: #0a0a0a;
-  --foreground-secondary: #333333;
-  --foreground-muted: #666666;
+  --foreground: #1d1d1f;
+  --foreground-secondary: #515154;
+  --foreground-muted: #86868b;
 
   /* Primary */
   --primary: #000000;
@@ -58,7 +56,7 @@
   --secondary-text: #000000;
 
   /* Border  */
-  --border: #e5e5e5;
+  --border: #e5e5e7;
 
   /* Radius system */
   --radius-xs: 8px;
@@ -106,11 +104,11 @@
 
 @layer components {
   .section-padding {
-    @apply py-24 md:py-32 px-6;
+    @apply py-20 md:py-32 px-6;
   }
 
   .apple-card {
-    @apply bg-white rounded-full border border-transparent shadow-[0_4px_20px_rgba(0_0_0_/_0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0_0_0_/_0.08)] hover:-translate-y-1;
+    @apply bg-white rounded-3xl border border-gray-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_12px_36px_rgba(0,0,0,0.08)] hover:-translate-y-1.5;
   }
 
   .apple-button-primary {

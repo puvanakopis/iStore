@@ -6,9 +6,9 @@ import { Zap, Heart, Shield } from "lucide-react";
 export default function AboutStory() {
   return (
     <section className="max-w-7xl mx-auto px-6 md:px-12 pb-24 grid grid-cols-1 lg:grid-cols-12 gap-gutter items-stretch">
-      
+
       {/* NARRATIVE */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: -30 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
@@ -24,14 +24,14 @@ export default function AboutStory() {
           </h2>
           <div className="space-y-6 text-foreground-secondary font-light text-lg leading-relaxed">
             <p>
-              iStore was born from a simple observation: the world&apos;s most advanced 
-              technology deserves a retail experience that is equally advanced. We 
-              set out to create a sanctuary for Apple enthusiasts—a place where 
+              iStore was born from a simple observation: the world&apos;s most advanced
+              technology deserves a retail experience that is equally advanced. We
+              set out to create a sanctuary for Apple enthusiasts—a place where
               product knowledge meets personalized care.
             </p>
             <p>
-              Today, we serve thousands of customers across the region, providing 
-              them with not just iPhones and MacBooks, but the technical expertise 
+              Today, we serve thousands of customers across the region, providing
+              them with not just iPhones and MacBooks, but the technical expertise
               and support that allows them to push the boundaries of their creativity.
             </p>
           </div>
@@ -42,7 +42,7 @@ export default function AboutStory() {
       </motion.div>
 
       {/* CORE PHILOSOPHY */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: 30 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
@@ -64,7 +64,7 @@ export default function AboutStory() {
             </PhilosophyItem>
           </div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -107,7 +107,7 @@ function PhilosophyItem({
   delay?: number
 }) {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}

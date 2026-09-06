@@ -29,7 +29,7 @@ export default function Profile() {
           {/* Main Content Grid */}
           <div className="flex-1">
             <div className="grid  gap-6">
-              
+
               {/* Row 1 */}
               <div className="md:col-span-2 lg:col-span-2">
                 <ProfileBentoCard />
@@ -47,7 +47,7 @@ export default function Profile() {
               <div className="md:col-span-2 lg:col-span-2">
                 <CommunicationSettings />
               </div>
-              
+
             </div>
           </div>
         </div>

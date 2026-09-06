@@ -30,7 +30,7 @@ export default function AboutValues() {
   return (
     <section className="section-padding bg-white pb-32">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -47,7 +47,7 @@ export default function AboutValues() {
             These principles guide our decisions and define our relationship with our clients.
           </p>
         </motion.div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
           {values.map((value, index) => (
             <motion.div

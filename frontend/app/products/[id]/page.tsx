@@ -126,10 +126,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                         }
                         return <ProductImage images={currentImages.length > 0 ? currentImages : [product.images[0]]} productName={product.name} />;
                     })()}
-                    <ProductDetails 
-                        product={product} 
-                        selectedColor={selectedColor} 
-                        onColorSelect={setSelectedColor} 
+                    <ProductDetails
+                        product={product}
+                        selectedColor={selectedColor}
+                        onColorSelect={setSelectedColor}
                     />
                 </div>
             </section>

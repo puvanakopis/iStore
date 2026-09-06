@@ -13,7 +13,7 @@ import api from "@/services/api";
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [stats, setStats] = useState([
     { label: "Total Revenue", value: "Rs. 0", change: "+0%", trendingUp: true, icon: DollarSign },
     { label: "Active Orders", value: "0", change: "+0%", trendingUp: true, icon: ShoppingCart },
@@ -27,7 +27,7 @@ export default function AdminDashboard() {
     { name: "Plus Series", percentage: 0, color: "bg-blue-500", icon: Smartphone },
     { name: "Standard Series", percentage: 0, color: "bg-purple-500", icon: Smartphone },
   ]);
-  
+
   const [totalProductsSold, setTotalProductsSold] = useState(0);
   const [revenueData, setRevenueData] = useState<{ month: string; amount: number }[]>([]);
 
@@ -41,56 +41,56 @@ export default function AdminDashboard() {
           productService.getAll(),
           api.get("/orders/all")
         ]);
-        
+
         const ordersData = ordersRes.data || [];
-        
+
         // Calculate Total Revenue
         const totalRevenue = ordersData.reduce((acc: number, order: any) => acc + (order.total || 0), 0);
-        
+
         // Calculate Active Orders (status not Cancelled and not Delivered)
-        const activeOrders = ordersData.filter((order: any) => 
+        const activeOrders = ordersData.filter((order: any) =>
           order.status !== "Cancelled" && order.status !== "Delivered"
         ).length;
-        
+
         // Calculate Total Customers
         const totalCustomers = usersData.filter((user: any) => user.role === "Customer").length;
-        
+
         // Low Stock Items: define as products having fewer than 2 storage options
         const lowStockItems = productsData.filter((prod: any) => !prod.storage || prod.storage.length < 2).length;
-        
+
         // Update stats
         setStats([
-          { 
-            label: "Total Revenue", 
-            value: `Rs. ${new Intl.NumberFormat('en-IN').format(totalRevenue)}`, 
-            change: "+12.5%", 
-            trendingUp: true, 
-            icon: DollarSign 
+          {
+            label: "Total Revenue",
+            value: `Rs. ${new Intl.NumberFormat('en-IN').format(totalRevenue)}`,
+            change: "+12.5%",
+            trendingUp: true,
+            icon: DollarSign
           },
-          { 
-            label: "Active Orders", 
-            value: String(activeOrders), 
-            change: "+8.2%", 
-            trendingUp: true, 
-            icon: ShoppingCart 
+          {
+            label: "Active Orders",
+            value: String(activeOrders),
+            change: "+8.2%",
+            trendingUp: true,
+            icon: ShoppingCart
           },
-          { 
-            label: "Total Customers", 
-            value: String(totalCustomers), 
-            change: "+2.4%", 
-            trendingUp: true, 
-            icon: Users 
+          {
+            label: "Total Customers",
+            value: String(totalCustomers),
+            change: "+2.4%",
+            trendingUp: true,
+            icon: Users
           },
-          { 
-            label: "Low Stock Items", 
-            value: String(lowStockItems), 
-            change: "Alert", 
-            trendingUp: false, 
-            icon: Package, 
-            alert: true 
+          {
+            label: "Low Stock Items",
+            value: String(lowStockItems),
+            change: "Alert",
+            trendingUp: false,
+            icon: Package,
+            alert: true
           },
         ]);
-        
+
         // Group revenue by month for the last 6 months
         const monthlyData = Array(6).fill(0).map((_, i) => {
           const d = new Date();
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
           const orderDate = new Date(order.created_at);
           const oMonth = orderDate.getMonth();
           const oYear = orderDate.getFullYear();
-          
+
           const target = monthlyData.find(m => m.monthIndex === oMonth && m.year === oYear);
           if (target) {
             target.amount += order.total || 0;
@@ -123,12 +123,12 @@ export default function AdminDashboard() {
         let proCount = 0;
         let plusCount = 0;
         let stdCount = 0;
-        
+
         ordersData.forEach((order: any) => {
           (order.items || []).forEach((item: any) => {
             const qty = item.quantity || 1;
             totalSold += qty;
-            
+
             const title = (item.title || "").toLowerCase();
             if (title.includes("pro max")) {
               proMaxCount += qty;
@@ -141,39 +141,39 @@ export default function AdminDashboard() {
             }
           });
         });
-        
+
         setTotalProductsSold(totalSold);
-        
+
         // Calculate category percentages
         const totalCategoryCount = proMaxCount + proCount + plusCount + stdCount || 1;
-        
+
         setCategories([
-          { 
-            name: "Pro Max Series", 
-            percentage: Math.round((proMaxCount / totalCategoryCount) * 100), 
-            color: "bg-gray-900", 
-            icon: Smartphone 
+          {
+            name: "Pro Max Series",
+            percentage: Math.round((proMaxCount / totalCategoryCount) * 100),
+            color: "bg-gray-900",
+            icon: Smartphone
           },
-          { 
-            name: "Pro Series", 
-            percentage: Math.round((proCount / totalCategoryCount) * 100), 
-            color: "bg-primary", 
-            icon: Smartphone 
+          {
+            name: "Pro Series",
+            percentage: Math.round((proCount / totalCategoryCount) * 100),
+            color: "bg-primary",
+            icon: Smartphone
           },
-          { 
-            name: "Plus Series", 
-            percentage: Math.round((plusCount / totalCategoryCount) * 100), 
-            color: "bg-blue-500", 
-            icon: Smartphone 
+          {
+            name: "Plus Series",
+            percentage: Math.round((plusCount / totalCategoryCount) * 100),
+            color: "bg-blue-500",
+            icon: Smartphone
           },
-          { 
-            name: "Standard Series", 
-            percentage: Math.round((stdCount / totalCategoryCount) * 100), 
-            color: "bg-purple-500", 
-            icon: Smartphone 
+          {
+            name: "Standard Series",
+            percentage: Math.round((stdCount / totalCategoryCount) * 100),
+            color: "bg-purple-500",
+            icon: Smartphone
           },
         ]);
-        
+
         setError(null);
       } catch (err: any) {
         console.error("Dashboard error:", err);
@@ -182,7 +182,7 @@ export default function AdminDashboard() {
         setLoading(false);
       }
     }
-    
+
     loadData();
   }, []);
 
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
     <main className="min-h-screen bg-gradient-to-b from-gray-50/30 to-white pb-20">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Page Header */}
-        <AdminHeader 
+        <AdminHeader
           title="Dashboard Overview"
           subtitle="Track your store's performance metrics and analytics"
         />

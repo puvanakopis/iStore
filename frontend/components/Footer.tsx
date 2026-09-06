@@ -117,7 +117,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="flex flex-col gap-4 text-[11px]">
-          
+
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-border pt-4">
             <p>
               Copyright © 2026 iStore Inc. All rights reserved.

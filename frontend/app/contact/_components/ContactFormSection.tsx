@@ -6,9 +6,9 @@ import { motion } from "framer-motion";
 export default function ContactFormSection() {
   return (
     <section className="max-w-7xl mx-auto px-6 md:px-12 pb-24 grid grid-cols-1 lg:grid-cols-12 gap-gutter items-stretch">
-      
+
       {/* FORM */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: -30 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
@@ -17,7 +17,7 @@ export default function ContactFormSection() {
       >
         <div className="bg-background-dim p-8 md:p-12 rounded-sm border border-border shadow-[0_40px_60px_-15px_rgba(0,0,0,0.04)] h-full">
           <form className="space-y-8 h-full flex flex-col">
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <label className="text-xs uppercase tracking-widest text-on-surface-variant">
@@ -59,14 +59,14 @@ export default function ContactFormSection() {
       </motion.div>
 
       {/* INFO */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: 30 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
         className="lg:col-span-5 flex flex-col justify-center space-y-10 lg:pl-12 mt-12 lg:mt-0 h-full"
       >
-        
+
         <div className="bg-background-dim p-8 md:p-12 rounded-sm border border-border shadow-[0_40px_60px_-15px_rgba(0,0,0,0.04)] space-y-10 h-full flex flex-col justify-between">
 
           <div className="space-y-10">
@@ -83,7 +83,7 @@ export default function ContactFormSection() {
             </Info>
           </div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -118,7 +118,7 @@ function Info({
   delay?: number
 }) {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
