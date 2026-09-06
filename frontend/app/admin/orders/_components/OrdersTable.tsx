@@ -24,7 +24,7 @@ export default function OrdersTable({
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPayment, setFilterPayment] = useState<string>("all");
 
-  const statuses = ["all", "Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
+  const statuses = ["all", "Confirmed", "Shipping", "Delivered", "Cancelled"];
   const payments = ["all", "Pending", "Paid", "Failed", "Refunded"];
 
   const filteredOrders = (orders || []).filter(order => {
@@ -42,14 +42,12 @@ export default function OrdersTable({
 
   const getStatusColor = (status: Order["status"]) => {
     switch (status) {
+      case "Confirmed":
+        return "bg-emerald-50 text-emerald-600 border-emerald-100";
+      case "Shipping":
+        return "bg-blue-50 text-blue-600 border-blue-100";
       case "Delivered":
         return "bg-green-50 text-green-600 border-green-100";
-      case "Processing":
-        return "bg-blue-50 text-blue-600 border-blue-100";
-      case "Shipped":
-        return "bg-purple-50 text-purple-600 border-purple-100";
-      case "Pending":
-        return "bg-yellow-50 text-yellow-600 border-yellow-100";
       case "Cancelled":
         return "bg-red-50 text-red-600 border-red-100";
       default:
@@ -206,9 +204,8 @@ export default function OrdersTable({
                     onChange={(e) => onUpdateStatus(order.id, e.target.value as Order["status"])}
                     className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)} border cursor-pointer focus:ring-2 focus:ring-gray-900`}
                   >
-                    <option value="Pending">Pending</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Shipped">Shipped</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Shipping">Shipping</option>
                     <option value="Delivered">Delivered</option>
                     <option value="Cancelled">Cancelled</option>
                   </select>

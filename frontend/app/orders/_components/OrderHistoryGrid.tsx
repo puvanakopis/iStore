@@ -7,21 +7,21 @@ import { useState, useEffect } from "react";
 import api from "../../../services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCheckout } from "@/contexts/CheckoutContext";
+import OrderDetailsModal from "./OrderDetailsModal";
 
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
-    case "delivered":
-      return "text-green-600 bg-green-50";
+    case "confirmed":
+      return "text-emerald-700 bg-emerald-50 border border-emerald-200/60";
+    case "shipping":
     case "shipped":
-      return "text-blue-600 bg-blue-50";
-    case "processing":
-      return "text-amber-600 bg-amber-50";
-    case "pending":
-      return "text-yellow-600 bg-yellow-50";
+      return "text-blue-700 bg-blue-50 border border-blue-200/60";
+    case "delivered":
+      return "text-green-700 bg-green-50 border border-green-200/60";
     case "cancelled":
-      return "text-red-600 bg-red-50";
+      return "text-red-700 bg-red-50 border border-red-200/60";
     default:
-      return "text-gray-600 bg-gray-50";
+      return "text-gray-700 bg-gray-50 border border-gray-200/60";
   }
 };
 
@@ -42,7 +42,7 @@ const formatPrice = (amount: number) => {
 const cleanImageSrc = (src: string) => {
   if (!src) return "/placeholder.png";
   let cleanSrc = src.replace("./../public", "");
-  
+
   if (cleanSrc.startsWith("uploads/")) {
     cleanSrc = "/" + cleanSrc;
   }
@@ -53,9 +53,14 @@ const cleanImageSrc = (src: string) => {
   return cleanSrc;
 };
 
-export default function OrderCard({ order }: { order: any }) {
+export default function OrderCard({ order, onOrderUpdated }: { order: any; onOrderUpdated?: () => void }) {
   const { startCheckout } = useCheckout();
   const [buyingAgain, setBuyingAgain] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  const isCancellable = (order.status || "").toLowerCase() === "confirmed";
 
   const handleBuyAgain = (item: any) => {
     setBuyingAgain(item.product_id);
@@ -74,6 +79,22 @@ export default function OrderCard({ order }: { order: any }) {
       alert("Failed to start checkout. Please try again.");
     } finally {
       setBuyingAgain(null);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    setCancelling(true);
+    try {
+      await api.put(`/orders/${order.id}/cancel`);
+      setShowCancelModal(false);
+      if (onOrderUpdated) {
+        onOrderUpdated();
+      }
+    } catch (error: any) {
+      console.error("Error cancelling order:", error);
+      alert(error.response?.data?.detail || "Failed to cancel order. Please try again.");
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -99,8 +120,8 @@ export default function OrderCard({ order }: { order: any }) {
             <p className="text-sm font-medium">{order.id}</p>
           </div>
         </div>
-        <div className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${getStatusColor(order.status || "Pending")}`}>
-          {order.status || "Pending"}
+        <div className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${getStatusColor(order.status || "Confirmed")}`}>
+          {order.status || "Confirmed"}
         </div>
       </div>
 
@@ -125,7 +146,7 @@ export default function OrderCard({ order }: { order: any }) {
                 >
                   View Item <ChevronRight size={14} />
                 </Link>
-                <button 
+                <button
                   onClick={() => handleBuyAgain(item)}
                   disabled={buyingAgain === item.product_id}
                   className="text-[13px] font-medium text-black hover:underline flex items-center gap-1 disabled:opacity-50"
@@ -139,17 +160,71 @@ export default function OrderCard({ order }: { order: any }) {
       </div>
 
       {/* Order Footer Actions */}
-      <div className="px-6 py-4 bg-gray-50/30 border-t border-border flex justify-end gap-3">
-        <button className="px-5 py-2 text-xs font-bold border border-border rounded-full hover:bg-black/5 transition-all">
-          Track Package
-        </button>
-        <button className="px-5 py-2 text-xs font-bold border border-border rounded-full hover:bg-black/5 transition-all">
+      <div className="px-6 py-4 bg-gray-50/30 border-t border-border flex flex-wrap justify-end gap-3 items-center">
+        {isCancellable && (
+          <button
+            onClick={() => setShowCancelModal(true)}
+            className="px-5 py-2 text-xs font-bold text-red-600 border border-red-200 rounded-full hover:bg-red-50 transition-all "
+          >
+            Cancel Order
+          </button>
+        )}
+        <button
+          onClick={() => setShowDetailsModal(true)}
+          className="px-5 py-2 text-xs font-bold border border-border rounded-full hover:bg-black/5 transition-all"
+        >
           Order Details
         </button>
-        <button className="px-5 py-2 text-xs font-bold bg-black text-white rounded-full hover:scale-[1.02] transition-all">
-          Get Help
-        </button>
       </div>
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        order={order}
+        onCancelOrder={() => {
+          setShowDetailsModal(false);
+          setShowCancelModal(true);
+        }}
+      />
+
+      {/* Cancel Order Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4"
+          >
+            <h3 className="text-xl font-bold text-gray-900">Cancel Order #{order.id}?</h3>
+            <p className="text-sm text-gray-600">
+              Are you sure you want to cancel this order? An email confirmation will be sent to your registered address.
+            </p>
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <button
+                disabled={cancelling}
+                onClick={() => setShowCancelModal(false)}
+                className="px-5 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-all"
+              >
+                Keep Order
+              </button>
+              <button
+                disabled={cancelling}
+                onClick={handleCancelOrder}
+                className="px-5 py-2 text-xs font-semibold text-white bg-red-600 rounded-full hover:bg-red-700 transition-all flex items-center gap-2"
+              >
+                {cancelling ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" /> Cancelling...
+                  </>
+                ) : (
+                  "Confirm Cancellation"
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -159,22 +234,22 @@ export function OrderHistoryGrid() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-      try {
-        const res = await api.get("/orders/");
-        setOrders(res.data);
-      } catch (error) {
-        console.error("Error fetching order history:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchOrders = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await api.get("/orders/");
+      setOrders(res.data);
+    } catch (error) {
+      console.error("Error fetching order history:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     if (!authLoading) {
       fetchOrders();
     }
@@ -204,9 +279,9 @@ export function OrderHistoryGrid() {
   return (
     <div className="space-y-6">
       {orders.map((order) => (
-        <OrderCard key={order.id} order={order} />
+        <OrderCard key={order.id} order={order} onOrderUpdated={fetchOrders} />
       ))}
-      
+
       {orders.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border rounded-sm">
           <Package size={48} className="text-foreground-muted mb-4 opacity-20" />
@@ -220,3 +295,4 @@ export function OrderHistoryGrid() {
     </div>
   );
 }
+

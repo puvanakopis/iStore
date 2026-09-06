@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { User as UserIcon, MapPin, Save, Phone } from "lucide-react";
+import { User as UserIcon, MapPin, Save, Phone, Home, Globe } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 
@@ -11,6 +11,10 @@ export default function PersonalDetailsForm() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [zipCode, setZipCode] = useState("");
+  const [country, setCountry] = useState("");
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -20,6 +24,10 @@ export default function PersonalDetailsForm() {
       setFirstName(user.first_name || "");
       setLastName(user.last_name || "");
       setAddress(user.address || "");
+      setCity(user.city || "");
+      setState(user.state || "");
+      setZipCode(user.zip_code || "");
+      setCountry(user.country || "");
       setPhone(user.phone || "");
     }
   }, [user]);
@@ -33,6 +41,10 @@ export default function PersonalDetailsForm() {
         first_name: firstName,
         last_name: lastName,
         address: address,
+        city: city,
+        state: state,
+        zip_code: zipCode,
+        country: country,
         phone: phone,
       });
       setSuccess(true);
@@ -53,8 +65,8 @@ export default function PersonalDetailsForm() {
     >
       <header className="flex items-center justify-between mb-8">
         <div>
-          <h3 className="text-lg font-bold tracking-tight">Personal Details</h3>
-          <p className="text-sm text-foreground-secondary font-light">Manage your information</p>
+          <h3 className="text-lg font-bold tracking-tight">Personal Details & Saved Address</h3>
+          <p className="text-sm text-foreground-secondary font-light">Manage your contact information and default shipping address</p>
         </div>
         <div className="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center text-black">
           <UserIcon size={20} />
@@ -62,82 +74,155 @@ export default function PersonalDetailsForm() {
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex flex-col">
-            <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="firstName">
-              First Name
-            </label>
-            <input
-              id="firstName"
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px]"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="lastName">
-              Last Name
-            </label>
-            <input
-              id="lastName"
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px]"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex flex-col">
-            <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="email">
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={user?.email || ""}
-              disabled
-              className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px] opacity-50 cursor-not-allowed"
-            />
-          </div>
+        {/* Personal Details */}
+        <div className="space-y-4">
+          <h4 className="text-xs font-semibold tracking-wider uppercase text-foreground-muted">Contact Details</h4>
           
-          <div className="flex flex-col">
-            <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="phone">
-              Phone Number
-            </label>
-            <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col">
+              <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="firstName">
+                First Name
+              </label>
               <input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 (555) 000-0000"
-                className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px] pr-8"
+                id="firstName"
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px]"
               />
-              <Phone size={16} className="absolute right-0 top-1/2 -translate-y-1/2 text-foreground-muted" />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="lastName">
+                Last Name
+              </label>
+              <input
+                id="lastName"
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col">
+              <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="email">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={user?.email || ""}
+                disabled
+                className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px] opacity-50 cursor-not-allowed"
+              />
+            </div>
+            
+            <div className="flex flex-col">
+              <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="phone">
+                Phone Number
+              </label>
+              <div className="relative">
+                <input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+1 (555) 000-0000"
+                  className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px] pr-8"
+                />
+                <Phone size={16} className="absolute right-0 top-1/2 -translate-y-1/2 text-foreground-muted" />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col">
-          <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="address">
-            Default Address
-          </label>
-          <div className="relative">
-            <input
-              id="address"
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px] pr-8"
-            />
-            <MapPin size={16} className="absolute right-0 top-1/2 -translate-y-1/2 text-foreground-muted" />
+        {/* Address Section */}
+        <div className="pt-4 space-y-4 border-t border-border/50">
+          <div className="flex items-center gap-2">
+            <Home size={16} className="text-foreground-muted" />
+            <h4 className="text-xs font-semibold tracking-wider uppercase text-foreground-muted">Default Shipping Address</h4>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="address">
+              Street Address
+            </label>
+            <div className="relative">
+              <input
+                id="address"
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="123 Apple Park Way"
+                className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px] pr-8"
+              />
+              <MapPin size={16} className="absolute right-0 top-1/2 -translate-y-1/2 text-foreground-muted" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col">
+              <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="city">
+                City
+              </label>
+              <input
+                id="city"
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Cupertino"
+                className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px]"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="state">
+                State / Province
+              </label>
+              <input
+                id="state"
+                type="text"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                placeholder="CA"
+                className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px]"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="zipCode">
+                ZIP / Postal Code
+              </label>
+              <input
+                id="zipCode"
+                type="text"
+                value={zipCode}
+                onChange={(e) => setZipCode(e.target.value)}
+                placeholder="95014"
+                className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px]"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-xs uppercase tracking-widest text-foreground-muted font-medium mb-1" htmlFor="country">
+              Country
+            </label>
+            <div className="relative">
+              <input
+                id="country"
+                type="text"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="United States"
+                className="w-full bg-transparent border-b border-border py-2 focus:border-black outline-none transition-colors font-light text-[15px] pr-8"
+              />
+              <Globe size={16} className="absolute right-0 top-1/2 -translate-y-1/2 text-foreground-muted" />
+            </div>
           </div>
         </div>
 
-        <div className="pt-4 flex items-center gap-4">
+        <div className="pt-6 flex items-center gap-4 border-t border-border/50">
           <button
             type="submit"
             disabled={saving}
@@ -148,7 +233,7 @@ export default function PersonalDetailsForm() {
           </button>
           {success && (
             <span className="text-sm text-green-600 font-medium animate-fade-in">
-              Changes saved successfully!
+              Address & personal details saved successfully!
             </span>
           )}
         </div>

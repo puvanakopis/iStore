@@ -265,7 +265,7 @@ async def _place_product_order_impl(
         total=total_val,
         promo_code=promo_code,
         payment="Paid",
-        status="Pending",
+        status="Confirmed",
         user_id=user_id,
     )
 
@@ -409,38 +409,25 @@ async def place_product_order(
 
 @tool
 async def cancel_order(order_id: str) -> Dict[str, Any]:
-    """Cancel a pending order by updating its status to 'Cancelled'.
-    Only orders that are currently 'Pending' can be cancelled.
+    """Cancel an active order by updating its status to 'Cancelled'.
+    Only orders that are currently 'Confirmed' can be cancelled.
     """
     user_id = get_current_user_id()
     if not user_id:
         return {"error": "User not authenticated."}
 
     db = get_db()
-    order = await db["orders"].find_one({"_id": order_id})
-    if not order:
-        return {"error": f"Order '{order_id}' not found."}
+    if db is None:
+        return {"error": "Database connection is not available."}
 
-    if order.get("user_id") != user_id:
-        return {"error": "You do not have permission to cancel this order."}
+    try:
+        updated_order = await order_service.cancel_user_order(db, order_id, user_id)
+        return {
+            "success": True,
+            "message": f"Order '{order_id}' has been successfully cancelled.",
+            "order_id": order_id,
+            "status": "Cancelled",
+        }
+    except Exception as e:
+        return {"error": str(getattr(e, "detail", e))}
 
-    current_status = order.get("status", "Pending")
-    if current_status.lower() != "pending":
-        return {"error": f"Order cannot be cancelled because its current status is '{current_status}'."}
-
-    from datetime import datetime
-
-    result = await db["orders"].update_one(
-        {"_id": order_id},
-        {"$set": {"status": "Cancelled", "updated_at": datetime.utcnow()}},
-    )
-
-    if result.modified_count == 0:
-        return {"error": "Failed to update order status."}
-
-    return {
-        "success": True,
-        "message": f"Order '{order_id}' has been successfully cancelled.",
-        "order_id": order_id,
-        "status": "Cancelled",
-    }

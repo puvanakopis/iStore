@@ -102,7 +102,7 @@ async def update_user_profile(db: AsyncIOMotorDatabase, user_id: str, profile_da
     update_dict = {}
     
     # Simple extraction of optional fields
-    for field in ["first_name", "last_name", "phone", "address", 
+    for field in ["first_name", "last_name", "phone", "address", "city", "state", "zip_code", "country",
                   "email_notifications", "push_notifications", "sms_updates"]:
         val = getattr(profile_data, field, None)
         if val is not None:

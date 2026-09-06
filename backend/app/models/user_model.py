@@ -15,6 +15,10 @@ class User(BaseModel):
     last_name: str
     phone: Optional[str] = None
     address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    country: Optional[str] = None
     avatar_initials: Optional[str] = None
     member_status: Optional[str] = "standard"
     member_since: Optional[datetime] = None

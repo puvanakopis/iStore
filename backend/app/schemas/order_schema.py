@@ -47,7 +47,7 @@ class OrderCreate(BaseModel):
     total: float
     promo_code: Optional[str] = None
     payment: Optional[str] = "Paid"
-    status: Optional[str] = "Pending"
+    status: Optional[str] = "Confirmed"
     user_id: Optional[str] = None
 
 
@@ -63,7 +63,7 @@ class OrderOut(BaseModel):
     tax: float = 0.0
     total: float = 0.0
     promo_code: Optional[str] = None
-    status: Optional[str] = "Pending"
+    status: Optional[str] = "Confirmed"
     payment: Optional[str] = "Paid"
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

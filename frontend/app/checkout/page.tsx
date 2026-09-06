@@ -2,7 +2,7 @@
 
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { motion } from "framer-motion";
 
@@ -22,129 +22,88 @@ import { OrderPlacedSuccessfully } from "./_components/OrderPlacedSuccessfully";
 
 import { useCheckout } from "../../contexts/CheckoutContext";
 
+import { useAuth } from "../../contexts/AuthContext";
+
 import api from "../../services/api";
 
-
-
 export interface CheckoutFormData {
-
   firstName: string;
-
   lastName: string;
-
   email: string;
-
   phone: string;
-
   address: string;
-
   city: string;
-
   state: string;
-
   zipCode: string;
-
   country: string;
-
   cardNumber: string;
-
   expiry: string;
-
   cvv: string;
-
   cardholder: string;
-
 }
-
-
 
 export interface CheckoutLineItem {
-
   id: string;
-
   product_id: string;
-
   title: string;
-
   price: string;
-
   imageSrc: string;
-
   quantity: number;
-
   color: string;
-
   storage: string;
-
 }
 
-
-
 const parsePrice = (priceStr: string): number => {
-
   return parseInt(priceStr.replace(/[^0-9]/g, "")) || 0;
-
 };
-
-
 
 const calculateTotals = (item: CheckoutLineItem | null) => {
-
   if (!item) return { subtotal: 0, shipping: 0, tax: 0, total: 0 };
-
   const subtotal = parsePrice(item.price) * item.quantity;
-
   const shipping = 0;
-
   const tax = subtotal * 0.18;
-
   const total = subtotal + shipping + tax;
-
   return { subtotal, shipping, tax, total };
-
 };
 
-
-
 export default function Checkout() {
-
   const [orderPlaced, setOrderPlaced] = useState(false);
-
   const [isLoading, setIsLoading] = useState(false);
-
   const { checkoutItem, clearCheckout } = useCheckout();
-
-
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState<CheckoutFormData>({
-
     firstName: "",
-
     lastName: "",
-
     email: "",
-
     phone: "",
-
     address: "",
-
     city: "",
-
     state: "",
-
     zipCode: "",
-
     country: "",
-
     cardNumber: "",
-
     expiry: "",
-
     cvv: "",
-
     cardholder: "",
-
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        firstName: prev.firstName || user.first_name || "",
+        lastName: prev.lastName || user.last_name || "",
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.phone || "",
+        address: prev.address || user.address || "",
+        city: prev.city || user.city || "",
+        state: prev.state || user.state || "",
+        zipCode: prev.zipCode || user.zip_code || "",
+        country: prev.country || user.country || "",
+      }));
+    }
+  }, [user]);
 
 
 

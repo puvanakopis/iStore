@@ -38,7 +38,7 @@ export interface Order {
   tax: number;
   total: number;
   promo_code?: string | null;
-  status: "Delivered" | "Processing" | "Pending" | "Cancelled" | "Shipped";
+  status: "Confirmed" | "Shipping" | "Delivered" | "Cancelled";
   payment: "Paid" | "Failed" | "Refunded" | "Pending";
   created_at?: string;
   updated_at?: string;

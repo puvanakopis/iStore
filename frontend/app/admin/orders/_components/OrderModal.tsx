@@ -74,7 +74,7 @@ export default function OrderModal({
         customer: "",
         customerEmail: "",
         total: 0,
-        status: "Pending",
+        status: "Confirmed",
         payment: "Pending",
         items: [],
         shippingAddress: "",
@@ -258,9 +258,8 @@ export default function OrderModal({
                       }
                       className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
                     >
-                      <option value="Pending">Pending</option>
-                      <option value="Processing">Processing</option>
-                      <option value="Shipped">Shipped</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Shipping">Shipping</option>
                       <option value="Delivered">Delivered</option>
                       <option value="Cancelled">Cancelled</option>
                     </select>

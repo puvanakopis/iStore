@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import Sidebar from "@/components/Sidebar";
 import ProfileBentoCard from "./_components/ProfileBentoCard";
 import PersonalDetailsForm from "./_components/PersonalDetailsForm";
-import CommunicationSettings from "./_components/CommunicationSettings";
 
 export default function Profile() {
   return (
@@ -41,11 +40,6 @@ export default function Profile() {
               {/* Row 2 */}
               <div className="md:col-span-2 lg:col-span-2">
                 <PersonalDetailsForm />
-              </div>
-
-              {/* Row 3 */}
-              <div className="md:col-span-2 lg:col-span-2">
-                <CommunicationSettings />
               </div>
 
             </div>

@@ -124,7 +124,7 @@ export default function Footer() {
             </p>
 
             <div className="flex flex-wrap justify-center items-center gap-6">
-              {["Privacy Policy", "Terms of Use", "Sales Policy", "Site Map"].map(
+              {["Privacy Policy", "Terms of Use"].map(
                 (item) => (
                   <a key={item} href="#" className="hover:text-foreground">
                     {item}

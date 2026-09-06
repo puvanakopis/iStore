@@ -37,6 +37,16 @@ async def get_all_orders(
     return await order_service.get_all_orders(db)
 
 
+@router.put("/{order_id}/cancel", response_model=OrderOut)
+async def cancel_order(
+    order_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    user_id = str(current_user["id"])
+    return await order_service.cancel_user_order(db, order_id, user_id)
+
+
 @router.put("/{order_id}", response_model=OrderOut, dependencies=[Depends(role_required("admin"))])
 async def update_order(
     order_id: str,

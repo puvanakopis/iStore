@@ -6,7 +6,6 @@ import { Search, ShoppingBag, Menu, X, User, Heart, Settings, ChevronRight, Tren
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
-import { useCheckout } from "../contexts/CheckoutContext";
 import { useSearch } from "../contexts/SearchContext";
 
 const navLinks = [
@@ -25,7 +24,6 @@ const userLinks = [
 
 export default function Navbar() {
   const { user, logout, loading } = useAuth();
-  const { checkoutItem } = useCheckout();
   const {
     searchResults,
     isSearching,
@@ -37,7 +35,6 @@ export default function Navbar() {
     removeRecentSearch
   } = useSearch();
 
-  const hasCheckoutItem = !!checkoutItem;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -174,14 +171,6 @@ export default function Navbar() {
             >
               <Search size={18} strokeWidth={2} />
             </button>
-            <Link href="/checkout" className="hover:scale-110 transition-transform cursor-pointer relative">
-              <ShoppingBag size={18} strokeWidth={2} />
-              {hasCheckoutItem && (
-                <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
-                  1
-                </span>
-              )}
-            </Link>
 
             {loading ? (
               <div className="w-5 h-5 rounded-full border-2 border-black/10 border-t-black animate-spin" />
@@ -246,14 +235,6 @@ export default function Navbar() {
             >
               <Search size={22} strokeWidth={2} />
             </button>
-            <Link href="/checkout" className="relative p-2 text-black" onClick={() => setMobileMenuOpen(false)}>
-              <ShoppingBag size={22} strokeWidth={2} />
-              {hasCheckoutItem && (
-                <span className="absolute top-1 right-1 bg-black text-white text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-full font-bold">
-                  1
-                </span>
-              )}
-            </Link>
             <button
               className="text-black p-2 -mr-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
