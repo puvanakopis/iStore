@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Clock, MapPin } from "lucide-react";
+import { Mail, Clock, MapPin, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ContactFormSection() {
@@ -40,6 +40,32 @@ export default function ContactFormSection() {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <label className="text-xs uppercase tracking-widest text-on-surface-variant">
+                  Phone Number
+                </label>
+                <input
+                  className="w-full bg-transparent border-b border-border py-3 focus:border-black outline-none"
+                  placeholder="+94 7X XXX XXXX"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs uppercase tracking-widest text-on-surface-variant">
+                  Inquiry Type
+                </label>
+                <select
+                  className="w-full bg-transparent border-b border-border py-3 focus:border-black outline-none text-gray-700"
+                >
+                  <option value="sales">Sales & Product Availability</option>
+                  <option value="support">Technical Support & Warranty</option>
+                  <option value="tradein">Trade-In & Upgrade</option>
+                  <option value="corporate">Corporate & Bulk Orders</option>
+                </select>
+              </div>
+            </div>
+
             <div>
               <label className="text-xs uppercase tracking-widest text-on-surface-variant">
                 Message
@@ -71,15 +97,19 @@ export default function ContactFormSection() {
 
           <div className="space-y-10">
             <Info icon={<MapPin />} title="Flagship Showroom" delay={0.4}>
-              767 Fifth Avenue<br />New York, NY 10153
+              Level 3, World Trade Center<br />Colombo 01, Sri Lanka
             </Info>
 
-            <Info icon={<Clock />} title="Experience Hours" delay={0.5}>
-              Mon–Fri: 09:00 - 21:00<br />Sat–Sun: 10:00 - 18:00
+            <Info icon={<Phone />} title="Hotline & WhatsApp" delay={0.45}>
+              +94 11 234 5678 (Landline)<br />+94 77 123 4567 (WhatsApp Support)
+            </Info>
+
+            <Info icon={<Clock />} title="Store Hours" delay={0.5}>
+              Mon–Fri: 09:00 - 20:00<br />Sat–Sun: 10:00 - 18:00
             </Info>
 
             <Info icon={<Mail />} title="Direct Inquiries" delay={0.6}>
-              concierge@aether.tech<br />support@aether.tech
+              info@istore.lk<br />support@istore.lk
             </Info>
           </div>
 

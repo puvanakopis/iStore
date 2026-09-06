@@ -17,15 +17,13 @@ export default function AboutHero() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         >
           <span className="text-[17px] md:text-[21px] font-semibold text-black mb-4 block tracking-tight uppercase">
-            Our Story
+            Our Legacy & Essence
           </span>
           <h1 className="text-[48px] md:text-[80px] font-bold leading-[1.02] tracking-tight mb-8">
             Redefining Premium Retail
           </h1>
           <p className="text-[21px] md:text-[24px] font-light text-foreground-secondary max-w-3xl mx-auto mb-12 tracking-tight leading-relaxed text-pretty">
-            At iStore, we don&apos;t just sell devices. We curate experiences.
-            Since our inception, we have been committed to bringing the best of Apple
-            to your hands with a focus on design, service, and innovation.
+            At iStore, technology is an art form. As Sri Lanka&apos;s premier destination for Apple innovations, we merge cutting-edge engineering with personalized white-glove service to create an unmatched luxury experience.
           </p>
         </motion.div>
       </div>

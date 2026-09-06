@@ -23,9 +23,9 @@ export default function ContactHero() {
             Get in Touch
           </h1>
           <p className="text-[21px] md:text-[24px] font-light text-foreground-secondary max-w-3xl mx-auto mb-12 tracking-tight leading-relaxed text-pretty">
-            Experience iStore&apos;s signature white-glove service. Whether you are inquiring
-            about the latest iPhone or seeking technical support, our team is dedicated
-            to providing an unparalleled standard of care.
+            Experience iStore&apos;s signature service. Whether you are inquiring
+            about the latest Apple products, checking order status, or seeking technical assistance,
+            our dedicated team in Colombo is here to help.
           </p>
         </motion.div>
       </div>
