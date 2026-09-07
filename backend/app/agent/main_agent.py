@@ -16,7 +16,7 @@ WISHLIST_ROUTE_PATTERN = re.compile(
     re.IGNORECASE,
 )
 ORDER_ROUTE_PATTERN = re.compile(
-    r"\b(order|orders|buy|purchase|checkout|track(?:ing)?|cancel(?:led|lation)?)\b",
+    r"\b(order|orders|buy|purchase|checkout|track(?:ing)?|cancel(?:led|lation)?|delivered|shipped|pending|confirmed|processing|history)\b",
     re.IGNORECASE,
 )
 PRODUCT_ROUTE_PATTERN = re.compile(
@@ -163,7 +163,7 @@ Rules:
 3. Route to the **Product Agent** for browsing, searching, or product info when the user is NOT trying to buy.
 4. If the user query is generic (e.g. "Hi", "Who are you?", "Help me"), reply directly to the user in a friendly way, explaining that you can help them browse products, manage their wishlist, checkout products, and track orders.
 5. Maintain a premium, polite, and helpful tone fitting for a premium Apple reseller (iStore).
-6. IMPORTANT: DO NOT include any images, image URLs, or markdown image tags in your response. The chat bot must only display text.
+6. IMPORTANT: DO NOT include any emojis, icons, images, image URLs, or markdown image tags in your response. The chat bot must only display clean text.
 7. When using tools, ensure you only pass the exact required parameters.
 8. CRITICAL: Once a specialist agent tool returns a result, relay that result to the user as your final response immediately. Do NOT call the tool again in a loop.
 9. NEVER tell the user to visit the website or click buttons manually — the agents handle actions via tools.

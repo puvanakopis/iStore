@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from typing import List
+from typing import List, Optional
 
 from app.core.database import get_db
 from app.core.security import get_current_user
@@ -23,18 +23,22 @@ async def create_order(
 
 @router.get("/", response_model=List[OrderOut])
 async def get_orders(
+    status: Optional[str] = None,
+    search_query: Optional[str] = None,
     current_user: dict = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     user_id = str(current_user["id"])
-    return await order_service.get_user_orders(db, user_id)
+    return await order_service.get_user_orders(db, user_id, status=status, search_query=search_query)
 
 
 @router.get("/all", response_model=List[OrderOut], dependencies=[Depends(role_required("admin"))])
 async def get_all_orders(
+    status: Optional[str] = None,
+    search_query: Optional[str] = None,
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    return await order_service.get_all_orders(db)
+    return await order_service.get_all_orders(db, status=status, search_query=search_query)
 
 
 @router.put("/{order_id}/cancel", response_model=OrderOut)

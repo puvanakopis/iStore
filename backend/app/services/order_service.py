@@ -1,3 +1,5 @@
+import re
+from typing import Optional
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from fastapi import HTTPException, status
 from datetime import datetime
@@ -49,8 +51,30 @@ async def create_order(db: AsyncIOMotorDatabase, user_id: str, order_in) -> dict
     return order_data
 
 
-async def get_user_orders(db: AsyncIOMotorDatabase, user_id: str) -> list:
-    cursor = db["orders"].find({"user_id": user_id}).sort("created_at", -1)
+async def get_user_orders(
+    db: AsyncIOMotorDatabase,
+    user_id: str,
+    status: Optional[str] = None,
+    search_query: Optional[str] = None,
+) -> list:
+    query: dict = {"user_id": user_id}
+
+    if status and status.strip():
+        st = status.strip()
+        query["status"] = {"$regex": f"^{re.escape(st)}$", "$options": "i"}
+
+    if search_query and search_query.strip():
+        sq = search_query.strip()
+        query["$or"] = [
+            {"_id": {"$regex": re.escape(sq), "$options": "i"}},
+            {"items.title": {"$regex": re.escape(sq), "$options": "i"}},
+            {"items.color": {"$regex": re.escape(sq), "$options": "i"}},
+            {"items.storage": {"$regex": re.escape(sq), "$options": "i"}},
+            {"promo_code": {"$regex": re.escape(sq), "$options": "i"}},
+            {"payment": {"$regex": re.escape(sq), "$options": "i"}},
+        ]
+
+    cursor = db["orders"].find(query).sort("created_at", -1)
     orders = []
     async for doc in cursor:
         doc["id"] = doc["_id"]
@@ -58,8 +82,29 @@ async def get_user_orders(db: AsyncIOMotorDatabase, user_id: str) -> list:
     return orders
 
 
-async def get_all_orders(db: AsyncIOMotorDatabase) -> list:
-    cursor = db["orders"].find().sort("created_at", -1)
+async def get_all_orders(
+    db: AsyncIOMotorDatabase,
+    status: Optional[str] = None,
+    search_query: Optional[str] = None,
+) -> list:
+    query: dict = {}
+
+    if status and status.strip():
+        st = status.strip()
+        query["status"] = {"$regex": f"^{re.escape(st)}$", "$options": "i"}
+
+    if search_query and search_query.strip():
+        sq = search_query.strip()
+        query["$or"] = [
+            {"_id": {"$regex": re.escape(sq), "$options": "i"}},
+            {"user_id": {"$regex": re.escape(sq), "$options": "i"}},
+            {"customer_details.email": {"$regex": re.escape(sq), "$options": "i"}},
+            {"customer_details.firstName": {"$regex": re.escape(sq), "$options": "i"}},
+            {"customer_details.lastName": {"$regex": re.escape(sq), "$options": "i"}},
+            {"items.title": {"$regex": re.escape(sq), "$options": "i"}},
+        ]
+
+    cursor = db["orders"].find(query).sort("created_at", -1)
     orders = []
     async for doc in cursor:
         doc["id"] = doc["_id"]

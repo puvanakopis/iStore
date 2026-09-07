@@ -1,3 +1,4 @@
+from typing import Optional
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from fastapi import HTTPException
 from datetime import datetime
@@ -31,48 +32,84 @@ async def create_product(db: AsyncIOMotorDatabase, data):
     return product
 
 
-async def get_all_products(db: AsyncIOMotorDatabase, skip: int = 0, limit: int = 100):
-    cursor = db["products"].find().skip(skip).limit(limit)
+async def get_all_products(
+    db: AsyncIOMotorDatabase,
+    category: Optional[str] = None,
+    search_query: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+):
+    query: dict = {}
+
+    if category and category.strip():
+        cat = category.strip()
+        query["category"] = {"$regex": f"^{re.escape(cat)}$", "$options": "i"}
+
+    if search_query and search_query.strip():
+        sq = search_query.strip()
+        regex = re.compile(re.escape(sq), re.IGNORECASE)
+        query["$or"] = [
+            {"title": regex},
+            {"subtitle": regex},
+            {"category": regex},
+            {"tags": regex},
+            {"colors.name": regex},
+            {"storage.size": regex},
+        ]
+
+    cursor = db["products"].find(query).skip(skip).limit(limit)
     products = await cursor.to_list(length=limit)
-    
+
     for p in products:
         p["id"] = str(p["_id"])
         del p["_id"]
-    
+
     return products
 
 
-async def search_products(db: AsyncIOMotorDatabase, query: str, limit: int = 10):
+async def search_products(
+    db: AsyncIOMotorDatabase,
+    query: str,
+    category: Optional[str] = None,
+    limit: int = 10,
+):
     if not query or not query.strip():
         return {"query": query, "results": [], "total": 0}
-    
+
     clean_query = query.strip()
     search_results = []
-    
-    # Try regex search first for instant partial prefix/substring matching
+
     regex = re.compile(re.escape(clean_query), re.IGNORECASE)
+    filter_cond: dict = {
+        "$or": [
+            {"title": regex},
+            {"subtitle": regex},
+            {"category": regex},
+            {"tags": regex},
+            {"colors.name": regex},
+            {"storage.size": regex},
+        ]
+    }
+    if category and category.strip():
+        filter_cond["category"] = {"$regex": f"^{re.escape(category.strip())}$", "$options": "i"}
+
     try:
-        search_results = await db["products"].find({
-            "$or": [
-                {"title": regex},
-                {"subtitle": regex},
-                {"category": regex},
-                {"tags": regex}
-            ]
-        }).limit(limit).to_list(length=limit)
-    except Exception as e:
+        search_results = await db["products"].find(filter_cond).limit(limit).to_list(length=limit)
+    except Exception:
         search_results = []
 
-    # If regex returns no results, try MongoDB text search if text index exists
     if not search_results:
+        text_query: dict = {"$text": {"$search": clean_query}}
+        if category and category.strip():
+            text_query["category"] = {"$regex": f"^{re.escape(category.strip())}$", "$options": "i"}
         try:
             search_results = await db["products"].find(
-                {"$text": {"$search": clean_query}},
+                text_query,
                 {"score": {"$meta": "textScore"}}
             ).sort([("score", {"$meta": "textScore"})]).limit(limit).to_list(length=limit)
         except Exception:
             pass
-    
+
     results = []
     for p in search_results:
         results.append({
@@ -80,10 +117,10 @@ async def search_products(db: AsyncIOMotorDatabase, query: str, limit: int = 10)
             "title": p["title"],
             "subtitle": p.get("subtitle"),
             "price": p["price"],
-            "imageSrc": p["imageSrc"],
+            "imageSrc": p.get("imageSrc", ""),
             "category": p.get("category")
         })
-    
+
     return {
         "query": query,
         "results": results,

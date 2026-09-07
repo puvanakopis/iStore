@@ -8,9 +8,14 @@ def _normalize_price(price: Any) -> str:
     if price is None:
         return "N/A"
     text = str(price).strip()
-    if text.lower().startswith("rs"):
-        return text
-    return f"Rs. {text}"
+    clean = text
+    if clean.lower().startswith("rs"):
+        clean = clean[2:].strip()
+    try:
+        val = float(clean.replace("$", "").replace(",", ""))
+        return f"Rs. {val:,.0f}"
+    except ValueError:
+        return f"Rs. {text}"
 
 
 def _format_product_lines(products: List[Dict[str, Any]], heading: str) -> str:
@@ -126,18 +131,39 @@ async def _fetch_product_by_id(db, product_id: str) -> Optional[Dict[str, Any]]:
 
 
 @tool(return_direct=True)
-async def list_products(skip: int = 0, limit: int = 50) -> str:
-    """List ALL available products in the store.
+async def list_products(
+    category: Optional[str] = None,
+    search_query: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+) -> str:
+    """List available products in the store with optional category or search filters.
 
-    Use when the customer asks what products are available, wants to browse
-    the catalog, or asks to see everything in the store.
-    Returns id, title, price, and category for each product.
+    Parameters:
+    - category: Optional category filter (e.g. 'iPhone', 'Mac', 'iPad', 'Watch', 'AirPods', 'Accessories').
+    - search_query: Optional search keyword to filter by title, storage, color, or tags.
     """
     db = get_db()
     if db is None:
         return "Sorry, the database is not available right now. Please try again later."
 
-    products = await product_service.get_all_products(db, skip, limit)
+    products = await product_service.get_all_products(
+        db, category=category, search_query=search_query, skip=skip, limit=limit
+    )
+
+    filters_desc = []
+    if category and category.strip():
+        filters_desc.append(f"Category: `{category.strip()}`")
+    if search_query and search_query.strip():
+        filters_desc.append(f"Search: `{search_query.strip()}`")
+
+    filter_suffix = f" ({', '.join(filters_desc)})" if filters_desc else ""
+
+    if not products:
+        if filters_desc:
+            return f"No products found in iStore matching your filter criteria{filter_suffix}."
+        return "No products are available in iStore right now."
+
     summaries = [
         {
             "id": p["id"],
@@ -147,27 +173,38 @@ async def list_products(skip: int = 0, limit: int = 50) -> str:
         }
         for p in products
     ]
-    return _format_product_lines(summaries, "Here are all the available products in iStore:")
+    return _format_product_lines(summaries, f"Here are the available products in iStore{filter_suffix}:")
 
 
 @tool(return_direct=True)
-async def search_products(query: str, limit: int = 10) -> str:
-    """Search for products by title, subtitle, category, or tags.
+async def search_products(
+    query: str,
+    category: Optional[str] = None,
+    limit: int = 10,
+) -> str:
+    """Search for products by title, subtitle, category, colors, storage, or tags.
 
-    Use when the customer searches for a specific type of product
-    (e.g. 'iPhone 15 Pro', 'MacBook', 'accessories').
+    Parameters:
+    - query: Search keyword (e.g. 'iPhone 15 Pro', 'MacBook', 'Space Black', '256GB').
+    - category: Optional category filter to restrict search within a specific category.
     """
     db = get_db()
     if db is None:
         return "Sorry, the database is not available right now. Please try again later."
 
-    res = await product_service.search_products(db, query, limit)
+    res = await product_service.search_products(db, query, category=category, limit=limit)
     results = res.get("results", [])
+
+    if not results:
+        cat_str = f" in category '{category}'" if category else ""
+        return f'No products found matching "{query}"{cat_str}.'
+
     summaries = [
         {"id": p["id"], "title": p.get("title"), "price": p.get("price"), "category": p.get("category")}
         for p in results
     ]
-    return _format_product_lines(summaries, f'Results for "{query}":')
+    heading = f'Results for "{query}"' + (f' in `{category}`:' if category else ':')
+    return _format_product_lines(summaries, heading)
 
 
 @tool(return_direct=True)

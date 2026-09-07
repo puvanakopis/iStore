@@ -157,9 +157,14 @@ def _normalize_price_display(price: Any) -> str:
     if price is None:
         return "N/A"
     text = str(price).strip()
-    if text.lower().startswith("rs"):
-        return text
-    return f"Rs. {text}"
+    clean = text
+    if clean.lower().startswith("rs"):
+        clean = clean[2:].strip()
+    try:
+        val = float(clean.replace("$", "").replace(",", ""))
+        return f"Rs. {val:,.0f}"
+    except ValueError:
+        return f"Rs. {text}"
 
 
 def _format_order_success(result: Dict[str, Any]) -> str:
@@ -167,9 +172,9 @@ def _format_order_success(result: Dict[str, Any]) -> str:
     items = order.get("items", [])
     item = items[0] if items else {}
     return (
-        f"Order placed successfully!\n\n"
+        f"**Order Placed Successfully!**\n\n"
         f"- **Order ID:** `{order.get('id', 'N/A')}`\n"
-        f"- **Status:** {order.get('status', 'Pending')}\n"
+        f"- **Status:** `{order.get('status', 'Confirmed')}`\n"
         f"- **Product:** {item.get('title', 'N/A')}\n"
         f"- **Color:** {item.get('color', 'N/A')}\n"
         f"- **Storage:** {item.get('storage', 'N/A')}\n"
@@ -178,7 +183,8 @@ def _format_order_success(result: Dict[str, Any]) -> str:
         f"- **Discount:** {_format_price(order.get('discount', 0))}\n"
         f"- **Shipping:** {_format_price(order.get('shipping', 0))}\n"
         f"- **Tax:** {_format_price(order.get('tax', 0))}\n"
-        f"- **Total:** {_format_price(order.get('total', 0))}"
+        f"- **Total:** **{_format_price(order.get('total', 0))}**\n\n"
+        f"Thank you for shopping with iStore! You can view or track your orders anytime."
     )
 
 
@@ -344,18 +350,75 @@ async def order_product_by_name(
     return _format_order_success(result)
 
 
-@tool
-async def get_my_orders() -> List[Dict[str, Any]]:
-    """Retrieve the order history for the current logged-in user."""
+@tool(return_direct=True)
+async def get_my_orders(
+    status: Optional[str] = None,
+    search_query: Optional[str] = None,
+) -> str:
+    """Retrieve the order history for the current logged-in user with optional filtering parameters.
+
+    Parameters:
+    - status: Optional status filter to get orders matching a status (e.g. 'Delivered', 'Confirmed', 'Processing', 'Shipped', 'Cancelled', 'Pending').
+    - search_query: Optional search query to filter orders by product name/title, order ID, color, or promo code.
+    """
     user_id = get_current_user_id()
     if not user_id:
-        return [{"error": "User not authenticated."}]
+        return "User not authenticated. Please sign in to view your order history."
 
     db = get_db()
     if db is None:
-        return [{"error": "Database connection is not available."}]
-    orders = await order_service.get_user_orders(db, user_id)
-    return sanitize_doc(orders)
+        return "Database connection is not available right now."
+
+    orders = await order_service.get_user_orders(db, user_id, status=status, search_query=search_query)
+
+    filters_desc = []
+    if status and status.strip():
+        filters_desc.append(f"Status: `{status.strip()}`")
+    if search_query and search_query.strip():
+        filters_desc.append(f"Search: `{search_query.strip()}`")
+
+    filter_suffix = f" ({', '.join(filters_desc)})" if filters_desc else ""
+
+    if not orders:
+        if filters_desc:
+            return f"You have no placed orders matching your filter criteria{filter_suffix}."
+        return "You have no placed orders yet in iStore."
+
+    lines = [f"## Your Order History{filter_suffix}", ""]
+    for i, o in enumerate(orders, 1):
+        order_id = str(o.get("_id") or o.get("id"))
+        st = o.get("status", "Pending")
+        payment = o.get("payment", "")
+        total = o.get("total", 0)
+        total_str = f"Rs. {total:,.0f}" if isinstance(total, (int, float)) else str(total)
+        created_at = o.get("created_at") or o.get("createdAt") or ""
+        date_str = f" on {str(created_at)[:10]}" if created_at else ""
+
+        lines.append(f"### Order #{i}: `{order_id}`")
+        lines.append(f"- **Status:** `{st}`")
+        if payment:
+            lines.append(f"- **Payment Status:** `{payment}`")
+        lines.append(f"- **Total Amount:** {total_str}{date_str}")
+        items = o.get("items", [])
+        if items:
+            lines.append("- **Items:**")
+            for item in items:
+                title = item.get("title", "Product")
+                color = item.get("color", "")
+                storage = item.get("storage", "")
+                qty = item.get("quantity", 1)
+                item_price = item.get("price", 0)
+                item_price_str = f"Rs. {item_price:,.0f}" if isinstance(item_price, (int, float)) else str(item_price)
+                details = []
+                if color:
+                    details.append(f"Color: {color}")
+                if storage:
+                    details.append(f"Storage: {storage}")
+                detail_str = f" ({', '.join(details)})" if details else ""
+                lines.append(f"  - **{title}**{detail_str} x{qty} — {item_price_str}")
+        lines.append("")
+
+    return "\n".join(lines)
 
 
 @tool

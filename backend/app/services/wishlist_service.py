@@ -1,9 +1,14 @@
+from typing import Optional
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from datetime import datetime
 from app.schemas.wishlist_schema import WishlistItemCreate
 
 
-async def get_or_create_wishlist(db: AsyncIOMotorDatabase, user_id: str) -> dict:
+async def get_or_create_wishlist(
+    db: AsyncIOMotorDatabase,
+    user_id: str,
+    search_query: Optional[str] = None,
+) -> dict:
     wishlist = await db["wishlists"].find_one({"user_id": user_id})
     if not wishlist:
         wishlist = {
@@ -17,6 +22,16 @@ async def get_or_create_wishlist(db: AsyncIOMotorDatabase, user_id: str) -> dict
     
     # Format _id to string for JSON serialization
     wishlist["id"] = str(wishlist["_id"])
+
+    if search_query and search_query.strip():
+        sq = search_query.strip().lower()
+        items = wishlist.get("items", [])
+        filtered_items = [
+            item for item in items
+            if sq in item.get("title", "").lower() or sq in item.get("product_id", "").lower()
+        ]
+        wishlist["items"] = filtered_items
+
     return wishlist
 
 

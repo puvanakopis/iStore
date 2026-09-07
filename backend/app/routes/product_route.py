@@ -45,11 +45,15 @@ async def create_product(
 
 @router.get("/")
 async def get_products(
+    category: Optional[str] = None,
+    search_query: Optional[str] = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=200),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    return await product_service.get_all_products(db, skip, limit)
+    return await product_service.get_all_products(
+        db, category=category, search_query=search_query, skip=skip, limit=limit
+    )
 
 
 @router.get("/search")
