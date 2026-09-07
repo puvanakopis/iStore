@@ -24,6 +24,7 @@ class ProductReview(BaseModel):
     name: str
     rating: int
     comment: str
+    created_at: Optional[datetime] = None
 
 
 class ProductSpecifications(BaseModel):
@@ -31,7 +32,9 @@ class ProductSpecifications(BaseModel):
     capacity: Optional[str] = None
     display: Optional[str] = None
     chip: Optional[str] = None
-
+    camera: Optional[str] = None
+    battery: Optional[str] = None
+    ram: Optional[str] = None
 
 
 class Product(BaseModel):
@@ -43,6 +46,7 @@ class Product(BaseModel):
 
     imageSrc: str
     imageAlt: Optional[str] = None
+    stock_quantity: Optional[int] = Field(default=10)
 
     colors: List[ProductColor] = Field(default_factory=list)
     storage: List[ProductStorage] = Field(default_factory=list)

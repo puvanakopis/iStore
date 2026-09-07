@@ -19,10 +19,11 @@ export default function ProductsTable({
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProducts = products.filter(product => {
+    const term = searchTerm.toLowerCase();
     const matchesSearch = 
-      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (product.subtitle && product.subtitle.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (product.specifications?.chip && product.specifications.chip.toLowerCase().includes(searchTerm.toLowerCase()));
+      product.title.toLowerCase().includes(term) ||
+      (product.subtitle && product.subtitle.toLowerCase().includes(term)) ||
+      (product.specifications?.chip && product.specifications.chip.toLowerCase().includes(term));
     return matchesSearch;
   });
 
@@ -65,6 +66,9 @@ export default function ProductsTable({
                 Price
               </th>
               <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Stock
+              </th>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Colors
               </th>
               <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -102,25 +106,49 @@ export default function ProductsTable({
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
-                  <div className="space-y-0.5">
+                  <div className="space-y-0.5 text-xs">
                     {product.specifications?.chip && (
-                      <p><span className="font-medium">Chip:</span> {product.specifications.chip}</p>
+                      <p><span className="font-medium text-gray-700">Chip:</span> {product.specifications.chip}</p>
+                    )}
+                    {product.specifications?.ram && (
+                      <p><span className="font-medium text-gray-700">RAM:</span> {product.specifications.ram}</p>
                     )}
                     {product.specifications?.display && (
-                      <p><span className="font-medium">Display:</span> {product.specifications.display}</p>
+                      <p><span className="font-medium text-gray-700">Display:</span> {product.specifications.display}</p>
                     )}
-                    {product.specifications?.capacity && (
-                      <p><span className="font-medium">Cap:</span> {product.specifications.capacity}</p>
+                    {product.specifications?.camera && (
+                      <p><span className="font-medium text-gray-700">Camera:</span> {product.specifications.camera}</p>
                     )}
                   </div>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 whitespace-nowrap">
                   <span className="font-medium text-gray-900">
                     {product.price}
                   </span>
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {product.stock_quantity !== undefined && product.stock_quantity !== null ? (
+                    product.stock_quantity > 5 ? (
+                      <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">
+                        In Stock ({product.stock_quantity})
+                      </span>
+                    ) : product.stock_quantity > 0 ? (
+                      <span className="px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200/80">
+                        Low ({product.stock_quantity})
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-1 bg-rose-50 text-rose-700 text-xs font-semibold rounded-full border border-rose-200/80">
+                        Out of Stock
+                      </span>
+                    )
+                  ) : (
+                    <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200/80">
+                      In Stock (10)
+                    </span>
+                  )}
+                </td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-1.5 flex-wrap max-w-[200px]">
+                  <div className="flex items-center gap-1.5 flex-wrap max-w-[150px]">
                     {product.colors && product.colors.length > 0 ? (
                       product.colors.map((color, idx) => (
                         <div 
@@ -136,7 +164,7 @@ export default function ProductsTable({
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1 max-w-[150px]">
                     {product.storage && product.storage.length > 0 ? (
                       product.storage.map((st, idx) => (
                         <span 

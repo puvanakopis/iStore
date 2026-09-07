@@ -16,7 +16,6 @@ import {
   Camera,
   ShieldCheck,
   ArrowRight,
-  ChevronDown,
   Zap,
 } from "lucide-react";
 
@@ -70,8 +69,6 @@ export default function Hero() {
   const { scrollY } = useScroll();
   const imageY = useTransform(scrollY, [0, 600], [0, 80]);
   const heroScale = useTransform(scrollY, [0, 450], [1, 0.98]);
-  const indicatorOpacity = useTransform(scrollY, [0, 120], [1, 0]);
-  const indicatorY = useTransform(scrollY, [0, 120], [0, 15]);
 
   // 3D Parallax Mouse Physics
   const x = useMotionValue(0);
@@ -98,24 +95,10 @@ export default function Hero() {
     y.set(0);
   }
 
-  function handleScrollDown() {
-    if (sectionRef.current) {
-      const nextSection = sectionRef.current.nextElementSibling;
-      if (nextSection) {
-        nextSection.scrollIntoView({ behavior: "smooth" });
-      } else {
-        window.scrollTo({
-          top: sectionRef.current.offsetHeight,
-          behavior: "smooth",
-        });
-      }
-    }
-  }
-
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-[92vh] md:min-h-screen w-full bg-white overflow-hidden flex flex-col items-center justify-between pt-20 md:pt-28 pb-12 px-4 sm:px-6 md:px-12"
+      className="relative min-h-[92vh] md:min-h-screen w-full bg-white overflow-hidden flex flex-col items-center justify-center pt-20 md:pt-28 pb-24 sm:pb-28 md:pb-36 lg:pb-40 px-4 sm:px-6 md:px-12"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -132,7 +115,7 @@ export default function Hero() {
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] sm:w-[900px] md:w-[1100px] h-[500px] sm:h-[650px] rounded-full blur-[140px] transition-colors duration-1000"
+          className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] sm:w-[900px] md:w-[1100px] h-[500px] sm:h-[650px] rounded-full transition-colors duration-1000"
           style={{
             background: `radial-gradient(circle, ${selectedFinish.bgGlow} 0%, rgba(255,255,255,0) 70%)`,
           }}
@@ -162,11 +145,7 @@ export default function Hero() {
 
           {/* Subtitle with Gradient Accent */}
           <p className="text-[18px] sm:text-[22px] md:text-[24px] font-light text-foreground-secondary max-w-2xl mx-auto mb-8 tracking-tight leading-relaxed">
-            Built for{" "}
-            <span className="font-semibold bg-gradient-to-r from-black via-zinc-700 to-black bg-clip-text text-transparent underline decoration-black/15 underline-offset-4">
-              Apple Intelligence
-            </span>
-            . Crafted in Grade 5 titanium.
+            Built for <span className="font-semibold">Apple Intelligence</span>. Crafted in Grade 5 titanium.
           </p>
 
           {/* Action Buttons */}
@@ -200,7 +179,7 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="flex flex-col items-center gap-3 mb-8"
           >
-            <div className="flex items-center gap-3 p-1.5 rounded-full bg-black/[0.04] border border-black/[0.08] backdrop-blur-md">
+            <div className="flex items-center gap-3 p-1.5 rounded-full bg-black/[0.04] border border-black/[0.08]">
               {FINISHES.map((finish) => {
                 const isSelected = selectedFinish.id === finish.id;
                 return (
@@ -257,7 +236,7 @@ export default function Hero() {
               style={{ x: parallaxX, y: parallaxY }}
               animate={{ y: [-5, 5, -5] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-12 left-4 lg:left-0 pointer-events-auto bg-white/85 backdrop-blur-xl border border-black/10 px-4 py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group"
+              className="absolute top-12 left-4 lg:left-0 pointer-events-auto bg-white border border-black/10 px-4 py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-black group-hover:bg-black group-hover:text-white transition-colors duration-300">
@@ -275,7 +254,7 @@ export default function Hero() {
               style={{ x: parallaxX, y: parallaxY }}
               animate={{ y: [6, -6, 6] }}
               transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-              className="absolute top-16 right-4 lg:right-0 pointer-events-auto bg-white/85 backdrop-blur-xl border border-black/10 px-4 py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group"
+              className="absolute top-16 right-4 lg:right-0 pointer-events-auto bg-white border border-black/10 px-4 py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-black group-hover:bg-black group-hover:text-white transition-colors duration-300">
@@ -293,7 +272,7 @@ export default function Hero() {
               style={{ x: parallaxX, y: parallaxY }}
               animate={{ y: [5, -5, 5] }}
               transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute bottom-16 left-6 lg:left-4 pointer-events-auto bg-white/85 backdrop-blur-xl border border-black/10 px-4 py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group"
+              className="absolute bottom-16 left-6 lg:left-4 pointer-events-auto bg-white border border-black/10 px-4 py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-black group-hover:bg-black group-hover:text-white transition-colors duration-300">
@@ -311,7 +290,7 @@ export default function Hero() {
               style={{ x: parallaxX, y: parallaxY }}
               animate={{ y: [-6, 6, -6] }}
               transition={{ duration: 7.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-              className="absolute bottom-20 right-6 lg:right-4 pointer-events-auto bg-white/85 backdrop-blur-xl border border-black/10 px-4 py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group"
+              className="absolute bottom-20 right-6 lg:right-4 pointer-events-auto bg-white border border-black/10 px-4 py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-black group-hover:bg-black group-hover:text-white transition-colors duration-300">
@@ -335,8 +314,13 @@ export default function Hero() {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="relative w-full h-full flex items-center justify-center"
             >
-              {/* Ground Shadow */}
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[65%] h-[24px] bg-black/15 rounded-[100%] blur-xl pointer-events-none" />
+              {/* Multi-layered Realistic Ground Shadow */}
+              <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 w-[65%] max-w-[480px] pointer-events-none flex items-center justify-center z-0">
+                {/* Soft wide diffuse shadow */}
+                <div className="w-full h-[20px] sm:h-[24px] bg-black/20 rounded-[100%] blur-lg transition-all duration-500" />
+                {/* Focused inner ground contact shadow */}
+                <div className="absolute w-[45%] h-[10px] sm:h-[12px] bg-black/35 rounded-[100%] blur-md transition-all duration-500" />
+              </div>
 
               <Image
                 src={selectedFinish.image}
@@ -350,40 +334,7 @@ export default function Hero() {
           </AnimatePresence>
         </motion.div>
       </motion.div>
-
-      {/* Scroll Indicator */}
-      <motion.button
-        type="button"
-        aria-label="Scroll down to explore featured products"
-        style={{ opacity: indicatorOpacity, y: indicatorY }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2, duration: 1 }}
-        onClick={handleScrollDown}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="relative z-20 flex flex-col items-center gap-2 mt-6 text-black/50 hover:text-black transition-colors cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30 rounded-full p-2"
-      >
-        <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-black/60 group-hover:text-black transition-colors">
-          Scroll to explore
-        </span>
-
-        <div className="flex flex-col items-center gap-1">
-          <div className="w-5 h-8 rounded-full border-[1.5px] border-black/30 group-hover:border-black/70 p-1 flex justify-center backdrop-blur-sm transition-colors duration-300 shadow-sm bg-white/40">
-            <motion.div
-              animate={{ y: [0, 10, 0], opacity: [1, 0.3, 1] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-              className="w-1 h-2 bg-black/70 group-hover:bg-black rounded-full"
-            />
-          </div>
-          <motion.div
-            animate={{ y: [0, 4, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <ChevronDown className="w-4 h-4 text-black/40 group-hover:text-black transition-colors" />
-          </motion.div>
-        </div>
-      </motion.button>
     </section>
   );
 }
+

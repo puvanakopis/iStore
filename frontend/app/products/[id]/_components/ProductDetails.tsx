@@ -17,6 +17,7 @@ interface Product {
     tagline: string;
     price: string;
     imageSrc?: string;
+    stockQuantity?: number;
     rating?: number;
     reviewCount?: number;
     colors: Array<{ name: string; value: string; images?: string[] }>;
@@ -123,8 +124,20 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
                 transition={{ duration: 0.8 }}
                 className="space-y-4"
             >
-                <div className="flex items-center justify-between">
-                    <span className="bg-primary text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-tighter">New Arrival</span>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                        {product.stockQuantity !== undefined && (
+                            product.stockQuantity > 0 ? (
+                                <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-200">
+                                    {product.stockQuantity <= 5 ? `Only ${product.stockQuantity} Left` : 'In Stock'}
+                                </span>
+                            ) : (
+                                <span className="bg-rose-50 text-rose-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-rose-200">
+                                    Out of Stock
+                                </span>
+                            )
+                        )}
+                    </div>
                     <button 
                         onClick={() => setIsShareModalOpen(true)}
                         title="Share Product"

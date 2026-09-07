@@ -34,6 +34,7 @@ class ProductSpecifications(BaseModel):
     chip: Optional[str] = None
     camera: Optional[str] = None
     battery: Optional[str] = None
+    ram: Optional[str] = None
 
 
 class ProductCreate(BaseModel):
@@ -42,8 +43,7 @@ class ProductCreate(BaseModel):
     price: str
     imageSrc: str
     imageAlt: Optional[str] = None
-    category: Optional[str] = None
-    tags: Optional[List[str]] = None
+    stock_quantity: Optional[int] = 10
 
     colors: Optional[List[ProductColor]] = None
     storage: Optional[List[ProductStorage]] = None
@@ -58,8 +58,7 @@ class ProductUpdate(BaseModel):
     price: Optional[str] = None
     imageSrc: Optional[str] = None
     imageAlt: Optional[str] = None
-    category: Optional[str] = None
-    tags: Optional[List[str]] = None
+    stock_quantity: Optional[int] = None
 
     colors: Optional[List[ProductColor]] = None
     storage: Optional[List[ProductStorage]] = None
@@ -71,18 +70,17 @@ class ProductUpdate(BaseModel):
 class ProductOut(BaseModel):
     id: str
     title: str
-    subtitle: Optional[str]
+    subtitle: Optional[str] = None
     price: str
     imageSrc: str
-    imageAlt: Optional[str]
-    category: Optional[str]
-    tags: Optional[List[str]]
+    imageAlt: Optional[str] = None
+    stock_quantity: Optional[int] = None
 
-    colors: List[ProductColor]
-    storage: List[ProductStorage]
-    features: List[ProductFeature]
-    specifications: Optional[ProductSpecifications]
-    reviews: List[ProductReview]
+    colors: List[ProductColor] = Field(default_factory=list)
+    storage: List[ProductStorage] = Field(default_factory=list)
+    features: List[ProductFeature] = Field(default_factory=list)
+    specifications: Optional[ProductSpecifications] = None
+    reviews: List[ProductReview] = Field(default_factory=list)
 
     created_at: datetime
     updated_at: datetime
@@ -94,7 +92,6 @@ class SearchResult(BaseModel):
     subtitle: Optional[str]
     price: str
     imageSrc: str
-    category: Optional[str]
     relevance_score: Optional[float] = None
 
 

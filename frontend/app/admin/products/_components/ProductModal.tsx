@@ -26,11 +26,15 @@ export default function ProductModal({
     price: "",
     imageSrc: "",
     imageAlt: "",
+    stock_quantity: 10,
     specifications: {
       finish: "",
       capacity: "",
       display: "",
       chip: "",
+      camera: "",
+      battery: "",
+      ram: "",
     },
     colors: [] as ProductColor[],
     storage: [] as ProductStorage[],
@@ -38,7 +42,6 @@ export default function ProductModal({
     reviews: [] as any[],
   });
 
-  // Temporary States for adding list items
   // Temporary States for adding list items
   const [newColor, setNewColor] = useState<{ name: string; hex: string; images: string[] }>({ name: "", hex: "#000000", images: [] });
   const [newStorage, setNewStorage] = useState({ size: "", price: "" });
@@ -103,16 +106,20 @@ export default function ProductModal({
   useEffect(() => {
     if (product) {
       setFormData({
-        title: product.title,
+        title: product.title || "",
         subtitle: product.subtitle || "",
-        price: product.price,
-        imageSrc: product.imageSrc,
+        price: product.price || "",
+        imageSrc: product.imageSrc || "",
         imageAlt: product.imageAlt || "",
+        stock_quantity: product.stock_quantity ?? 10,
         specifications: {
           finish: product.specifications?.finish || "",
           capacity: product.specifications?.capacity || "",
           display: product.specifications?.display || "",
           chip: product.specifications?.chip || "",
+          camera: product.specifications?.camera || "",
+          battery: product.specifications?.battery || "",
+          ram: product.specifications?.ram || "",
         },
         colors: product.colors || [],
         storage: product.storage || [],
@@ -126,11 +133,15 @@ export default function ProductModal({
         price: "",
         imageSrc: "",
         imageAlt: "",
+        stock_quantity: 10,
         specifications: {
           finish: "",
           capacity: "",
           display: "",
           chip: "",
+          camera: "",
+          battery: "",
+          ram: "",
         },
         colors: [],
         storage: [],
@@ -352,6 +363,23 @@ export default function ProductModal({
                       />
                     </div>
 
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Stock Quantity *
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        required
+                        value={formData.stock_quantity}
+                        onChange={(e) =>
+                          setFormData({ ...formData, stock_quantity: parseInt(e.target.value) || 0 })
+                        }
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                        placeholder="e.g., 10"
+                      />
+                    </div>
+
                     <div className="sm:col-span-2">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Product Image *
@@ -433,7 +461,7 @@ export default function ProductModal({
                 {/* 2. Technical Specifications */}
                 <div>
                   <h3 className="text-lg font-bold text-gray-950 mb-4 pb-2 border-b border-gray-100">
-                    2. Specifications
+                    2. Technical Specifications
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
@@ -505,6 +533,60 @@ export default function ProductModal({
                         }
                         className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
                         placeholder="e.g., A17 Pro chip"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Camera System
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.specifications.camera}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            specifications: { ...formData.specifications, camera: e.target.value },
+                          })
+                        }
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                        placeholder="e.g., 48MP Main, 12MP Ultra Wide"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Battery
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.specifications.battery}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            specifications: { ...formData.specifications, battery: e.target.value },
+                          })
+                        }
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                        placeholder="e.g., Up to 29 hours video playback"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        RAM / Memory
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.specifications.ram}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            specifications: { ...formData.specifications, ram: e.target.value },
+                          })
+                        }
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                        placeholder="e.g., 8GB"
                       />
                     </div>
                   </div>

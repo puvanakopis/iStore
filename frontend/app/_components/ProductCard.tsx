@@ -63,12 +63,7 @@ export default function ProductCard({
       : ["/iPhone_01.png"];
 
   const displayImage = imageSrc || currentImages[0];
-
-  const selectColor = (e: React.MouseEvent, index: number) => {
-    e.stopPropagation();
-    setSelectedColorIndex(index);
-  };
-
+  
   const handleWishlistClick = async () => {
     if (!user) {
       router.push("/signin");
@@ -224,16 +219,11 @@ export default function ProductCard({
               <span className="text-[10px] text-foreground-muted font-bold uppercase tracking-wider">
                 Colors
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-4">
                 {colors.map((color, index) => (
                   <button
                     key={color.name}
-                    onClick={(e) => selectColor(e, index)}
-                    className={`w-3.5 h-3.5 rounded-full transition-all duration-300 ${
-                      selectedColorIndex === index
-                        ? "ring-2 ring-offset-2 ring-black scale-110"
-                        : "ring-1 ring-gray-200 hover:scale-110"
-                    }`}
+                    className="w-3.5 h-3.5 rounded-full transition-all duration-300 ring-2 ring-offset-2 ring-black ring-gray-200"
                     style={{ backgroundColor: color.hex }}
                     title={color.name}
                   />

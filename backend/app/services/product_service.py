@@ -34,16 +34,11 @@ async def create_product(db: AsyncIOMotorDatabase, data):
 
 async def get_all_products(
     db: AsyncIOMotorDatabase,
-    category: Optional[str] = None,
     search_query: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
 ):
     query: dict = {}
-
-    if category and category.strip():
-        cat = category.strip()
-        query["category"] = {"$regex": f"^{re.escape(cat)}$", "$options": "i"}
 
     if search_query and search_query.strip():
         sq = search_query.strip()
@@ -51,8 +46,6 @@ async def get_all_products(
         query["$or"] = [
             {"title": regex},
             {"subtitle": regex},
-            {"category": regex},
-            {"tags": regex},
             {"colors.name": regex},
             {"storage.size": regex},
         ]
@@ -70,7 +63,6 @@ async def get_all_products(
 async def search_products(
     db: AsyncIOMotorDatabase,
     query: str,
-    category: Optional[str] = None,
     limit: int = 10,
 ):
     if not query or not query.strip():
@@ -84,14 +76,10 @@ async def search_products(
         "$or": [
             {"title": regex},
             {"subtitle": regex},
-            {"category": regex},
-            {"tags": regex},
             {"colors.name": regex},
             {"storage.size": regex},
         ]
     }
-    if category and category.strip():
-        filter_cond["category"] = {"$regex": f"^{re.escape(category.strip())}$", "$options": "i"}
 
     try:
         search_results = await db["products"].find(filter_cond).limit(limit).to_list(length=limit)
@@ -100,8 +88,6 @@ async def search_products(
 
     if not search_results:
         text_query: dict = {"$text": {"$search": clean_query}}
-        if category and category.strip():
-            text_query["category"] = {"$regex": f"^{re.escape(category.strip())}$", "$options": "i"}
         try:
             search_results = await db["products"].find(
                 text_query,
@@ -118,7 +104,6 @@ async def search_products(
             "subtitle": p.get("subtitle"),
             "price": p["price"],
             "imageSrc": p.get("imageSrc", ""),
-            "category": p.get("category")
         })
 
     return {
@@ -133,25 +118,8 @@ async def get_recommendations(db: AsyncIOMotorDatabase, product_id: str, limit: 
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    query_conditions = []
-    
-    if product.get("category"):
-        query_conditions.append({"category": product["category"]})
-    
-    if product.get("tags"):
-        for tag in product["tags"]:
-            query_conditions.append({"tags": tag})
-    
-    if not query_conditions:
-        pipeline = [{"$sample": {"size": limit}}]
-        recommendations = await db["products"].aggregate(pipeline).to_list(length=limit)
-    else:
-        recommendations = await db["products"].find({
-            "$and": [
-                {"_id": {"$ne": product_id}},
-                {"$or": query_conditions}
-            ]
-        }).limit(limit).to_list(length=limit)
+    pipeline = [{"$match": {"_id": {"$ne": product_id}}}, {"$sample": {"size": limit}}]
+    recommendations = await db["products"].aggregate(pipeline).to_list(length=limit)
     
     for r in recommendations:
         r["id"] = str(r["_id"])

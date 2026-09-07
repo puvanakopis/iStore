@@ -39,8 +39,7 @@ function ShopContent() {
       result = result.filter(
         (p) =>
           p.title?.toLowerCase().includes(q) ||
-          p.subtitle?.toLowerCase().includes(q) ||
-          p.category?.toLowerCase().includes(q)
+          p.subtitle?.toLowerCase().includes(q)
       );
     }
 

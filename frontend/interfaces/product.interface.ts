@@ -29,6 +29,7 @@ export interface ProductSpecifications {
   chip?: string;
   camera?: string;
   battery?: string;
+  ram?: string;
 }
 
 export interface Product {
@@ -38,8 +39,7 @@ export interface Product {
   price: string;
   imageSrc: string;
   imageAlt?: string;
-  category?: string;
-  tags?: string[];
+  stock_quantity?: number;
   colors: ProductColor[];
   storage: ProductStorage[];
   features: ProductFeature[];
@@ -56,7 +56,6 @@ export interface SearchResult {
   subtitle?: string;
   price: string;
   imageSrc: string;
-  category?: string;
 }
 
 export interface SearchResponse {
@@ -71,8 +70,7 @@ export interface ProductCreate {
   price: string;
   imageSrc: string;
   imageAlt?: string;
-  category?: string;
-  tags?: string[];
+  stock_quantity?: number;
   colors?: ProductColor[];
   storage?: ProductStorage[];
   features?: ProductFeature[];
@@ -86,8 +84,7 @@ export interface ProductUpdate {
   price?: string;
   imageSrc?: string;
   imageAlt?: string;
-  category?: string;
-  tags?: string[];
+  stock_quantity?: number;
   colors?: ProductColor[];
   storage?: ProductStorage[];
   features?: ProductFeature[];

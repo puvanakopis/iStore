@@ -10,6 +10,8 @@ interface Product {
   price: string;
   imageSrc: string;
   imageAlt?: string;
+  stockQuantity?: number;
+  stock_quantity?: number;
   rating?: number;
   reviewCount?: number;
   isNew?: boolean;
@@ -57,6 +59,7 @@ export default function ProductGrid({ products }: ProductGridProps) {
               price={product.price}
               imageSrc={product.imageSrc}
               imageAlt={product.imageAlt}
+              stockQuantity={product.stockQuantity ?? product.stock_quantity}
               rating={product.rating}
               reviewCount={product.reviewCount}
               isNew={product.isNew}

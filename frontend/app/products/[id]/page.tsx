@@ -21,12 +21,39 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             const data = await getProduct(id);
             if (data) {
                 // Map the data based on product_model.py schema
+                const specItems: Array<{ label: string; value: string }> = [];
+                if (data.specifications?.finish || (data.colors && data.colors.length > 0)) {
+                    specItems.push({ label: 'Finish', value: data.specifications?.finish || data.colors?.map((c: any) => c.name).join(', ') || 'N/A' });
+                }
+                if (data.specifications?.capacity || (data.storage && data.storage.length > 0)) {
+                    specItems.push({ label: 'Capacity', value: data.specifications?.capacity || data.storage?.map((s: any) => s.size).join(', ') || 'N/A' });
+                }
+                if (data.specifications?.display) {
+                    specItems.push({ label: 'Display', value: data.specifications.display });
+                }
+                if (data.specifications?.chip) {
+                    specItems.push({ label: 'Chip', value: data.specifications.chip });
+                }
+                if (data.specifications?.camera) {
+                    specItems.push({ label: 'Camera System', value: data.specifications.camera });
+                }
+                if (data.specifications?.battery) {
+                    specItems.push({ label: 'Battery', value: data.specifications.battery });
+                }
+                if (data.specifications?.ram) {
+                    specItems.push({ label: 'RAM', value: data.specifications.ram });
+                }
+                if (specItems.length === 0) {
+                    specItems.push({ label: 'Specs', value: 'Standard Specifications' });
+                }
+
                 const mappedProduct = {
                     id: data.id,
                     name: data.title,
                     tagline: data.subtitle || 'Experience the future of technology with premium features.',
                     price: data.price,
                     imageSrc: data.imageSrc,
+                    stockQuantity: data.stock_quantity ?? 10,
                     rating: 4.8,
                     reviewCount: data.reviews?.length || 120,
                     colors: data.colors && data.colors.length > 0
@@ -45,12 +72,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                             { icon: 'photo_camera', title: 'Advanced Camera', description: 'Professional grade capture lenses that bring scenes to life.' },
                             { icon: 'bolt', title: 'Efficiency', description: 'Long lasting utility with optimized power management.' },
                         ],
-                    specifications: [
-                        { label: 'Finish', value: data.specifications?.finish || data.colors?.map(c => c.name).join(', ') || 'N/A' },
-                        { label: 'Capacity', value: data.specifications?.capacity || data.storage?.map(s => s.size).join(', ') || 'N/A' },
-                        { label: 'Display', value: data.specifications?.display || 'N/A' },
-                        { label: 'Chip', value: data.specifications?.chip || 'N/A' },
-                    ],
+                    specifications: specItems,
                     reviews: data.reviews && data.reviews.length > 0
                         ? data.reviews.map(r => ({ rating: r.rating, text: r.comment, author: r.name }))
                         : [

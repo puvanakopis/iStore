@@ -17,6 +17,7 @@ interface ShopProductCardProps {
   price: string;
   imageSrc: string;
   imageAlt?: string;
+  stockQuantity?: number;
   rating?: number;
   reviewCount?: number;
   isNew?: boolean;
@@ -30,6 +31,7 @@ export default function ShopProductCard({
   price,
   imageSrc,
   imageAlt,
+  stockQuantity,
   rating = 4.5,
   reviewCount = 120,
   isNew = false,
@@ -162,9 +164,18 @@ export default function ShopProductCard({
           </h3>
         </Link>
 
-        <p className="text-foreground-secondary text-sm mb-5 font-light tracking-tight">
-          Apple Intelligence
-        </p>
+        <div className="flex items-center gap-2 mb-5">
+          {stockQuantity !== undefined && stockQuantity <= 5 && stockQuantity > 0 && (
+            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
+              Only {stockQuantity} left
+            </span>
+          )}
+          {stockQuantity === 0 && (
+            <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded">
+              Out of stock
+            </span>
+          )}
+        </div>
 
         <div className="flex items-center justify-between mt-auto">
           <div className="flex flex-col">

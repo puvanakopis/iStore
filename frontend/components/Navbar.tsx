@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
 import { useSearch } from "../contexts/SearchContext";
+import { useWishlist } from "../contexts/WishlistContext";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -24,6 +25,7 @@ const userLinks = [
 
 export default function Navbar() {
   const { user, logout, loading } = useAuth();
+  const { wishlistItems } = useWishlist();
   const {
     searchResults,
     isSearching,
@@ -164,13 +166,27 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Icons */}
-          <div className="hidden md:flex items-center gap-8 text-black">
+          <div className="hidden md:flex items-center gap-6 text-black">
             <button
               onClick={() => setSearchOpen(true)}
               className="hover:scale-110 transition-transform cursor-pointer"
+              title="Search"
             >
               <Search size={18} strokeWidth={2} />
             </button>
+
+            <Link
+              href="/wishlist"
+              className="relative hover:scale-110 transition-transform cursor-pointer flex items-center justify-center p-1"
+              title="Wishlist"
+            >
+              <Heart size={18} strokeWidth={2} />
+              {wishlistItems.length > 0 && (
+                <span className="absolute -top-1 -right-2 bg-black text-white text-[10px] font-bold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center border border-white">
+                  {wishlistItems.length > 99 ? "99+" : wishlistItems.length}
+                </span>
+              )}
+            </Link>
 
             {loading ? (
               <div className="w-5 h-5 rounded-full border-2 border-black/10 border-t-black animate-spin" />
@@ -202,6 +218,11 @@ export default function Navbar() {
                             <link.icon size={14} strokeWidth={2} />
                           </div>
                           <span className="text-black/70 group-hover:text-black transition-colors">{link.label}</span>
+                          {link.href === "/wishlist" && wishlistItems.length > 0 && (
+                            <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full bg-black/5 text-black/70 group-hover:bg-black group-hover:text-white transition-colors">
+                              {wishlistItems.length}
+                            </span>
+                          )}
                         </Link>
                       ))}
                       <div className="border-t border-black/5 mt-2 pt-2 px-2">
@@ -228,16 +249,30 @@ export default function Navbar() {
           </div>
 
           {/* Mobile View Icons & Button */}
-          <div className="flex md:hidden items-center gap-4">
+          <div className="flex md:hidden items-center gap-3">
             <button
               onClick={() => setSearchOpen(true)}
               className="p-2 text-black"
+              title="Search"
             >
               <Search size={22} strokeWidth={2} />
             </button>
+            <Link
+              href="/wishlist"
+              className="relative p-2 text-black flex items-center justify-center"
+              title="Wishlist"
+            >
+              <Heart size={22} strokeWidth={2} />
+              {wishlistItems.length > 0 && (
+                <span className="absolute top-0 right-0 bg-black text-white text-[9px] font-bold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center border border-white">
+                  {wishlistItems.length > 99 ? "99+" : wishlistItems.length}
+                </span>
+              )}
+            </Link>
             <button
               className="text-black p-2 -mr-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              title="Menu"
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -302,7 +337,14 @@ export default function Navbar() {
                           </div>
                           <span className="text-[18px] font-semibold tracking-tight">{link.label}</span>
                         </div>
-                        <ChevronRight size={18} className="text-foreground-muted" />
+                        <div className="flex items-center gap-2">
+                          {link.href === "/wishlist" && wishlistItems.length > 0 && (
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-black text-white">
+                              {wishlistItems.length}
+                            </span>
+                          )}
+                          <ChevronRight size={18} className="text-foreground-muted" />
+                        </div>
                       </Link>
                     </motion.div>
                   ))}
@@ -482,12 +524,12 @@ export default function Navbar() {
                           className="w-full text-left p-4 rounded-xl hover:bg-black/5 transition-colors flex items-center justify-between group"
                         >
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-black/5 rounded-lg overflow-hidden">
+                            <div className="w-12 h-12 bg-black/5 rounded-lg overflow-hidden flex-shrink-0">
                               <img src={result.imageSrc} alt={result.title} className="w-full h-full object-cover" />
                             </div>
                             <div>
                               <p className="font-medium">{result.title}</p>
-                              <p className="text-sm text-black/40">{result.subtitle || result.category}</p>
+                              {result.subtitle && <p className="text-sm text-black/40">{result.subtitle}</p>}
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
