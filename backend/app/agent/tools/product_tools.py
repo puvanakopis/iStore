@@ -91,7 +91,12 @@ def _format_product_details(product: Dict[str, Any]) -> str:
         lines.append("**Specifications:**")
         for key, value in specifications.items():
             label = key.replace("_", " ").title()
-            lines.append(f"- **{label}:** {value}")
+            if isinstance(value, dict):
+                sub_items = [f"{k.replace('_', ' ').title()}: {v}" for k, v in value.items() if v]
+                if sub_items:
+                    lines.append(f"- **{label}:** {', '.join(sub_items)}")
+            elif value:
+                lines.append(f"- **{label}:** {value}")
         lines.append("")
 
     reviews = product.get("reviews", [])
@@ -230,3 +235,103 @@ async def get_trending_products(limit: int = 5) -> str:
     products = await product_service.get_trending_products(db, limit)
     summaries = [{"id": p["id"], "title": p.get("title"), "price": p.get("price")} for p in products]
     return _format_product_lines(summaries, "Here are the trending products in iStore:")
+
+
+@tool(return_direct=True)
+async def compare_products(product_names_or_ids: List[str]) -> str:
+    """Compare 2 to 4 products side-by-side by their names or IDs.
+
+    Use when the customer asks to compare devices (e.g., 'Compare iPhone 16 and iPhone 16 Pro').
+    Returns a markdown table comparing price, display, processor, camera, battery, and storage.
+    """
+    db = get_db()
+    if db is None:
+        return "Sorry, the database is currently unavailable. Please try again later."
+
+    found_products = []
+    for query in product_names_or_ids[:4]:
+        q = query.strip()
+        # Try finding by ID
+        prod = await _fetch_product_by_id(db, q)
+        if not prod:
+            # Try searching by name
+            res = await product_service.search_products(db, q, limit=1)
+            results = res.get("results", [])
+            if results:
+                prod = await _fetch_product_by_id(db, results[0]["id"])
+        if prod and prod not in found_products:
+            found_products.append(prod)
+
+    if len(found_products) < 2:
+        return f"Could not find at least 2 matching products to compare from {product_names_or_ids}. Please verify the model names."
+
+    lines = ["## Product Comparison Matrix", ""]
+
+    # Build markdown table header
+    headers = ["Feature"] + [p.get("title", "Product") for p in found_products]
+    lines.append("| " + " | ".join(headers) + " |")
+    lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
+
+    # Starting Price
+    prices = [_normalize_price(p.get("price")) for p in found_products]
+    lines.append("| **Starting Price** | " + " | ".join(prices) + " |")
+
+    # Chip / Processor
+    chips = [
+        p.get("specifications", {}).get("platform", {}).get("chip")
+        or p.get("specifications", {}).get("chip")
+        or "Apple Silicon"
+        for p in found_products
+    ]
+    lines.append("| **Processor** | " + " | ".join(chips) + " |")
+
+    # Display Size
+    displays = []
+    for p in found_products:
+        d = p.get("specifications", {}).get("display")
+        if isinstance(d, dict):
+            displays.append(d.get("size") or d.get("type") or "Super Retina XDR")
+        elif isinstance(d, str):
+            displays.append(d)
+        else:
+            displays.append("Super Retina XDR OLED")
+    lines.append("| **Display** | " + " | ".join(displays) + " |")
+
+    # Camera System
+    cameras = []
+    for p in found_products:
+        c = p.get("specifications", {}).get("main_camera") or p.get("specifications", {}).get("mainCamera")
+        if isinstance(c, dict):
+            cameras.append(c.get("megapixels") or c.get("type") or "Advanced Camera")
+        elif isinstance(c, str):
+            cameras.append(c)
+        else:
+            cameras.append(p.get("specifications", {}).get("camera") or "Advanced Dual/Triple Camera")
+    lines.append("| **Main Camera** | " + " | ".join(cameras) + " |")
+
+    # Battery / Charging
+    batteries = []
+    for p in found_products:
+        b = p.get("specifications", {}).get("battery")
+        if isinstance(b, dict):
+            batteries.append(b.get("type") or b.get("charging") or "Fast Charge Capable")
+        elif isinstance(b, str):
+            batteries.append(b)
+        else:
+            batteries.append("All-day battery life")
+    lines.append("| **Battery** | " + " | ".join(batteries) + " |")
+
+    # Storage Options
+    storages = []
+    for p in found_products:
+        st = p.get("storage", [])
+        if st:
+            storages.append(", ".join([s.get("size", "") for s in st if s.get("size")]))
+        else:
+            storages.append("128GB, 256GB, 512GB")
+    lines.append("| **Storage Options** | " + " | ".join(storages) + " |")
+
+    lines.append("")
+    lines.append("You can also view the full interactive comparison on our [/compare](/compare) page!")
+    return "\n".join(lines)
+

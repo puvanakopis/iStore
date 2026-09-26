@@ -2,16 +2,18 @@
 
 import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, ShoppingBag, Menu, X, User, Heart, Settings, ChevronRight, TrendingUp, Clock, XCircle, Loader2 } from "lucide-react";
+import { Search, ShoppingBag, Menu, X, User, Heart, Settings, ChevronRight, TrendingUp, Clock, XCircle, Loader2, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
 import { useCheckout } from "../contexts/CheckoutContext";
 import { useSearch } from "../contexts/SearchContext";
+import { useCompare } from "../contexts/CompareContext";
 
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Shop", href: "/shop" },
+  { name: "Compare", href: "/compare" },
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
 ];
@@ -20,12 +22,14 @@ const userLinks = [
   { icon: User, label: "Personal Info", href: "/profile" },
   { icon: ShoppingBag, label: "Order History", href: "/orders" },
   { icon: Heart, label: "My Wishlist", href: "/wishlist" },
+  { icon: Layers, label: "Compare Models", href: "/compare" },
   { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
 export default function Navbar() {
   const { user, logout, loading } = useAuth();
   const { checkoutItem } = useCheckout();
+  const { compareList } = useCompare();
   const {
     searchResults,
     isSearching,
@@ -143,12 +147,17 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`text-[13px] font-medium tracking-tight transition-all duration-300 relative py-1 px-1 group ${isActive
+                  className={`text-[13px] font-medium tracking-tight transition-all duration-300 relative py-1 px-1 flex items-center gap-1.5 group ${isActive
                     ? "text-black"
                     : "text-foreground-muted hover:text-black"
                     }`}
                 >
-                  {link.name}
+                  <span>{link.name}</span>
+                  {link.href === "/compare" && compareList.length > 0 && (
+                    <span className="bg-black text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
+                      {compareList.length}
+                    </span>
+                  )}
                   <span className={`absolute bottom-0 left-0 w-full h-[1.5px] bg-black transition-transform duration-500 origin-left ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                     }`} />
                 </Link>
@@ -276,10 +285,15 @@ export default function Navbar() {
                       <Link
                         href={link.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`text-[36px] font-bold tracking-tighter transition-colors ${isActive ? "text-black" : "text-foreground-muted"
+                        className={`text-[36px] font-bold tracking-tighter transition-colors flex items-center justify-between ${isActive ? "text-black" : "text-foreground-muted"
                           }`}
                       >
-                        {link.name}
+                        <span>{link.name}</span>
+                        {link.href === "/compare" && compareList.length > 0 && (
+                          <span className="bg-black text-white text-sm px-2.5 py-0.5 rounded-full font-bold">
+                            {compareList.length}
+                          </span>
+                        )}
                       </Link>
                     </motion.div>
                   );

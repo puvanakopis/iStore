@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional, List, Union
 from datetime import datetime
 
 
@@ -27,13 +27,58 @@ class ProductReview(BaseModel):
     created_at: Optional[datetime] = None
 
 
+class BodySpecs(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    dimensions: Optional[str] = None
+    weight: Optional[str] = None
+    build: Optional[str] = None
+
+
+class DisplaySpecs(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    type: Optional[str] = None
+    size: Optional[str] = None
+    resolution: Optional[str] = None
+
+
+class MainCameraSpecs(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    type: Optional[str] = None
+    megapixels: Optional[str] = None
+    video: Optional[str] = None
+
+
+class SelfieCameraSpecs(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    megapixels: Optional[str] = None
+    video: Optional[str] = None
+
+
+class BatterySpecs(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    type: Optional[str] = None
+    charging: Optional[str] = None
+
+
+class PlatformSpecs(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    chip: Optional[str] = None
+    os: Optional[str] = None
+
+
 class ProductSpecifications(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
     finish: Optional[str] = None
     capacity: Optional[str] = None
-    display: Optional[str] = None
     chip: Optional[str] = None
     camera: Optional[str] = None
-    battery: Optional[str] = None
+
+    body: Optional[BodySpecs] = None
+    display: Optional[Union[DisplaySpecs, str]] = None
+    main_camera: Optional[MainCameraSpecs] = Field(default=None, alias="mainCamera")
+    selfie_camera: Optional[SelfieCameraSpecs] = Field(default=None, alias="selfieCamera")
+    battery: Optional[Union[BatterySpecs, str]] = None
+    platform: Optional[PlatformSpecs] = None
 
 
 class ProductCreate(BaseModel):

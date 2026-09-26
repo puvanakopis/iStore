@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import ProductImage from './_components/ProductImage';
 import ProductDetails from './_components/ProductDetails';
+import ProductTabs from './_components/ProductTabs';
 import Link from 'next/link';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 import ProductGrid from '../../shop/_components/ProductGrid';
@@ -46,11 +47,23 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                             { icon: 'bolt', title: 'Efficiency', description: 'Long lasting utility with optimized power management.' },
                         ],
                     specifications: [
-                        { label: 'Finish', value: data.specifications?.finish || data.colors?.map(c => c.name).join(', ') || 'N/A' },
-                        { label: 'Capacity', value: data.specifications?.capacity || data.storage?.map(s => s.size).join(', ') || 'N/A' },
-                        { label: 'Display', value: data.specifications?.display || 'N/A' },
-                        { label: 'Chip', value: data.specifications?.chip || 'N/A' },
-                    ],
+                        { label: 'Processor / Chip', value: data.specifications?.platform?.chip || data.specifications?.chip || '' },
+                        { label: 'Display Size', value: (typeof data.specifications?.display === 'object' ? data.specifications?.display?.size : '') || '' },
+                        { label: 'Display Type', value: (typeof data.specifications?.display === 'object' ? data.specifications?.display?.type : (typeof data.specifications?.display === 'string' ? data.specifications?.display : '')) || '' },
+                        { label: 'Display Resolution', value: (typeof data.specifications?.display === 'object' ? data.specifications?.display?.resolution : '') || '' },
+                        { label: 'Main Camera', value: data.specifications?.main_camera?.megapixels || data.specifications?.mainCamera?.megapixels || data.specifications?.camera || '' },
+                        { label: 'Main Camera Type', value: data.specifications?.main_camera?.type || data.specifications?.mainCamera?.type || '' },
+                        { label: 'Main Camera Video', value: data.specifications?.main_camera?.video || data.specifications?.mainCamera?.video || '' },
+                        { label: 'Selfie Camera', value: data.specifications?.selfie_camera?.megapixels || data.specifications?.selfieCamera?.megapixels || '' },
+                        { label: 'Selfie Camera Video', value: data.specifications?.selfie_camera?.video || data.specifications?.selfieCamera?.video || '' },
+                        { label: 'Battery Type', value: (typeof data.specifications?.battery === 'object' ? data.specifications?.battery?.type : (typeof data.specifications?.battery === 'string' ? data.specifications?.battery : '')) || '' },
+                        { label: 'Charging', value: (typeof data.specifications?.battery === 'object' ? data.specifications?.battery?.charging : '') || '' },
+                        { label: 'Dimensions', value: data.specifications?.body?.dimensions || '' },
+                        { label: 'Weight', value: data.specifications?.body?.weight || '' },
+                        { label: 'Build', value: data.specifications?.body?.build || '' },
+                        { label: 'Finish', value: data.specifications?.finish || data.colors?.map(c => c.name).join(', ') || '' },
+                        { label: 'Capacity', value: data.specifications?.capacity || data.storage?.map(s => s.size).join(', ') || '' },
+                    ].filter(item => Boolean(item.value && item.value.trim() !== '')),
                     reviews: data.reviews && data.reviews.length > 0
                         ? data.reviews.map(r => ({ rating: r.rating, text: r.comment, author: r.name }))
                         : [
@@ -126,12 +139,17 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                         }
                         return <ProductImage images={currentImages.length > 0 ? currentImages : [product.images[0]]} productName={product.name} />;
                     })()}
-                    <ProductDetails 
-                        product={product} 
-                        selectedColor={selectedColor} 
-                        onColorSelect={setSelectedColor} 
+                    <ProductDetails
+                        product={product}
+                        selectedColor={selectedColor}
+                        onColorSelect={setSelectedColor}
                     />
                 </div>
+            </section>
+
+            {/* Product Information Tabs (Description, Specifications, Reviews) */}
+            <section className="max-w-7xl mx-auto px-6 md:px-12 mt-20 pt-16 border-t border-border">
+                <ProductTabs product={product} />
             </section>
 
             {/* Related Products Section */}

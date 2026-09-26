@@ -22,7 +22,7 @@ ORDER_ROUTE_PATTERN = re.compile(
 PRODUCT_ROUTE_PATTERN = re.compile(
     r"\b(search|find|browse|product|products|iphone|ipad|mac|price|spec|specs?|"
     r"recommend|trending|available|show me|list|catalog|detail|details|explain|"
-    r"tell me about|what are|colors?|storage)\b",
+    r"tell me about|what are|colors?|storage|compare|comparison|versus|vs)\b",
     re.IGNORECASE,
 )
 PRODUCT_FLOW_MARKERS = re.compile(

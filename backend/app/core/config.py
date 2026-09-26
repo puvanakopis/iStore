@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     MONGODB_URL: str
     DATABASE_NAME: str = "istore_db"
 
+    # Frontend URL
+    FRONTEND_URL: str = "http://localhost:3000"
+
     # OTP
     OTP_EXPIRE_MINUTES: int = 10
 
@@ -28,8 +31,6 @@ class Settings(BaseSettings):
     # Groq only
     GROQ_API_KEY: Optional[str] = None
 
-    # Model settings (locked to Groq)
-    # Prefer llama-3.1-8b-instant — higher rate limits than 70b models on free tier.
     MODEL_PROVIDER: str = "groq"
     MODEL_NAME: str = Field(
         default="openai/gpt-oss-120b",
