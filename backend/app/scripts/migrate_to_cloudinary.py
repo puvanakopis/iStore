@@ -6,9 +6,17 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 APP_DIR = os.path.dirname(SCRIPT_DIR)
 BACKEND_DIR = os.path.dirname(APP_DIR)
-for p in [BACKEND_DIR, APP_DIR]:
-    if p not in sys.path:
+venv_site = os.path.join(BACKEND_DIR, ".venv", "Lib", "site-packages")
+for p in [BACKEND_DIR, APP_DIR, venv_site]:
+    if os.path.exists(p) and p not in sys.path:
         sys.path.insert(0, p)
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(BACKEND_DIR, ".env"))
+    load_dotenv(".env")
+except Exception:
+    pass
 
 from motor.motor_asyncio import AsyncIOMotorClient
 import certifi

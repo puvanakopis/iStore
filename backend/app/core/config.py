@@ -1,17 +1,26 @@
+import os
+from pathlib import Path
 from typing import Optional
 
 from pydantic_settings import BaseSettings
 from pydantic import AliasChoices, ConfigDict, Field
 
+_BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+_ENV_FILE_PATHS = [
+    str(_BACKEND_DIR / ".env"),
+    str(_BACKEND_DIR.parent / ".env"),
+    ".env",
+]
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "iStore API"
-    SECRET_KEY: str
+    SECRET_KEY: str = "istore-secret-key"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Database
-    MONGODB_URL: str
+    MONGODB_URL: str = "mongodb://localhost:27017"
     DATABASE_NAME: str = "istore_db"
 
     # OTP
@@ -47,7 +56,7 @@ class Settings(BaseSettings):
     USE_MOCK_EMAIL: bool = True
 
     model_config = ConfigDict(
-        env_file=".env",
+        env_file=_ENV_FILE_PATHS,
         extra="ignore",
         populate_by_name=True,
     )
