@@ -25,4 +25,10 @@ async def close_mongo_connection():
 
 
 def get_db():
+    if db_config.db is None or db_config.client is None:
+        db_config.client = AsyncIOMotorClient(
+            settings.MONGODB_URL,
+            tlsCAFile=certifi.where()
+        )
+        db_config.db = db_config.client[settings.DATABASE_NAME]
     return db_config.db

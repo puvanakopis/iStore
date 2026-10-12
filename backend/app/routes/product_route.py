@@ -22,7 +22,10 @@ async def upload_image(file: UploadFile = File(...)):
     file_extension = os.path.splitext(file.filename)[1]
     unique_filename = f"{uuid.uuid4()}{file_extension}"
     
-    upload_dir = "uploads"
+    upload_dir = os.environ.get(
+        "UPLOAD_DIR",
+        "uploads" if os.access(".", os.W_OK) else "/tmp/uploads"
+    )
     os.makedirs(upload_dir, exist_ok=True)
     filepath = os.path.join(upload_dir, unique_filename)
     
@@ -32,7 +35,7 @@ async def upload_image(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Could not save file: {str(e)}")
         
-    return {"url": f"http://localhost:8000/uploads/{unique_filename}"}
+    return {"url": f"/uploads/{unique_filename}"}
 
 
 @router.post("/", dependencies=[Depends(role_required("admin"))])

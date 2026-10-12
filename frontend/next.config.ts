@@ -1,23 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // Use standalone only when explicitly requested (e.g. Docker builds)
+  ...(process.env.BUILD_STANDALONE === "true" ? { output: "standalone" } : {}),
   images: {
     remotePatterns: [
       {
-        protocol: "http",
-        hostname: "localhost",
-        port: "8000",
-        pathname: "/uploads/**",
-      },
-      {
         protocol: "https",
-        hostname: "lh3.googleusercontent.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "i.pravatar.cc",
+        hostname: "**",
         pathname: "/**",
       },
       {
@@ -26,8 +16,30 @@ const nextConfig: NextConfig = {
         port: "8000",
         pathname: "/**",
       },
-
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "8000",
+        pathname: "/**",
+      },
     ],
+  },
+  async rewrites() {
+    const backendUrl = process.env.BACKEND_URL;
+    if (backendUrl && !backendUrl.startsWith("/")) {
+      const cleanBackendUrl = backendUrl.replace(/\/$/, "");
+      return [
+        {
+          source: "/api/:path*",
+          destination: `${cleanBackendUrl}/api/:path*`,
+        },
+        {
+          source: "/uploads/:path*",
+          destination: `${cleanBackendUrl}/uploads/:path*`,
+        },
+      ];
+    }
+    return [];
   },
 };
 

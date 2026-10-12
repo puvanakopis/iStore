@@ -49,3 +49,5 @@ next-env.d.ts
 # Misc
 *.pem
 *.key
+*.docx
+*CV*

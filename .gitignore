@@ -1,0 +1,33 @@
+# Node dependencies & Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Python cache & virtual environments
+__pycache__/
+*.py[oc]
+.venv/
+.pytest_cache/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.docx
+*CV*
