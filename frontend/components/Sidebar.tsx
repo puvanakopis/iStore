@@ -3,6 +3,7 @@
 import { User, ShoppingBag, Heart, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 const menuItems = [
   { icon: User, label: "Personal Info", href: "/profile" },
@@ -13,6 +14,7 @@ const menuItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { logout } = useAuth();
 
   return (
     <aside className="w-full lg:w-72 flex flex-col gap-8 h-fit lg:sticky lg:top-32">
@@ -72,7 +74,10 @@ export default function Sidebar() {
 
       {/* Support / Secondary */}
       <div className="mt-auto pt-8 border-t border-border flex flex-col gap-2">
-        <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all duration-300 w-full group">
+        <button
+          onClick={logout}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all duration-300 w-full group cursor-pointer text-left"
+        >
           <div className="w-8 h-8 rounded-lg bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors">
             <LogOut size={16} className="text-red-500" />
           </div>
