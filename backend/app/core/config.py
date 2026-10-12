@@ -38,6 +38,12 @@ class Settings(BaseSettings):
 
     API_BASE_URL: str = "http://localhost:8000"
 
+    # Cloudinary Image Storage
+    CLOUDINARY_CLOUD_NAME: Optional[str] = None
+    CLOUDINARY_API_KEY: Optional[str] = None
+    CLOUDINARY_API_SECRET: Optional[str] = None
+    CLOUDINARY_URL: Optional[str] = None
+
     USE_MOCK_EMAIL: bool = True
 
     model_config = ConfigDict(

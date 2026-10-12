@@ -33,6 +33,9 @@ Deploying frontend and backend as separate Vercel projects gives you independent
    - `SMTP_PASSWORD`: Your Gmail App Password
    - `EMAILS_FROM_EMAIL`: Your email address
    - `EMAILS_FROM_NAME`: `iStore`
+   - `CLOUDINARY_CLOUD_NAME`: Your Cloudinary cloud name
+   - `CLOUDINARY_API_KEY`: Your Cloudinary API key
+   - `CLOUDINARY_API_SECRET`: Your Cloudinary API secret
    - `FRONTEND_URL`: URL of your frontend once deployed (e.g. `https://istore-frontend.vercel.app`)
 5. Click **Deploy**.
 6. Once deployed, copy your backend URL: e.g. `https://istore-backend.vercel.app`. Test it by visiting `https://istore-backend.vercel.app/api/health`.
@@ -58,7 +61,7 @@ Deploy both Frontend and Backend together under a single Vercel project using th
 
 1. Go to [Vercel Dashboard](https://vercel.com/new) and import the `iStore` repository.
 2. Keep the **Root Directory** as `./` (the root).
-3. Add all the backend environment variables (`MONGODB_URL`, `SECRET_KEY`, `GROQ_API_KEY`, etc.) and set:
+3. Add all the backend environment variables (`MONGODB_URL`, `SECRET_KEY`, `GROQ_API_KEY`, Cloudinary variables, etc.) and set:
    - `NEXT_PUBLIC_API_URL`: Leave empty or set to your deployment URL (requests to `/api/*` and `/uploads/*` are automatically routed by Vercel to the FastAPI serverless functions).
 4. Click **Deploy**.
 
@@ -71,6 +74,9 @@ Deploy both Frontend and Backend together under a single Vercel project using th
 | `MONGODB_URL` | Backend | Cloud MongoDB Atlas URI with TLS enabled |
 | `DATABASE_NAME` | Backend | Database name (e.g. `istore_db`) |
 | `SECRET_KEY` | Backend | Secret key used for JWT signing |
+| `CLOUDINARY_CLOUD_NAME` | Backend | Cloudinary Cloud Name for persistent image uploads |
+| `CLOUDINARY_API_KEY` | Backend | Cloudinary API Key |
+| `CLOUDINARY_API_SECRET` | Backend | Cloudinary API Secret |
 | `GROQ_API_KEY` | Backend | API Key from console.groq.com |
 | `SMTP_USER` & `SMTP_PASSWORD` | Backend | Credentials for email dispatch |
 | `NEXT_PUBLIC_API_URL` | Frontend | Base URL of the backend API |

@@ -6,7 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.core.database import get_db
 from app.middleware.auth_middleware import role_required
 from app.schemas.product_schema import ProductCreate, ProductUpdate, SearchResponse
-from app.services import product_service
+from app.services import product_service, cloudinary_service
 from app.core.security import get_current_user
 from datetime import datetime
 from typing import Optional, List
@@ -19,23 +19,16 @@ async def upload_image(file: UploadFile = File(...)):
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
     
-    file_extension = os.path.splitext(file.filename)[1]
-    unique_filename = f"{uuid.uuid4()}{file_extension}"
-    
-    upload_dir = os.environ.get(
-        "UPLOAD_DIR",
-        "uploads" if os.access(".", os.W_OK) else "/tmp/uploads"
-    )
-    os.makedirs(upload_dir, exist_ok=True)
-    filepath = os.path.join(upload_dir, unique_filename)
-    
     try:
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        url, public_id = cloudinary_service.upload_image(
+            file.file,
+            folder="istore/products",
+            filename=file.filename
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Could not save file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Could not upload image: {str(e)}")
         
-    return {"url": f"/uploads/{unique_filename}"}
+    return {"url": url, "public_id": public_id}
 
 
 @router.post("/", dependencies=[Depends(role_required("admin"))])
