@@ -174,11 +174,146 @@ async def update_product(db: AsyncIOMotorDatabase, product_id: str, data):
 
 
 async def delete_product(db: AsyncIOMotorDatabase, product_id: str):
+    # Find product before deletion to clean up associated Cloudinary images
+    product = await db["products"].find_one({"_id": product_id})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
     result = await db["products"].delete_one({"_id": product_id})
-    
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Product not found")
-    
+
     await db["likes"].delete_many({"product_id": product_id})
-    
+
+    # Asynchronously / gracefully clean up images from Cloudinary
+    try:
+        from app.services import cloudinary_service
+        if cloudinary_service.is_cloudinary_configured():
+            if product.get("imageSrc"):
+                cloudinary_service.delete_image_by_url(product["imageSrc"])
+            for color in product.get("colors") or []:
+                for img_url in color.get("images") or []:
+                    cloudinary_service.delete_image_by_url(img_url)
+    except Exception as e:
+        print(f"Warning: Cloudinary image cleanup error for product {product_id}: {e}")
+
     return {"msg": "Product deleted"}
+
+
+async def migrate_all_product_images_to_cloudinary(db: AsyncIOMotorDatabase):
+    """
+    Scans all products in MongoDB for local upload images (e.g. /uploads/filename.png),
+    uploads them to Cloudinary, and updates the database records with permanent Cloudinary URLs.
+    """
+    import os
+    from app.services import cloudinary_service
+
+    if not cloudinary_service.is_cloudinary_configured():
+        raise HTTPException(
+            status_code=400,
+            detail="Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in your environment."
+        )
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    backend_dir = os.path.dirname(os.path.dirname(current_dir))
+    upload_dirs = [
+        "uploads",
+        os.path.join(backend_dir, "uploads"),
+        os.environ.get("UPLOAD_DIR", "uploads"),
+        "/tmp/uploads"
+    ]
+
+    def find_local_file(src: str) -> Optional[str]:
+        if not src:
+            return None
+        filename = os.path.basename(src.split("?")[0])
+        if not filename:
+            return None
+        for udir in upload_dirs:
+            candidate = os.path.join(udir, filename)
+            if os.path.exists(candidate) and os.path.isfile(candidate):
+                return candidate
+        return None
+
+    migrated_products = 0
+    migrated_images = 0
+    failed_images = 0
+
+    cursor = db["products"].find({})
+    async for product in cursor:
+        product_id = product["_id"]
+        updated_fields = {}
+        product_changed = False
+
+        # Migrate main imageSrc
+        main_src = product.get("imageSrc", "")
+        if main_src and "cloudinary.com" not in main_src:
+            local_path = find_local_file(main_src)
+            if local_path:
+                c_url, _ = cloudinary_service.upload_local_file(local_path, folder="istore/products")
+                if c_url:
+                    updated_fields["imageSrc"] = c_url
+                    migrated_images += 1
+                    product_changed = True
+                else:
+                    failed_images += 1
+            elif main_src.startswith("http://") or main_src.startswith("https://"):
+                c_url, _ = cloudinary_service.upload_from_url(main_src, folder="istore/products")
+                if c_url:
+                    updated_fields["imageSrc"] = c_url
+                    migrated_images += 1
+                    product_changed = True
+
+        # Migrate color variant images
+        colors = product.get("colors") or []
+        colors_updated = False
+        new_colors = []
+        for color in colors:
+            color_copy = dict(color)
+            color_images = color.get("images") or []
+            new_color_images = []
+            for img in color_images:
+                if img and "cloudinary.com" not in img:
+                    local_path = find_local_file(img)
+                    if local_path:
+                        c_url, _ = cloudinary_service.upload_local_file(local_path, folder="istore/products")
+                        if c_url:
+                            new_color_images.append(c_url)
+                            migrated_images += 1
+                            colors_updated = True
+                        else:
+                            new_color_images.append(img)
+                            failed_images += 1
+                    elif img.startswith("http://") or img.startswith("https://"):
+                        c_url, _ = cloudinary_service.upload_from_url(img, folder="istore/products")
+                        if c_url:
+                            new_color_images.append(c_url)
+                            migrated_images += 1
+                            colors_updated = True
+                        else:
+                            new_color_images.append(img)
+                    else:
+                        new_color_images.append(img)
+                else:
+                    new_color_images.append(img)
+            color_copy["images"] = new_color_images
+            new_colors.append(color_copy)
+
+        if colors_updated:
+            updated_fields["colors"] = new_colors
+            product_changed = True
+
+        if product_changed:
+            updated_fields["updated_at"] = datetime.utcnow()
+            await db["products"].update_one(
+                {"_id": product_id},
+                {"$set": updated_fields}
+            )
+            migrated_products += 1
+
+    return {
+        "status": "success",
+        "migrated_products": migrated_products,
+        "migrated_images": migrated_images,
+        "failed_images": failed_images,
+    }

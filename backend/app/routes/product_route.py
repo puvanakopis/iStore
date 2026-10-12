@@ -31,6 +31,38 @@ async def upload_image(file: UploadFile = File(...)):
     return {"url": url, "public_id": public_id}
 
 
+@router.post("/upload-multiple", dependencies=[Depends(role_required("admin"))])
+async def upload_multiple_images(files: List[UploadFile] = File(...)):
+    uploaded = []
+    for f in files:
+        if not f.content_type or not f.content_type.startswith("image/"):
+            continue
+        try:
+            url, public_id = cloudinary_service.upload_image(
+                f.file,
+                folder="istore/products",
+                filename=f.filename
+            )
+            uploaded.append({"url": url, "public_id": public_id, "filename": f.filename})
+        except Exception as e:
+            print(f"Error uploading {f.filename}: {e}")
+    return {"urls": [item["url"] for item in uploaded], "items": uploaded}
+
+
+@router.delete("/image", dependencies=[Depends(role_required("admin"))])
+async def delete_image_from_cloudinary(url_or_id: str = Query(..., description="Cloudinary image URL or public_id")):
+    deleted = cloudinary_service.delete_image_by_url(url_or_id) or cloudinary_service.delete_image(url_or_id)
+    if not deleted:
+        raise HTTPException(status_code=400, detail="Could not delete image from Cloudinary or image not found")
+    return {"msg": "Image deleted successfully"}
+
+
+@router.post("/migrate-images", dependencies=[Depends(role_required("admin"))])
+async def migrate_images_to_cloudinary(db: AsyncIOMotorDatabase = Depends(get_db)):
+    """Admin endpoint: migrates all existing product images stored locally to Cloudinary."""
+    return await product_service.migrate_all_product_images_to_cloudinary(db)
+
+
 @router.post("/", dependencies=[Depends(role_required("admin"))])
 async def create_product(
     data: ProductCreate,

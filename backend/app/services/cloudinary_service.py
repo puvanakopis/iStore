@@ -1,9 +1,10 @@
 import os
 import uuid
 import shutil
+import re
 import cloudinary
 import cloudinary.uploader
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List, Dict, Any
 from app.core.config import settings
 
 _configured = False
@@ -43,10 +44,29 @@ def configure_cloudinary():
         _configured = True
 
 
+def extract_public_id(url_or_id: str) -> Optional[str]:
+    """
+    Extracts the Cloudinary public_id from a Cloudinary URL or returns the id as-is.
+    Example:
+    https://res.cloudinary.com/demo/image/upload/v1570979139/istore/products/sample.jpg
+    -> istore/products/sample
+    """
+    if not url_or_id or not isinstance(url_or_id, str):
+        return None
+    if "cloudinary.com" not in url_or_id:
+        return url_or_id if not url_or_id.startswith("http") and not url_or_id.startswith("/") else None
+
+    # Matches /upload/(?:v\d+/)?(.*?)(?:\.[a-zA-Z0-9]+)?$
+    match = re.search(r"/upload/(?:v\d+/)?(.*?)(?:\.[a-zA-Z0-9]+)?$", url_or_id)
+    if match:
+        return match.group(1)
+    return None
+
+
 def upload_image(file_obj, folder: str = "istore/products", filename: Optional[str] = None) -> Tuple[str, Optional[str]]:
     """
-    Upload an image file to Cloudinary.
-    Falls back gracefully to local storage if Cloudinary credentials are not configured.
+    Upload an image file object (UploadFile, bytes, or file-like buffer) to Cloudinary.
+    Falls back gracefully to local storage if Cloudinary is not configured.
     Returns: (image_url, public_id)
     """
     if is_cloudinary_configured():
@@ -62,7 +82,7 @@ def upload_image(file_obj, folder: str = "istore/products", filename: Optional[s
         secure_url = result.get("secure_url") or result.get("url")
         return secure_url, result.get("public_id")
 
-    # Fallback to local / tmp storage if Cloudinary is not configured
+    # Local / serverless disk fallback
     upload_dir = os.environ.get(
         "UPLOAD_DIR",
         "uploads" if os.access(".", os.W_OK) else "/tmp/uploads"
@@ -84,6 +104,48 @@ def upload_image(file_obj, folder: str = "istore/products", filename: Optional[s
     return f"/uploads/{unique_name}", None
 
 
+def upload_local_file(filepath: str, folder: str = "istore/products") -> Tuple[Optional[str], Optional[str]]:
+    """Uploads a file from local disk to Cloudinary."""
+    if not os.path.exists(filepath):
+        return None, None
+    if not is_cloudinary_configured():
+        return None, None
+
+    configure_cloudinary()
+    try:
+        result = cloudinary.uploader.upload(
+            filepath,
+            folder=folder,
+            resource_type="image",
+            overwrite=True,
+        )
+        return result.get("secure_url") or result.get("url"), result.get("public_id")
+    except Exception as e:
+        print(f"Failed to upload local file {filepath} to Cloudinary: {e}")
+        return None, None
+
+
+def upload_from_url(image_url: str, folder: str = "istore/products") -> Tuple[Optional[str], Optional[str]]:
+    """Uploads an image directly from an external URL to Cloudinary."""
+    if not is_cloudinary_configured() or not image_url:
+        return None, None
+    if "cloudinary.com" in image_url:
+        return image_url, extract_public_id(image_url)
+
+    configure_cloudinary()
+    try:
+        result = cloudinary.uploader.upload(
+            image_url,
+            folder=folder,
+            resource_type="image",
+            overwrite=True,
+        )
+        return result.get("secure_url") or result.get("url"), result.get("public_id")
+    except Exception as e:
+        print(f"Failed to upload from URL {image_url} to Cloudinary: {e}")
+        return None, None
+
+
 def delete_image(public_id: str) -> bool:
     """Delete an image from Cloudinary by its public_id."""
     if not is_cloudinary_configured() or not public_id:
@@ -91,7 +153,15 @@ def delete_image(public_id: str) -> bool:
     try:
         configure_cloudinary()
         res = cloudinary.uploader.destroy(public_id)
-        return res.get("result") == "ok"
+        return res.get("result") in ["ok", "not found"]
     except Exception as e:
-        print(f"Cloudinary deletion error: {e}")
+        print(f"Cloudinary deletion error for {public_id}: {e}")
         return False
+
+
+def delete_image_by_url(url: str) -> bool:
+    """Extract public_id from Cloudinary URL and delete it."""
+    public_id = extract_public_id(url)
+    if public_id:
+        return delete_image(public_id)
+    return False
