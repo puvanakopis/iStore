@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight,
-  ArrowLeft,
   X,
   Plus,
   Check,
@@ -57,8 +56,8 @@ export default function ComparePage() {
       typeof specs.display === "object"
         ? specs.display?.size
         : typeof specs.display === "string"
-        ? specs.display
-        : "";
+          ? specs.display
+          : "";
 
     const displayType =
       typeof specs.display === "object"
@@ -108,8 +107,8 @@ export default function ComparePage() {
       typeof specs.battery === "object"
         ? specs.battery?.type
         : typeof specs.battery === "string"
-        ? specs.battery
-        : "Built-in rechargeable lithium-ion battery";
+          ? specs.battery
+          : "Built-in rechargeable lithium-ion battery";
 
     const charging =
       typeof specs.battery === "object"
@@ -226,20 +225,10 @@ export default function ComparePage() {
     <main className="min-h-screen bg-white pt-24 md:pt-32 pb-32">
       {/* Breadcrumb & Top Section */}
       <section className="max-w-7xl mx-auto px-6 md:px-12 mb-8">
-        <nav className="flex items-center gap-2 text-sm text-foreground-muted mb-6">
-          <Link href="/shop" className="hover:text-primary transition-colors flex items-center gap-1">
-            <ArrowLeft size={14} />
-            Back to Shop
-          </Link>
-          <ChevronRight size={14} />
-          <span className="text-foreground font-medium">Compare Models</span>
-        </nav>
-
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-black/10">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="bg-black/5 text-black text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles size={12} />
                 Specification Matrix
               </span>
             </div>
@@ -256,11 +245,10 @@ export default function ComparePage() {
             {compareList.length > 1 && (
               <button
                 onClick={() => setHighlightDifferences(!highlightDifferences)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                  highlightDifferences
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${highlightDifferences
                     ? "bg-black text-white border-black shadow-sm"
                     : "bg-white text-black border-black/15 hover:bg-black/5"
-                }`}
+                  }`}
               >
                 <SlidersHorizontal size={14} />
                 <span>{highlightDifferences ? "Highlighting differences" : "Highlight differences"}</span>
@@ -382,11 +370,10 @@ export default function ComparePage() {
                                 [product.id]: cIdx,
                               }))
                             }
-                            className={`w-5 h-5 rounded-full border transition-all ${
-                              colorIdx === cIdx
+                            className={`w-5 h-5 rounded-full border transition-all ${colorIdx === cIdx
                                 ? "ring-2 ring-black ring-offset-2 scale-110 border-transparent"
                                 : "border-black/20 hover:scale-105"
-                            }`}
+                              }`}
                             style={{ backgroundColor: c.hex }}
                             title={c.name}
                           />
@@ -421,11 +408,10 @@ export default function ComparePage() {
                                 [product.id]: s.size,
                               }))
                             }
-                            className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
-                              activeStorage === s.size
+                            className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all ${activeStorage === s.size
                                 ? "bg-black text-white border-black"
                                 : "bg-black/5 text-black/70 border-transparent hover:bg-black/10"
-                            }`}
+                              }`}
                           >
                             {s.size}
                           </button>
@@ -843,9 +829,8 @@ function SpecRow({
 
   return (
     <div
-      className={`grid grid-cols-1 lg:grid-cols-5 p-4 md:p-6 transition-colors ${
-        isHighlighted ? "bg-amber-500/[0.07]" : "hover:bg-black/[0.01]"
-      }`}
+      className={`grid grid-cols-1 lg:grid-cols-5 p-4 md:p-6 transition-colors ${isHighlighted ? "bg-amber-500/[0.07]" : "hover:bg-black/[0.01]"
+        }`}
     >
       {/* Spec Label */}
       <div className="lg:col-span-1 font-semibold text-xs text-black/50 uppercase tracking-wider mb-2 lg:mb-0 flex items-center gap-2">

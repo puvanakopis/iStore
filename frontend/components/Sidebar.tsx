@@ -41,14 +41,14 @@ export default function Sidebar() {
                 key={item.label}
                 href={item.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group whitespace-nowrap ${isActive
-                    ? "bg-black text-white shadow-lg shadow-black/5"
-                    : "text-foreground-secondary hover:bg-black/5"
+                  ? "bg-black text-white shadow-lg shadow-black/5"
+                  : "text-foreground-secondary hover:bg-black/5"
                   }`}
               >
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-300 ${isActive
-                      ? "bg-white/10"
-                      : "bg-black/5 group-hover:bg-black/10"
+                    ? "bg-white/10"
+                    : "bg-black/5 group-hover:bg-black/10"
                     }`}
                 >
                   <Icon
