@@ -7,10 +7,12 @@ import { ProductProvider } from "@/contexts/ProductContext";
 import { CheckoutProvider } from "@/contexts/CheckoutContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { SearchProvider } from "@/contexts/SearchContext";
+import { CompareProvider } from "@/contexts/CompareContext";
 
 import ChatbotGate from "@/route/ChatbotGate";
 import RouteGate from "@/route/RouteGate";
 import RoleLayoutGate from "@/route/RoleLayoutGate";
+import FloatingCompareBar from "@/components/FloatingCompareBar";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -38,14 +40,17 @@ export default function RootLayout({
           <RouteGate>
             <ProductProvider>
               <WishlistProvider>
-                <CheckoutProvider>
-                  <SearchProvider>
-                    <RoleLayoutGate>
-                      {children}
-                    </RoleLayoutGate>
-                    <ChatbotGate />
-                  </SearchProvider>
-                </CheckoutProvider>
+                <CompareProvider>
+                  <CheckoutProvider>
+                    <SearchProvider>
+                      <RoleLayoutGate>
+                        {children}
+                      </RoleLayoutGate>
+                      <FloatingCompareBar />
+                      <ChatbotGate />
+                    </SearchProvider>
+                  </CheckoutProvider>
+                </CompareProvider>
               </WishlistProvider>
             </ProductProvider>
           </RouteGate>

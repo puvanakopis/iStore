@@ -1,4 +1,6 @@
+import json
 from fastapi import APIRouter, Depends, Request, HTTPException, Header
+from fastapi.responses import StreamingResponse
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
@@ -7,7 +9,7 @@ from jose import jwt
 from app.core.database import get_db
 from app.core.config import settings
 from app.agent.tools.auth import current_user_var, chat_history_var, groq_api_key_var
-from app.agent.main_agent import run_agent
+from app.agent.main_agent import run_agent, stream_agent
 
 router = APIRouter()
 
@@ -88,3 +90,60 @@ async def chat_with_agent(
         chat_history_var.reset(history_token)
         current_user_var.reset(token_token)
         groq_api_key_var.reset(groq_key_token)
+
+
+@router.post("/chat/stream")
+async def chat_with_agent_stream(
+    payload: ChatRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+    x_groq_api_key: Optional[str] = Header(None)
+):
+    api_key = (x_groq_api_key or "").strip() or (settings.GROQ_API_KEY or "").strip()
+    if not api_key:
+        raise HTTPException(
+            status_code=400,
+            detail="GROQ_API_KEY is not set. Please set a valid Groq API key in backend .env or Chatbot settings."
+        )
+
+    # Convert chat history to LangChain format
+    langchain_history = []
+    for msg in payload.history:
+        if msg.role == "user":
+            langchain_history.append(HumanMessage(content=msg.content))
+        elif msg.role == "assistant":
+            langchain_history.append(AIMessage(content=msg.content))
+
+    async def event_generator():
+        # Set context variables for this generator run
+        token_token = current_user_var.set(current_user)
+        groq_key_token = groq_api_key_var.set(api_key)
+        history_token = chat_history_var.set(langchain_history)
+
+        try:
+            async for chunk in stream_agent(payload.message, langchain_history):
+                yield f"data: {json.dumps(chunk)}\n\n"
+            yield f"data: {json.dumps({'type': 'done'})}\n\n"
+        except Exception as e:
+            error_text = str(e)
+            if "429" in error_text or "rate_limit" in error_text.lower():
+                msg = "The AI service is temporarily rate-limited. Please wait a moment."
+            elif "401" in error_text or "invalid_api_key" in error_text.lower():
+                msg = "Invalid Groq API Key. Please update your key in Chatbot settings."
+            else:
+                msg = f"Agent Error: {error_text}"
+            yield f"data: {json.dumps({'type': 'error', 'content': msg})}\n\n"
+        finally:
+            chat_history_var.reset(history_token)
+            current_user_var.reset(token_token)
+            groq_api_key_var.reset(groq_key_token)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
+    )

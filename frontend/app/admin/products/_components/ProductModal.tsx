@@ -20,6 +20,7 @@ export default function ProductModal({
   product,
 }: ProductModalProps) {
   // Form State
+  // Form State
   const [formData, setFormData] = useState({
     title: "",
     subtitle: "",
@@ -29,8 +30,35 @@ export default function ProductModal({
     specifications: {
       finish: "",
       capacity: "",
-      display: "",
       chip: "",
+      camera: "",
+      body: {
+        dimensions: "",
+        weight: "",
+        build: "",
+      },
+      display: {
+        type: "",
+        size: "",
+        resolution: "",
+      },
+      main_camera: {
+        type: "",
+        megapixels: "",
+        video: "",
+      },
+      selfie_camera: {
+        megapixels: "",
+        video: "",
+      },
+      battery: {
+        type: "",
+        charging: "",
+      },
+      platform: {
+        chip: "",
+        os: "",
+      },
     },
     colors: [] as ProductColor[],
     storage: [] as ProductStorage[],
@@ -38,7 +66,6 @@ export default function ProductModal({
     reviews: [] as any[],
   });
 
-  // Temporary States for adding list items
   // Temporary States for adding list items
   const [newColor, setNewColor] = useState<{ name: string; hex: string; images: string[] }>({ name: "", hex: "#000000", images: [] });
   const [newStorage, setNewStorage] = useState({ size: "", price: "" });
@@ -102,6 +129,14 @@ export default function ProductModal({
 
   useEffect(() => {
     if (product) {
+      const specs = product.specifications as any;
+      const displayType = typeof specs?.display === "object" ? specs.display?.type || "" : (specs?.display || "");
+      const displaySize = typeof specs?.display === "object" ? specs.display?.size || "" : "";
+      const displayRes = typeof specs?.display === "object" ? specs.display?.resolution || "" : "";
+
+      const batteryType = typeof specs?.battery === "object" ? specs.battery?.type || "" : (specs?.battery || "");
+      const batteryCharging = typeof specs?.battery === "object" ? specs.battery?.charging || "" : "";
+
       setFormData({
         title: product.title,
         subtitle: product.subtitle || "",
@@ -109,10 +144,37 @@ export default function ProductModal({
         imageSrc: product.imageSrc,
         imageAlt: product.imageAlt || "",
         specifications: {
-          finish: product.specifications?.finish || "",
-          capacity: product.specifications?.capacity || "",
-          display: product.specifications?.display || "",
-          chip: product.specifications?.chip || "",
+          finish: specs?.finish || "",
+          capacity: specs?.capacity || "",
+          chip: specs?.platform?.chip || specs?.chip || "",
+          camera: specs?.main_camera?.megapixels || specs?.mainCamera?.megapixels || specs?.camera || "",
+          body: {
+            dimensions: specs?.body?.dimensions || "",
+            weight: specs?.body?.weight || "",
+            build: specs?.body?.build || "",
+          },
+          display: {
+            type: displayType,
+            size: displaySize,
+            resolution: displayRes,
+          },
+          main_camera: {
+            type: specs?.main_camera?.type || specs?.mainCamera?.type || "",
+            megapixels: specs?.main_camera?.megapixels || specs?.mainCamera?.megapixels || specs?.camera || "",
+            video: specs?.main_camera?.video || specs?.mainCamera?.video || "",
+          },
+          selfie_camera: {
+            megapixels: specs?.selfie_camera?.megapixels || specs?.selfieCamera?.megapixels || "",
+            video: specs?.selfie_camera?.video || specs?.selfieCamera?.video || "",
+          },
+          battery: {
+            type: batteryType,
+            charging: batteryCharging,
+          },
+          platform: {
+            chip: specs?.platform?.chip || specs?.chip || "",
+            os: specs?.platform?.os || "",
+          },
         },
         colors: product.colors || [],
         storage: product.storage || [],
@@ -129,8 +191,35 @@ export default function ProductModal({
         specifications: {
           finish: "",
           capacity: "",
-          display: "",
           chip: "",
+          camera: "",
+          body: {
+            dimensions: "",
+            weight: "",
+            build: "",
+          },
+          display: {
+            type: "",
+            size: "",
+            resolution: "",
+          },
+          main_camera: {
+            type: "",
+            megapixels: "",
+            video: "",
+          },
+          selfie_camera: {
+            megapixels: "",
+            video: "",
+          },
+          battery: {
+            type: "",
+            charging: "",
+          },
+          platform: {
+            chip: "",
+            os: "",
+          },
         },
         colors: [],
         storage: [],
@@ -298,7 +387,7 @@ export default function ProductModal({
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="p-6 space-y-8 flex-1 overflow-y-auto">
-                
+
                 {/* 1. Basic Information */}
                 <div>
                   <h3 className="text-lg font-bold text-gray-950 mb-4 pb-2 border-b border-gray-100">
@@ -406,7 +495,7 @@ export default function ProductModal({
                           )}
                         </div>
                       </div>
-                      
+
                       {uploadError && (
                         <p className="text-sm text-red-600 mt-2">{uploadError}</p>
                       )}
@@ -433,79 +522,337 @@ export default function ProductModal({
                 {/* 2. Technical Specifications */}
                 <div>
                   <h3 className="text-lg font-bold text-gray-950 mb-4 pb-2 border-b border-gray-100">
-                    2. Specifications
+                    2. Technical Specifications
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Finish
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.specifications.finish}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            specifications: { ...formData.specifications, finish: e.target.value },
-                          })
-                        }
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                        placeholder="e.g., Natural Titanium, Blue Titanium"
-                      />
-                    </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Capacity
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.specifications.capacity}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            specifications: { ...formData.specifications, capacity: e.target.value },
-                          })
-                        }
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                        placeholder="e.g., 256GB, 512GB, 1TB"
-                      />
+                  {/* General / Core */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">General</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Finish / Colors</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.finish}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: { ...formData.specifications, finish: e.target.value },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., Natural Titanium, Black, White"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Capacity</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.capacity}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: { ...formData.specifications, capacity: e.target.value },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., 256GB, 512GB, 1TB"
+                        />
+                      </div>
                     </div>
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Display Info
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.specifications.display}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            specifications: { ...formData.specifications, display: e.target.value },
-                          })
-                        }
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                        placeholder="e.g., 6.7-inch Super Retina XDR display"
-                      />
+                  {/* Body & Dimensions */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Body</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Dimensions</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.body.dimensions}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                body: { ...formData.specifications.body, dimensions: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., 163.0 x 77.6 x 8.25 mm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Weight</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.body.weight}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                body: { ...formData.specifications.body, weight: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., 227 grams"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Build</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.body.build}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                body: { ...formData.specifications.body, build: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., Titanium frame, Ceramic Shield"
+                        />
+                      </div>
                     </div>
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Processor / Chip
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.specifications.chip}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            specifications: { ...formData.specifications, chip: e.target.value },
-                          })
-                        }
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-                        placeholder="e.g., A17 Pro chip"
-                      />
+                  {/* Display */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Display</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Display Size</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.display.size}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                display: { ...formData.specifications.display, size: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., 6.9-inch"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Display Type</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.display.type}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                display: { ...formData.specifications.display, type: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., Super Retina XDR OLED, 120Hz"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Resolution</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.display.resolution}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                display: { ...formData.specifications.display, resolution: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., 2868 x 1320 pixels at 460 ppi"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Main Camera */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Main Camera</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Camera Type / System</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.main_camera.type}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                main_camera: { ...formData.specifications.main_camera, type: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., Pro Triple Camera System"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Megapixels & Lenses</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.main_camera.megapixels}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                main_camera: { ...formData.specifications.main_camera, megapixels: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., 48MP Fusion + 48MP Ultra Wide + 12MP Telephoto"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Video Recording</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.main_camera.video}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                main_camera: { ...formData.specifications.main_camera, video: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., 4K Dolby Vision at 120 fps"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Selfie Camera */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Selfie Camera</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Megapixels & Lens</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.selfie_camera.megapixels}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                selfie_camera: { ...formData.specifications.selfie_camera, megapixels: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., 12MP TrueDepth (f/1.9) with Autofocus"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Video Recording</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.selfie_camera.video}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                selfie_camera: { ...formData.specifications.selfie_camera, video: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., 4K Dolby Vision at 60 fps"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Battery & Charging */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Battery & Charging</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Battery Type / Capacity</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.battery.type}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                battery: { ...formData.specifications.battery, type: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., Li-Ion 4,685 mAh, non-removable"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Charging Details</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.battery.charging}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                battery: { ...formData.specifications.battery, charging: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., USB-C fast charging, 25W MagSafe, 15W Qi2"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Platform / Hardware */}
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Platform</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Processor / Chip</label>
+                        <input
+                          type="text"
+                          value={formData.specifications.platform.chip}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              specifications: {
+                                ...formData.specifications,
+                                platform: { ...formData.specifications.platform, chip: e.target.value },
+                              },
+                            })
+                          }
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                          placeholder="e.g., Apple A18 Pro (6-core CPU, 6-core GPU)"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -515,7 +862,7 @@ export default function ProductModal({
                   <h3 className="text-lg font-bold text-gray-950 mb-4 pb-2 border-b border-gray-100">
                     3. Product Colors ({formData.colors.length})
                   </h3>
-                  
+
                   {/* Current Colors list */}
                   <div className="flex flex-col gap-2 mb-4">
                     {formData.colors.map((color, index) => (
