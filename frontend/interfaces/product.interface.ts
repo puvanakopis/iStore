@@ -22,13 +22,52 @@ export interface ProductReview {
   created_at?: string;
 }
 
+export interface BodySpecs {
+  dimensions?: string;
+  weight?: string;
+  build?: string;
+}
+
+export interface DisplaySpecs {
+  type?: string;
+  size?: string;
+  resolution?: string;
+}
+
+export interface MainCameraSpecs {
+  type?: string;
+  megapixels?: string;
+  video?: string;
+}
+
+export interface SelfieCameraSpecs {
+  megapixels?: string;
+  video?: string;
+}
+
+export interface BatterySpecs {
+  type?: string;
+  charging?: string;
+}
+
+export interface PlatformSpecs {
+  chip?: string;
+  os?: string;
+}
+
 export interface ProductSpecifications {
   finish?: string;
   capacity?: string;
-  display?: string;
   chip?: string;
   camera?: string;
-  battery?: string;
+  display?: string | DisplaySpecs;
+  battery?: string | BatterySpecs;
+  body?: BodySpecs;
+  main_camera?: MainCameraSpecs;
+  mainCamera?: MainCameraSpecs;
+  selfie_camera?: SelfieCameraSpecs;
+  selfieCamera?: SelfieCameraSpecs;
+  platform?: PlatformSpecs;
 }
 
 export interface Product {

@@ -8,6 +8,7 @@ import StarRating from "@/components/StarRating";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import { useProducts } from "@/contexts/ProductContext";
+import { useCompare } from "@/contexts/CompareContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -40,10 +41,36 @@ export default function ShopProductCard({
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { startCheckout } = useCheckout();
   const { products } = useProducts();
+  const { isInCompare, toggleCompare } = useCompare();
   const { user } = useAuth();
   const router = useRouter();
 
   const inWishlist = isInWishlist(id.toString());
+  const inCompare = isInCompare(id.toString());
+
+  const handleCompareClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const fullProduct = products.find((p) => p.id === id.toString());
+    if (fullProduct) {
+      toggleCompare(fullProduct);
+    } else {
+      // Fallback
+      toggleCompare({
+        id: id.toString(),
+        title,
+        price,
+        imageSrc,
+        imageAlt: imageAlt || title,
+        colors: [],
+        storage: [],
+        features: [],
+        reviews: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+  };
 
   const handleWishlistClick = async () => {
     if (onToggleWishlist) {
@@ -106,20 +133,24 @@ export default function ShopProductCard({
           </span>
         )}
 
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            handleWishlistClick();
-          }}
-          className={`absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full transition-all duration-300 ${inWishlist ? "text-red-500 hover:bg-white" : "text-gray-400 hover:text-red-500 hover:bg-white"
-            }`}
-        >
-          <Heart
-            size={18}
-            fill={inWishlist ? "currentColor" : (isHovered ? "currentColor" : "none")}
-            className={isHovered || inWishlist ? "scale-110" : ""}
-          />
-        </button>
+        {/* Top actions */}
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              handleWishlistClick();
+            }}
+            className={`p-2.5 bg-white/80 backdrop-blur-md rounded-full transition-all duration-300 ${inWishlist ? "text-red-500 hover:bg-white" : "text-gray-400 hover:text-red-500 hover:bg-white"
+              }`}
+          >
+            <Heart
+              size={18}
+              fill={inWishlist ? "currentColor" : (isHovered ? "currentColor" : "none")}
+              className={isHovered || inWishlist ? "scale-110" : ""}
+            />
+          </button>
+        </div>
 
         <Link
           href={`/products/${id}`}
@@ -129,8 +160,8 @@ export default function ShopProductCard({
             src={imageSrc}
             alt={imageAlt || title}
             className={`w-full h-full object-contain transition-all duration-700 ${isHovered
-                ? "scale-110 rotate-2"
-                : "scale-140 rotate-0"
+              ? "scale-110 rotate-2"
+              : "scale-140 rotate-0"
               }`}
           />
         </Link>
@@ -140,10 +171,13 @@ export default function ShopProductCard({
           className={`absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 transition-all duration-300 ${isHovered ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
             }`}
         >
-          <button className="bg-white text-gray-900 px-5 py-3 rounded-xl text-xs font-bold hover:bg-gray-900 hover:text-white transition-colors flex items-center gap-2 whitespace-nowrap">
+          <Link
+            href={`/products/${id}`}
+            className="bg-white text-gray-900 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-gray-900 hover:text-white transition-colors flex items-center gap-1.5 whitespace-nowrap shadow-sm"
+          >
             <Eye size={14} />
             Quick View
-          </button>
+          </Link>
         </div>
       </div>
 

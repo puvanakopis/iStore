@@ -33,7 +33,10 @@ def send_email(email_to: str, subject_template: str = "", html_template: str = "
         smtp_options["password"] = settings.SMTP_PASSWORD
 
     response = message.send(to=email_to, render=context, smtp=smtp_options)
-    logger.info(f"send email result: {response}")
+    if response.error:
+        logger.error(f"Failed to send email to {email_to}: {response.error}")
+    else:
+        logger.info(f"Email successfully sent to {email_to}: {response}")
 
 
 

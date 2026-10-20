@@ -13,6 +13,7 @@ export default function SignInVisual() {
           alt="Premium iPhone Display"
           src="/bg_image.png"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           priority
           className="object-cover"
         />

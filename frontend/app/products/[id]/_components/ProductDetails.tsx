@@ -1,14 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Minus, Plus, Heart, Truck, RotateCcw, Cpu, Camera, Zap, ShieldCheck, Share2, Box } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Minus, Plus, Heart, Truck, RotateCcw, ShieldCheck, Share2, Box, Layers, Check, ArrowRight } from 'lucide-react';
 import StarRating from '@/components/StarRating';
 import { useRouter } from 'next/navigation';
 import { useCheckout } from '@/contexts/CheckoutContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWishlist } from '@/contexts/WishlistContext';
-
+import { useCompare } from '@/contexts/CompareContext';
+import { useProducts } from '@/contexts/ProductContext';
+import Link from 'next/link';
 
 interface Product {
     id: string;
@@ -31,27 +33,39 @@ interface ProductDetailsProps {
     onColorSelect: (colorName: string) => void;
 }
 
-type TabType = 'description' | 'specifications' | 'reviews';
-
 export default function ProductDetails({ product, selectedColor, onColorSelect }: ProductDetailsProps) {
     const router = useRouter();
     const { user } = useAuth();
     const { startCheckout } = useCheckout();
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const { toggleCompare, isInCompare, addToCompare } = useCompare();
+    const { products } = useProducts();
     const inWishlist = isInWishlist(product.id);
+    const inCompare = isInCompare(product.id);
 
-    const [activeTab, setActiveTab] = useState<TabType>('description');
-    const [selectedStorage, setSelectedStorage] = useState(product.storage[0].size);
-    const [quantity, setQuantity] = useState(1);
-
-    const getFeatureIcon = (icon: string) => {
-        switch (icon) {
-            case 'rocket_launch': return <Cpu className="w-8 h-8 text-primary" />;
-            case 'photo_camera': return <Camera className="w-8 h-8 text-primary" />;
-            case 'bolt': return <Zap className="w-8 h-8 text-primary" />;
-            default: return null;
+    const handleCompare = () => {
+        const fullProduct = products.find((p) => p.id === product.id);
+        if (fullProduct) {
+            toggleCompare(fullProduct);
+        } else {
+            toggleCompare({
+                id: product.id,
+                title: product.name,
+                subtitle: product.tagline,
+                price: product.price,
+                imageSrc: product.imageSrc || '',
+                colors: product.colors.map(c => ({ name: c.name, hex: c.value, images: c.images || [] })),
+                storage: product.storage,
+                features: product.features,
+                reviews: [],
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            });
         }
     };
+
+    const [selectedStorage, setSelectedStorage] = useState(product.storage[0].size);
+    const [quantity, setQuantity] = useState(1);
 
     const incrementQty = () => setQuantity(prev => prev + 1);
     const decrementQty = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
@@ -229,11 +243,53 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
                         inWishlist ? 'border-red-100 text-red-500 bg-red-50/50' : 'border-border text-foreground-secondary'
                     }`}
                     onClick={handleFavorite}
+                    title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
                 >
                     <Heart className={`${inWishlist ? 'fill-red-500 text-red-500' : 'group-hover:fill-red-500 group-hover:text-red-500'} transition-colors`} size={24} />
                 </button>
+                <button
+                    className={`p-4 border rounded-full transition-all duration-300 hover:scale-110 group ${
+                        inCompare ? 'border-black bg-black text-white' : 'border-border text-foreground-secondary hover:bg-background-dim'
+                    }`}
+                    onClick={handleCompare}
+                    title={inCompare ? "Remove from comparison" : "Add to comparison"}
+                >
+                    {inCompare ? <Check size={24} /> : <Layers className="group-hover:rotate-6 transition-transform" size={24} />}
+                </button>
             </motion.div>
 
+            {/* Compare banner prompt */}
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.35 }}
+                className="bg-black/[0.03] border border-black/5 rounded-2xl p-4 flex items-center justify-between"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-black/5 flex items-center justify-center">
+                        <Layers size={18} className="text-black" />
+                    </div>
+                    <div>
+                        <p className="text-xs font-bold text-black">Compare with other models</p>
+                        <p className="text-[11px] text-black/50">Side-by-side specs, camera & battery</p>
+                    </div>
+                </div>
+                <Link
+                    href="/compare"
+                    onClick={() => {
+                        const fullProduct = products.find((p) => p.id === product.id);
+                        if (fullProduct && !inCompare) {
+                            addToCompare(fullProduct);
+                        }
+                    }}
+                    className="text-xs font-bold text-black hover:opacity-70 flex items-center gap-1 bg-white px-3.5 py-2 rounded-xl border border-black/10 shadow-sm transition-all"
+                >
+                    <span>Compare</span>
+                    <ArrowRight size={13} />
+                </Link>
+            </motion.div>
+
+            {/* Guarantee / Value props */}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -277,89 +333,6 @@ export default function ProductDetails({ product, selectedColor, onColorSelect }
                     </div>
                 </div>
             </motion.div>
-
-            {/* Tabs Section */}
-            <div className="pt-12">
-                <div className="flex border-b border-border mb-8 overflow-x-auto no-scrollbar scroll-smooth">
-                    {(['description', 'specifications', 'reviews'] as TabType[]).map((tab) => (
-                        <button
-                            key={tab}
-                            className={`pb-4 px-6 md:px-10 font-bold text-[13px] uppercase tracking-[0.15em] transition-all duration-300 border-b-2 whitespace-nowrap ${activeTab === tab
-                                ? 'text-primary border-primary'
-                                : 'text-foreground-muted hover:text-black border-transparent'
-                                }`}
-                            onClick={() => setActiveTab(tab)}
-                        >
-                            {tab}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Tab Content */}
-                <div className="min-h-[300px]">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={activeTab}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.4 }}
-                        >
-                            {activeTab === 'description' && (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {product.features.map((feature, index) => (
-                                        <div
-                                            key={index}
-                                            className="p-8 rounded-2xl bg-background-dim border border-border space-y-4 transition-all duration-300"
-                                        >
-                                            {getFeatureIcon(feature.icon)}
-                                            <h4 className="font-bold text-foreground text-lg">{feature.title}</h4>
-                                            <p className="text-foreground-secondary text-sm leading-relaxed">{feature.description}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {activeTab === 'specifications' && (
-                                <div className="max-w-2xl divide-y divide-border border-t border-b border-border">
-                                    {product.specifications.map((spec, index) => (
-                                        <div key={index} className="grid grid-cols-3 py-4">
-                                            <span className="font-bold text-foreground text-sm uppercase tracking-wider">{spec.label}</span>
-                                            <span className="col-span-2 text-foreground-secondary font-light">{spec.value}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {activeTab === 'reviews' && (
-                                <div className="space-y-6">
-                                    {product.reviews.map((review, index) => (
-                                        <div key={index} className="p-8 rounded-2xl bg-white border border-border">
-                                            <div className="flex items-center gap-1 mb-4 text-primary">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <span key={i} className={`text-xl ${i < review.rating ? 'fill-current text-primary' : 'text-border'}`}>★</span>
-                                                ))}
-                                            </div>
-                                            <p className="text-foreground italic text-lg mb-4 font-light leading-relaxed">{review.text}</p>
-                                            <span className="font-bold text-foreground text-sm uppercase tracking-wide">— {review.author}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </motion.div>
-                    </AnimatePresence>
-                </div>
-            </div>
-
-            <style jsx>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
         </div>
     );
 }

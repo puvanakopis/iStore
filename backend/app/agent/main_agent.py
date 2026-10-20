@@ -1,9 +1,10 @@
 import re
+import asyncio
 from langchain_classic.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import tool
-from typing import List, Any, Optional
+from typing import List, Any, Optional, AsyncGenerator, Dict
 
 from app.core.config import get_llm
 from app.agent.tools.auth import chat_history_var
@@ -22,7 +23,7 @@ ORDER_ROUTE_PATTERN = re.compile(
 PRODUCT_ROUTE_PATTERN = re.compile(
     r"\b(search|find|browse|product|products|iphone|ipad|mac|price|spec|specs?|"
     r"recommend|trending|available|show me|list|catalog|detail|details|explain|"
-    r"tell me about|what are|colors?|storage)\b",
+    r"tell me about|what are|colors?|storage|compare|comparison|versus|vs)\b",
     re.IGNORECASE,
 )
 PRODUCT_FLOW_MARKERS = re.compile(
@@ -222,3 +223,94 @@ async def run_agent(input_text: str, chat_history: List[Any] = None) -> str:
         if "talk_to_product_agent" in error_text:
             return await _run_specialist("product", input_text, chat_history)
         raise
+
+
+def _friendly_tool_status(tool_name: str) -> str:
+    """Return customer-friendly status messages for tool activities."""
+    mapping = {
+        "search_products": "Searching products...",
+        "list_products": "Browsing catalog...",
+        "get_product_details": "Fetching product details...",
+        "get_product_details_by_name": "Checking specifications...",
+        "get_recommended_products": "Finding recommendations...",
+        "get_trending_products": "Loading trending items...",
+        "compare_products": "Comparing products...",
+        "get_product_order_options": "Checking color & storage options...",
+        "place_product_order": "Processing your order...",
+        "order_product_by_name": "Setting up your order...",
+        "get_my_orders": "Retrieving your orders...",
+        "cancel_order": "Processing cancellation...",
+        "get_my_wishlist": "Checking wishlist...",
+        "add_item_to_wishlist": "Adding to wishlist...",
+        "remove_item_from_wishlist": "Updating wishlist...",
+        "clear_my_wishlist": "Clearing wishlist...",
+        "talk_to_product_agent": "Consulting Product Specialist...",
+        "talk_to_order_agent": "Connecting to Order Specialist...",
+        "talk_to_wishlist_agent": "Accessing Wishlist...",
+    }
+    return mapping.get(tool_name, "Consulting store assistant...")
+
+
+async def stream_agent(input_text: str, chat_history: List[Any] = None) -> AsyncGenerator[Dict[str, Any], None]:
+    """Streaming entrypoint that yields tokens and status events in real-time."""
+    if chat_history is None:
+        chat_history = []
+
+    route = detect_specialist_route(input_text, chat_history)
+    if route:
+        if route == "wishlist":
+            executor = get_wishlist_agent_executor()
+        elif route == "order":
+            executor = get_order_agent_executor()
+        elif route == "product":
+            executor = get_product_agent_executor()
+        else:
+            executor = get_main_agent_executor()
+    else:
+        executor = get_main_agent_executor()
+
+    streamed_chars = 0
+    try:
+        async for event in executor.astream_events(
+            {"input": input_text, "chat_history": chat_history},
+            version="v2"
+        ):
+            kind = event.get("event")
+            if kind == "on_chat_model_stream":
+                chunk = event.get("data", {}).get("chunk")
+                content = getattr(chunk, "content", None)
+                if content and isinstance(content, str):
+                    streamed_chars += len(content)
+                    yield {"type": "token", "content": content}
+            elif kind == "on_tool_start":
+                tool_name = event.get("name", "tool")
+                yield {"type": "status", "content": _friendly_tool_status(tool_name)}
+            elif kind == "on_chain_end" and event.get("name") == "AgentExecutor":
+                final_output = event.get("data", {}).get("output")
+                if streamed_chars == 0 and final_output and isinstance(final_output, str):
+                    # For tools with return_direct=True, smoothly stream output words
+                    words = final_output.split(" ")
+                    for i, word in enumerate(words):
+                        to_send = word if i == 0 else " " + word
+                        yield {"type": "token", "content": to_send}
+                        await asyncio.sleep(0.01)
+    except Exception as error:
+        error_text = str(error)
+        fallback_route = None
+        if "talk_to_order_agent" in error_text or "tool_use_failed" in error_text:
+            fallback_route = "order"
+        elif "talk_to_wishlist_agent" in error_text:
+            fallback_route = "wishlist"
+        elif "talk_to_product_agent" in error_text:
+            fallback_route = "product"
+
+        if fallback_route:
+            yield {"type": "status", "content": f"Connecting to {fallback_route} specialist..."}
+            fallback_res = await _run_specialist(fallback_route, input_text, chat_history)
+            words = fallback_res.split(" ")
+            for i, word in enumerate(words):
+                to_send = word if i == 0 else " " + word
+                yield {"type": "token", "content": to_send}
+                await asyncio.sleep(0.01)
+        else:
+            raise

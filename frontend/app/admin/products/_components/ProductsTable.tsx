@@ -19,10 +19,11 @@ export default function ProductsTable({
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProducts = products.filter(product => {
+    const chipText = (typeof product.specifications?.chip === 'string' ? product.specifications.chip : '') || product.specifications?.platform?.chip || '';
     const matchesSearch = 
       product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (product.subtitle && product.subtitle.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (product.specifications?.chip && product.specifications.chip.toLowerCase().includes(searchTerm.toLowerCase()));
+      (chipText && chipText.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesSearch;
   });
 
@@ -103,11 +104,14 @@ export default function ProductsTable({
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
                   <div className="space-y-0.5">
-                    {product.specifications?.chip && (
-                      <p><span className="font-medium">Chip:</span> {product.specifications.chip}</p>
+                    {((typeof product.specifications?.chip === 'string' ? product.specifications.chip : '') || product.specifications?.platform?.chip) && (
+                      <p><span className="font-medium">Chip:</span> {(typeof product.specifications?.chip === 'string' ? product.specifications.chip : '') || product.specifications?.platform?.chip}</p>
                     )}
                     {product.specifications?.display && (
-                      <p><span className="font-medium">Display:</span> {product.specifications.display}</p>
+                      <p><span className="font-medium">Display:</span> {typeof product.specifications.display === 'object' ? `${product.specifications.display.size || ''} ${product.specifications.display.type || ''}`.trim() : product.specifications.display}</p>
+                    )}
+                    {(product.specifications?.main_camera?.megapixels || product.specifications?.mainCamera?.megapixels || product.specifications?.camera) && (
+                      <p><span className="font-medium">Camera:</span> {product.specifications?.main_camera?.megapixels || product.specifications?.mainCamera?.megapixels || product.specifications?.camera}</p>
                     )}
                     {product.specifications?.capacity && (
                       <p><span className="font-medium">Cap:</span> {product.specifications.capacity}</p>

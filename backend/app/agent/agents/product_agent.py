@@ -7,37 +7,23 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from app.core.config import get_llm
 
 from app.agent.tools.product_tools import (
-
     list_products,
-
     search_products,
-
     get_product_details,
-
     get_product_details_by_name,
-
     get_recommended_products,
-
-    get_trending_products
-
+    get_trending_products,
+    compare_products,
 )
 
-
-
 PRODUCT_TOOLS = [
-
     list_products,
-
     search_products,
-
     get_product_details,
-
     get_product_details_by_name,
-
     get_recommended_products,
-
-    get_trending_products
-
+    get_trending_products,
+    compare_products,
 ]
 
 

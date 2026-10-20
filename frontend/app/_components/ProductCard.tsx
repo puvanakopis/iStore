@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Eye, ShoppingCart } from "lucide-react";
+import { Heart, Eye, ShoppingCart, Layers, Check } from "lucide-react";
 import Link from "next/link";
 import StarRating from "@/components/StarRating";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import { useProducts } from "@/contexts/ProductContext";
+import { useCompare } from "@/contexts/CompareContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -50,10 +51,35 @@ export default function ProductCard({
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { startCheckout } = useCheckout();
   const { products } = useProducts();
+  const { isInCompare, toggleCompare } = useCompare();
   const { user } = useAuth();
   const router = useRouter();
 
   const inWishlist = isInWishlist(id.toString());
+  const inCompare = isInCompare(id.toString());
+
+  const handleCompareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const fullProduct = products.find((p) => p.id === id.toString());
+    if (fullProduct) {
+      toggleCompare(fullProduct);
+    } else {
+      toggleCompare({
+        id: id.toString(),
+        title,
+        price,
+        imageSrc: imageSrc || (initialImages && initialImages[0]) || "",
+        imageAlt: imageAlt || title,
+        colors: colors || [],
+        storage: [],
+        features: [],
+        reviews: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+  };
 
   const currentImages =
     colors && colors.length > 0
@@ -152,31 +178,58 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Favorite Icon */}
-          <button
-            className={`absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full transition-all duration-300 shadow-sm ${inWishlist ? "text-red-500 hover:bg-white" : "text-gray-400 hover:text-red-500 hover:bg-white"
-              }`}
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              handleWishlistClick();
-            }}
-          >
-            <Heart
-              size={18}
-              fill={inWishlist ? "currentColor" : (isHovered ? "currentColor" : "none")}
-              className={isHovered || inWishlist ? "scale-110" : ""}
-            />
-          </button>
+          {/* Action Icons */}
+          <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+            <button
+              onClick={handleCompareClick}
+              title={inCompare ? "Remove from comparison" : "Add to comparison"}
+              className={`p-2.5 backdrop-blur-md rounded-full transition-all duration-300 shadow-sm ${inCompare
+                ? "bg-black text-white scale-105"
+                : "bg-white/80 text-gray-500 hover:text-black hover:bg-white"
+                }`}
+            >
+              {inCompare ? <Check size={16} strokeWidth={2.5} /> : <Layers size={16} />}
+            </button>
 
-          {/* View Details Overlay */}
+            <button
+              className={`p-2.5 bg-white/80 backdrop-blur-md rounded-full transition-all duration-300 shadow-sm ${inWishlist ? "text-red-500 hover:bg-white" : "text-gray-400 hover:text-red-500 hover:bg-white"
+                }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                handleWishlistClick();
+              }}
+            >
+              <Heart
+                size={18}
+                fill={inWishlist ? "currentColor" : (isHovered ? "currentColor" : "none")}
+                className={isHovered || inWishlist ? "scale-110" : ""}
+              />
+            </button>
+          </div>
+
+          {/* Quick Action Overlay */}
           <div
             className={`absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 transition-all duration-300 ${isHovered ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
               }`}
           >
-            <button className="bg-white text-gray-900 px-4 py-2 rounded-xl text-xs font-bold shadow-xl hover:bg-gray-900 hover:text-white transition-colors flex flex-row items-center justify-center gap-2 whitespace-nowrap">
-              <Eye size={14} />
-              <span>View Details</span>
+            <button
+              onClick={handleCompareClick}
+              className={`px-4 py-2 rounded-xl text-xs font-bold shadow-xl transition-colors flex items-center gap-1.5 whitespace-nowrap ${inCompare
+                ? "bg-black text-white"
+                : "bg-white text-gray-900 hover:bg-black hover:text-white"
+                }`}
+            >
+              {inCompare ? <Check size={13} /> : <Layers size={13} />}
+              <span>{inCompare ? "Compared" : "Compare"}</span>
+            </button>
+
+            <button
+              onClick={() => router.push(`/products/${id}`)}
+              className="bg-white text-gray-900 px-4 py-2 rounded-xl text-xs font-bold shadow-xl hover:bg-gray-900 hover:text-white transition-colors flex items-center gap-1.5 whitespace-nowrap"
+            >
+              <Eye size={13} />
+              <span>Details</span>
             </button>
           </div>
         </div>
