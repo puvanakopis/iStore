@@ -1,19 +1,39 @@
 "use client";
 
-import React from 'react';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
+import Image from "next/image";
 
 const Offers = () => {
   return (
-    <section className="relative w-full bg-white overflow-hidden py-24 md:py-32">
+    <section className="py-24 bg-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 md:px-12">
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16 md:mb-24">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-[32px] md:text-[56px] font-bold tracking-tight mb-4"
+          >
+            Special Offers.
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="text-foreground-secondary text-lg md:text-xl font-light"
+          >
+            Ways to save and get the most out of your upgrade.
+          </motion.p>
+        </div>
 
-        {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+        {/* Grid of 2 Offer Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-          {/* Card 1: Trade In */}
+          {/* Card 1: Trade-in */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -21,23 +41,22 @@ const Offers = () => {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="group relative bg-background-dim border border-border-100 rounded-2xl overflow-hidden transition-all duration-500 "
           >
-            {/* Inner content container */}
             <div className="relative h-[560px] md:h-[600px] flex flex-col items-center pt-12 md:pt-16 px-6 md:px-12 text-center">
 
               {/* Badge */}
               <div className="absolute top-6 left-6 z-10">
                 <span className="bg-black text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg">
-                  Limited Time
+                  Trade-In
                 </span>
               </div>
 
               <div className="z-10 flex-1 flex flex-col items-center">
                 <h3 className="text-[28px] md:text-[40px] font-bold tracking-tight mb-4 text-gray-900">
-                  iStore Trade In
+                  Upgrade and save.
                 </h3>
 
                 <p className="text-[16px] md:text-[18px] text-gray-500 font-light max-w-sm mb-6 leading-relaxed">
-                  Get <span className="font-semibold text-gray-900">Rs. 18,000–Rs. 65,000</span> in credit toward iPhone 16 Pro when you trade in a qualifying smartphone.
+                  Get <span className="font-semibold text-gray-900">up to $650</span> in credit when you trade in your current device for iPhone 16 Pro.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
@@ -57,6 +76,7 @@ const Offers = () => {
                     src="/iPhone_02.png"
                     alt="iPhone Trade In"
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-contain object-bottom transition-all duration-700 group-hover:scale-105 group-hover:translate-y-[-8px]"
                   />
                 </div>
@@ -110,6 +130,7 @@ const Offers = () => {
                     src="/iPhone_03.png"
                     alt="iStore Card"
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-contain object-bottom transition-all duration-700 group-hover:scale-105 group-hover:translate-y-[-8px]"
                   />
                 </div>

@@ -25,6 +25,7 @@ export default function LifestyleBanner() {
               src="/iPhone_04.png"
               alt="iPhone 16 Pro Lifestyle"
               fill
+              sizes="(max-width: 1280px) 100vw, 1280px"
               className="object-contain md:object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-1000"
               priority
             />

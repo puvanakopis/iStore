@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Database
-    MONGODB_URL: str
+    MONGODB_URL: str = "mongodb://localhost:27017"
     DATABASE_NAME: str = "istore_db"
 
     # Frontend URL
@@ -40,6 +40,14 @@ class Settings(BaseSettings):
     API_BASE_URL: str = "http://localhost:8000"
 
     USE_MOCK_EMAIL: bool = True
+
+    # Stripe
+    STRIPE_API_KEY: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("STRIPE_API_KEY", "STRIPE_SECRET_KEY"),
+    )
+    STRIPE_WEBHOOK_SECRET: Optional[str] = None
+    STRIPE_CURRENCY: str = "usd"
 
     model_config = ConfigDict(
         env_file=".env",

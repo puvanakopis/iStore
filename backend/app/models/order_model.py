@@ -20,9 +20,9 @@ class OrderShippingAddress(BaseModel):
 
 
 class OrderPaymentDetails(BaseModel):
-    cardholder: str
-    cardNumber: str  
-    expiry: str
+    cardholder: Optional[str] = None
+    cardNumber: Optional[str] = None
+    expiry: Optional[str] = None
 
 
 class OrderItem(BaseModel):
@@ -40,7 +40,7 @@ class Order(BaseModel):
     user_id: str
     customer_details: OrderCustomerDetails
     shipping_address: OrderShippingAddress
-    payment_details: OrderPaymentDetails
+    payment_details: Optional[OrderPaymentDetails] = None
     items: List[OrderItem]
     subtotal: float
     discount: float
@@ -50,6 +50,9 @@ class Order(BaseModel):
     promo_code: Optional[str] = None
     status: str = Field(default="Pending")
     payment: str = Field(default="Paid")
+    payment_method: Optional[str] = "stripe"
+    stripe_session_id: Optional[str] = None
+    stripe_payment_intent_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 

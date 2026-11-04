@@ -19,10 +19,10 @@ class OrderShippingAddressSchema(BaseModel):
 
 
 class OrderPaymentDetailsSchema(BaseModel):
-    cardholder: str
-    cardNumber: str
-    expiry: str
-    cvv: str  # We can accept CVV but won't save it in Order model/DB for compliance/mock purposes
+    cardholder: Optional[str] = None
+    cardNumber: Optional[str] = None
+    expiry: Optional[str] = None
+    cvv: Optional[str] = None
 
 
 class OrderItemSchema(BaseModel):
@@ -38,7 +38,7 @@ class OrderItemSchema(BaseModel):
 class OrderCreate(BaseModel):
     customer_details: OrderCustomerDetailsSchema
     shipping_address: OrderShippingAddressSchema
-    payment_details: OrderPaymentDetailsSchema
+    payment_details: Optional[OrderPaymentDetailsSchema] = None
     items: List[OrderItemSchema]
     subtotal: float
     discount: float
@@ -47,8 +47,11 @@ class OrderCreate(BaseModel):
     total: float
     promo_code: Optional[str] = None
     payment: Optional[str] = "Paid"
+    payment_method: Optional[str] = "stripe"
     status: Optional[str] = "Pending"
     user_id: Optional[str] = None
+    stripe_session_id: Optional[str] = None
+    stripe_payment_intent_id: Optional[str] = None
 
 
 class OrderOut(BaseModel):
@@ -65,6 +68,9 @@ class OrderOut(BaseModel):
     promo_code: Optional[str] = None
     status: Optional[str] = "Pending"
     payment: Optional[str] = "Paid"
+    payment_method: Optional[str] = "stripe"
+    stripe_session_id: Optional[str] = None
+    stripe_payment_intent_id: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -82,3 +88,6 @@ class OrderUpdate(BaseModel):
     promo_code: Optional[str] = None
     status: Optional[str] = None
     payment: Optional[str] = None
+    payment_method: Optional[str] = None
+    stripe_session_id: Optional[str] = None
+    stripe_payment_intent_id: Optional[str] = None

@@ -15,6 +15,11 @@ reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl="/auth/login"
 )
 
+reusable_oauth2_optional = OAuth2PasswordBearer(
+    tokenUrl="/auth/login",
+    auto_error=False
+)
+
 
 def create_access_token(subject: Union[str, Any], expires_delta: timedelta = None) -> str:
     if expires_delta:
@@ -58,3 +63,26 @@ async def get_current_user(
     user.pop("hashed_password", None)
     user["id"] = user["_id"]
     return user
+
+
+async def get_optional_current_user(
+    db: AsyncIOMotorDatabase = Depends(get_db),
+    token: Optional[str] = Depends(reusable_oauth2_optional)
+) -> Optional[dict]:
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        user_id: str = payload.get("sub")
+        if not user_id:
+            return None
+        user = await db["users"].find_one({"_id": user_id})
+        if user:
+            user.pop("hashed_password", None)
+            user["id"] = user["_id"]
+            return user
+    except Exception:
+        return None
+    return None
