@@ -17,17 +17,22 @@ async def get_next_order_id(db: AsyncIOMotorDatabase) -> str:
 
 async def create_order(db: AsyncIOMotorDatabase, user_id: str, order_in) -> dict:
     order_id = await get_next_order_id(db)
-    
+
+    payment_details_dict = None
+    if getattr(order_in, "payment_details", None):
+        card_num = getattr(order_in.payment_details, "cardNumber", "") or ""
+        payment_details_dict = {
+            "cardholder": getattr(order_in.payment_details, "cardholder", None),
+            "cardNumber": f"**** **** **** {card_num[-4:]}" if len(card_num) >= 4 else "****",
+            "expiry": getattr(order_in.payment_details, "expiry", None)
+        }
+
     order_data = {
         "_id": order_id,
         "user_id": user_id,
         "customer_details": order_in.customer_details.model_dump(),
         "shipping_address": order_in.shipping_address.model_dump(),
-        "payment_details": {
-            "cardholder": order_in.payment_details.cardholder,
-            "cardNumber": f"**** **** **** {order_in.payment_details.cardNumber[-4:]}" if len(order_in.payment_details.cardNumber) >= 4 else "****",
-            "expiry": order_in.payment_details.expiry
-        },
+        "payment_details": payment_details_dict,
         "items": [item.model_dump() for item in order_in.items],
         "subtotal": order_in.subtotal,
         "discount": order_in.discount,
@@ -37,12 +42,15 @@ async def create_order(db: AsyncIOMotorDatabase, user_id: str, order_in) -> dict
         "promo_code": order_in.promo_code,
         "status": getattr(order_in, "status", "Pending") or "Pending",
         "payment": getattr(order_in, "payment", "Paid") or "Paid",
+        "payment_method": getattr(order_in, "payment_method", "stripe") or "stripe",
+        "stripe_session_id": getattr(order_in, "stripe_session_id", None),
+        "stripe_payment_intent_id": getattr(order_in, "stripe_payment_intent_id", None),
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()
     }
-    
+
     await db["orders"].insert_one(order_data)
-    
+
     # Return formatted with string id alias matching Pydantic expectations
     order_data["id"] = order_data["_id"]
     return order_data
@@ -68,13 +76,13 @@ async def get_all_orders(db: AsyncIOMotorDatabase) -> list:
 
 async def update_order(db: AsyncIOMotorDatabase, order_id: str, data) -> dict:
     update_dict = {}
-    
+
     for field, val in data.model_dump(exclude_unset=True).items():
         if val is not None:
             update_dict[field] = val
 
     update_dict["updated_at"] = datetime.utcnow()
-    
+
     result = await db["orders"].find_one_and_update(
         {"_id": order_id},
         {"$set": update_dict},
@@ -82,7 +90,7 @@ async def update_order(db: AsyncIOMotorDatabase, order_id: str, data) -> dict:
     )
     if not result:
         raise HTTPException(status_code=404, detail="Order not found")
-        
+
     result["id"] = result["_id"]
     return result
 

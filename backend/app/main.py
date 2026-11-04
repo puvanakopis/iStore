@@ -1,13 +1,12 @@
 import sys
 import os
 import time
-import os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "app"))
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.routes import auth_route, product_route, order_route, user_route, wishlist_route, agent_route
+from app.routes import auth_route, product_route, order_route, user_route, wishlist_route, agent_route, payment_route
 from app.core.config import settings
 from app.core.database import connect_to_mongo, close_mongo_connection
 
@@ -50,6 +49,7 @@ app.include_router(order_route.router, prefix="/orders", tags=["orders"])
 app.include_router(user_route.router, prefix="/users", tags=["users"])
 app.include_router(wishlist_route.router, prefix="/wishlist", tags=["wishlist"])
 app.include_router(agent_route.router, prefix="/agent", tags=["agent"])
+app.include_router(payment_route.router, prefix="/payments", tags=["payments"])
 
 # Serve uploaded static files
 os.makedirs("uploads", exist_ok=True)
@@ -64,4 +64,3 @@ def read_root():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
