@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronDown, Tag, X } from "lucide-react";
 import Image from "next/image";
 import { CheckoutLineItem } from "../page";
+import { resolveImageSrc } from "@/utils/image";
 
 interface OrderSummaryProps {
   items: CheckoutLineItem[];
@@ -14,6 +15,7 @@ interface OrderSummaryProps {
   total: number;
   isLoading: boolean;
   onPlaceOrder: (promoCode: string | null, discount: number, total: number) => void;
+  buttonText?: string;
 }
 
 const PROMO_CODES: Record<string, number> = {
@@ -28,6 +30,7 @@ export const OrderSummary = ({
   shipping,
   isLoading,
   onPlaceOrder,
+  buttonText,
 }: OrderSummaryProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [promoInput, setPromoInput] = useState('');
@@ -88,10 +91,12 @@ export const OrderSummary = ({
           <div key={item.id} className="flex gap-4 pb-4 border-b border-border/50">
             <div className="relative w-16 h-16 bg-white rounded-sm overflow-hidden flex-shrink-0">
               <Image
-                src={item.imageSrc}
+                src={resolveImageSrc(item.imageSrc)}
                 alt={item.title}
                 fill
+                sizes="64px"
                 className="object-contain p-2"
+                unoptimized
               />
             </div>
             <div className="flex-grow min-w-0">
@@ -116,7 +121,7 @@ export const OrderSummary = ({
         <div className="flex justify-between text-sm text-foreground-secondary">
           <span>Subtotal</span>
           <span className="font-medium text-foreground">
-            {(subtotal)}
+            {subtotal.toLocaleString("en-IN")}
           </span>
         </div>
 
@@ -124,7 +129,7 @@ export const OrderSummary = ({
           <div className="flex justify-between text-sm text-foreground-secondary">
             <span>Discount ({appliedPromo})</span>
             <span className="font-medium text-green-600">
-              -{(discount)}
+              -{discount.toLocaleString("en-IN")}
             </span>
           </div>
         )}
@@ -132,21 +137,21 @@ export const OrderSummary = ({
         <div className="flex justify-between text-sm text-foreground-secondary">
           <span>Shipping</span>
           <span className="font-medium text-green-600">
-            {shipping === 0 ? "FREE" : (shipping)}
+            {shipping === 0 ? "FREE" : shipping.toLocaleString("en-IN")}
           </span>
         </div>
 
         <div className="flex justify-between text-sm text-foreground-secondary">
           <span>Estimated Tax (18% GST)</span>
           <span className="font-medium text-foreground">
-            {(activeTax)}
+            {activeTax.toLocaleString("en-IN")}
           </span>
         </div>
 
         <div className="pt-3 border-t border-border flex justify-between">
           <span className="text-base font-bold">Total</span>
           <span className="text-xl font-bold text-primary">
-            {(activeTotal)}
+            Rs. {activeTotal.toLocaleString("en-IN")}
           </span>
         </div>
       </div>
@@ -234,11 +239,11 @@ export const OrderSummary = ({
         {isLoading ? (
           <>
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            Processing...
+            Processing Payment...
           </>
         ) : (
           <>
-            Place Order
+            {buttonText || "Pay with Stripe"}
             <ArrowLeft
               className="rotate-180 group-hover:translate-x-1 transition-transform"
               size={18}

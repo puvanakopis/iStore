@@ -13,9 +13,18 @@ db_config = Database()
 
 async def connect_to_mongo():
     try:
+        motor_kwargs = {}
+        # Only use TLS/CA certificates if using Mongo Atlas (mongodb+srv) or TLS/SSL is explicitly requested
+        if (
+            "mongodb+srv://" in settings.MONGODB_URL
+            or "tls=true" in settings.MONGODB_URL.lower()
+            or "ssl=true" in settings.MONGODB_URL.lower()
+        ):
+            motor_kwargs["tlsCAFile"] = certifi.where()
+
         db_config.client = AsyncIOMotorClient(
             settings.MONGODB_URL,
-            tlsCAFile=certifi.where()
+            **motor_kwargs
         )
 
         db_config.db = db_config.client[settings.DATABASE_NAME]

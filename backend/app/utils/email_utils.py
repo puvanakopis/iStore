@@ -1,43 +1,107 @@
-import emails
-from emails.template import JinjaTemplate
-from app.core.config import settings
+import smtplib
+from email.message import EmailMessage
 import logging
+from typing import Dict, Any
+from app.core.config import settings
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def send_email(email_to: str, subject_template: str = "", html_template: str = "", context: dict = {}):
+def _log_fallback_otp(email_to: str, subject: str, otp: str):
+    msg = (
+        f"\n============================================================\n"
+        f"[iStore OTP - EMAIL DELIVERY FAILED]\n"
+        f"Recipient : {email_to}\n"
+        f"Subject   : {subject}\n"
+        f"OTP Code  : >>> {otp} <<< (Valid for 10 minutes)\n"
+        f"Action    : Use this OTP to proceed while resolving SMTP credentials.\n"
+        f"============================================================"
+    )
+    logger.warning(msg)
+    print(msg)
+
+
+def send_email(email_to: str, subject: str = "", html_content: str = "", context: Dict[str, Any] = {}):
+    otp = context.get("otp_code")
+
     if settings.USE_MOCK_EMAIL:
-        logger.info(f"MOCK EMAIL SENT TO {email_to}")
-        logger.info(f"Subject: {subject_template}")
-        logger.info(f"Context: {context}")
+        msg = (
+            f"\n============================================================\n"
+            f"[MOCK EMAIL - USE_MOCK_EMAIL=True]\n"
+            f"To        : {email_to}\n"
+            f"Subject   : {subject}\n"
+            f"OTP Code  : >>> {otp} <<<\n"
+            f"============================================================"
+        )
+        logger.info(msg)
+        print(msg)
         return
 
-    message = emails.Message(
-        subject=JinjaTemplate(subject_template),
-        html=JinjaTemplate(html_template),
-        mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
-    )
+    if not settings.SMTP_HOST or not settings.SMTP_PORT:
+        logger.warning(
+            f"SMTP is not configured (SMTP_HOST / SMTP_PORT missing). "
+            f"Email to {email_to} was not sent."
+        )
+        if otp:
+            _log_fallback_otp(email_to, subject, otp)
+        return
 
-    smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    from_name = settings.EMAILS_FROM_NAME or "iStore"
+    from_email = settings.EMAILS_FROM_EMAIL or settings.SMTP_USER or "noreply@istore.com"
+    msg["From"] = f"{from_name} <{from_email}>"
+    msg["To"] = email_to
+    msg.set_content(html_content, subtype="html")
 
-    if settings.SMTP_PORT == 587:
-        smtp_options["tls"] = True
-    elif settings.SMTP_PORT == 465:
-        smtp_options["ssl"] = True
+    server = None
+    try:
+        port = int(settings.SMTP_PORT)
+        if port == 465:
+            server = smtplib.SMTP_SSL(settings.SMTP_HOST, port, timeout=12)
+        else:
+            server = smtplib.SMTP(settings.SMTP_HOST, port, timeout=12)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
 
-    if settings.SMTP_USER:
-        smtp_options["user"] = settings.SMTP_USER
-    if settings.SMTP_PASSWORD:
-        smtp_options["password"] = settings.SMTP_PASSWORD
+        if settings.SMTP_USER and settings.SMTP_PASSWORD:
+            clean_password = settings.SMTP_PASSWORD.replace(" ", "").strip()
+            server.login(settings.SMTP_USER.strip(), clean_password)
 
-    response = message.send(to=email_to, render=context, smtp=smtp_options)
-    if response.error:
-        logger.error(f"Failed to send email to {email_to}: {response.error}")
-    else:
-        logger.info(f"Email successfully sent to {email_to}: {response}")
+        server.send_message(msg)
+        logger.info(f"Email successfully sent to {email_to}")
 
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(
+            f"SMTP Authentication Error ({e.smtp_code}): Username or password rejected by {settings.SMTP_HOST}. "
+            f"For Gmail (smtp.gmail.com), ensure 2-Step Verification is ON and generate a 16-character "
+            f"Google App Password from https://myaccount.google.com/apppasswords, NOT your normal Google password."
+        )
+        if otp:
+            _log_fallback_otp(email_to, subject, otp)
+
+    except smtplib.SMTPServerDisconnected as e:
+        logger.error(
+            f"SMTP connection unexpectedly closed by {settings.SMTP_HOST}:{settings.SMTP_PORT}. "
+            f"Note: Gmail automatically closes the socket when credentials are invalid (535 BadCredentials). "
+            f"Please verify SMTP_USER ('{settings.SMTP_USER}') matches the Google account that generated the "
+            f"16-character App Password for SMTP_PASSWORD in backend/.env."
+        )
+        if otp:
+            _log_fallback_otp(email_to, subject, otp)
+
+    except Exception as e:
+        logger.error(f"Failed to send email to {email_to}: {type(e).__name__}: {str(e)}")
+        if otp:
+            _log_fallback_otp(email_to, subject, otp)
+
+    finally:
+        if server:
+            try:
+                server.quit()
+            except Exception:
+                pass
 
 
 BASE_STYLE = """

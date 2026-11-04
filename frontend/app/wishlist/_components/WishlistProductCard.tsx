@@ -53,6 +53,7 @@ export default function WishlistProductCard({
               src={resolvedImageSrc}
               alt={imageAlt}
               fill
+              sizes="(max-width: 768px) 128px, 160px"
               unoptimized
               className={`object-contain transition-transform duration-700 ${isHovered ? "scale-110" : "scale-100"
                 }`}

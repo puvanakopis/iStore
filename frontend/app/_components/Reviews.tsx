@@ -258,6 +258,7 @@ export default function Reviews() {
                               src={review.avatar}
                               alt={review.name}
                               fill
+                              sizes="40px"
                               className="object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                           </div>

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from typing import List
+from typing import List, Optional
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, get_optional_current_user
 from app.schemas.order_schema import OrderCreate, OrderOut, OrderUpdate
 from app.services import order_service
 from app.middleware.auth_middleware import role_required
@@ -14,10 +14,10 @@ router = APIRouter()
 @router.post("/", response_model=OrderOut, status_code=status.HTTP_201_CREATED)
 async def create_order(
     order_in: OrderCreate,
-    current_user: dict = Depends(get_current_user),
+    current_user: Optional[dict] = Depends(get_optional_current_user),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    user_id = order_in.user_id or str(current_user["id"])
+    user_id = str(current_user["id"]) if current_user else (order_in.user_id or order_in.customer_details.email or "guest")
     return await order_service.create_order(db, user_id, order_in)
 
 

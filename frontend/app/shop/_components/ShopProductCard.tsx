@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ShoppingCart, Heart, Eye, Layers, Check } from "lucide-react";
+import { ShoppingCart, Heart, Eye } from "lucide-react";
 import Link from "next/link";
 import StarRating from "@/components/StarRating";
 import { useWishlist } from "@/contexts/WishlistContext";
@@ -11,13 +11,6 @@ import { useProducts } from "@/contexts/ProductContext";
 import { useCompare } from "@/contexts/CompareContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { resolveImageSrc } from "@/utils/image";
-
-interface ProductColor {
-  name: string;
-  hex: string;
-  images: string[];
-}
 
 interface ShopProductCardProps {
   id: number | string;
@@ -28,8 +21,6 @@ interface ShopProductCardProps {
   rating?: number;
   reviewCount?: number;
   isNew?: boolean;
-  subtitle?: string;
-  colors?: ProductColor[];
   onAddToCart?: () => void;
   onToggleWishlist?: () => void;
 }
@@ -40,15 +31,12 @@ export default function ShopProductCard({
   price,
   imageSrc,
   imageAlt,
-  rating = 4.8,
+  rating = 4.5,
   reviewCount = 120,
   isNew = false,
-  subtitle,
-  colors,
   onAddToCart,
   onToggleWishlist,
 }: ShopProductCardProps) {
-  const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { startCheckout } = useCheckout();
@@ -60,13 +48,6 @@ export default function ShopProductCard({
   const inWishlist = isInWishlist(id.toString());
   const inCompare = isInCompare(id.toString());
 
-  // Determine current display image (supports color variant switching)
-  const currentImages =
-    colors && colors.length > 0 && colors[selectedColorIndex]?.images?.length > 0
-      ? colors[selectedColorIndex].images
-      : [imageSrc];
-  const activeImage = resolveImageSrc(currentImages[0] || imageSrc);
-
   const handleCompareClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -74,13 +55,14 @@ export default function ShopProductCard({
     if (fullProduct) {
       toggleCompare(fullProduct);
     } else {
+      // Fallback
       toggleCompare({
         id: id.toString(),
         title,
         price,
-        imageSrc: activeImage,
+        imageSrc,
         imageAlt: imageAlt || title,
-        colors: colors || [],
+        colors: [],
         storage: [],
         features: [],
         reviews: [],
@@ -90,9 +72,7 @@ export default function ShopProductCard({
     }
   };
 
-  const handleWishlistClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleWishlistClick = async () => {
     if (onToggleWishlist) {
       onToggleWishlist();
       return;
@@ -106,7 +86,7 @@ export default function ShopProductCard({
         product_id: id.toString(),
         title,
         price,
-        imageSrc: activeImage,
+        imageSrc,
         imageAlt: imageAlt || title,
       });
     } catch (err) {
@@ -114,9 +94,7 @@ export default function ShopProductCard({
     }
   };
 
-  const handleCheckoutClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleCheckoutClick = () => {
     if (onAddToCart) {
       onAddToCart();
       return;
@@ -126,7 +104,7 @@ export default function ShopProductCard({
       return;
     }
     const fullProduct = products.find((p) => p.id === id.toString());
-    const color = fullProduct?.colors?.[selectedColorIndex]?.name || colors?.[selectedColorIndex]?.name || "Default";
+    const color = fullProduct?.colors?.[0]?.name || "Default";
     const storage = fullProduct?.storage?.[0]?.size || "Base";
     const currentPrice = fullProduct?.storage?.[0]?.price || price;
 
@@ -137,169 +115,114 @@ export default function ShopProductCard({
       storage,
       title,
       price: currentPrice,
-      imageSrc: activeImage,
+      imageSrc,
     });
   };
 
   return (
     <motion.div
-      className="group relative bg-[#f7f7f7] rounded-[24px] p-5 transition-all duration-300 border border-black/[0.04] hover:border-black/10 hover:shadow-[0_16px_36px_rgba(0,0,0,0.06)] hover:-translate-y-1 flex flex-col h-full justify-between overflow-hidden"
+      className="group bg-white rounded-sm p-4 transition-all duration-500 border border-border flex flex-col h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div>
-        {/* Top Badges & Actions */}
-        <div className="flex items-center justify-between mb-2 z-10 relative">
-          <div>
-            {isNew && (
-              <span className="inline-block bg-black text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
-                Latest
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1.5 ml-auto">
-            {/* Compare Toggle */}
-            <button
-              onClick={handleCompareClick}
-              title={inCompare ? "Remove from comparison" : "Add to comparison"}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 shadow-xs ${
-                inCompare
-                  ? "bg-black text-white scale-105"
-                  : "bg-white/80 backdrop-blur-md text-gray-500 hover:text-black hover:bg-white"
-              }`}
-            >
-              {inCompare ? <Check size={14} strokeWidth={2.5} /> : <Layers size={14} />}
-            </button>
-
-            {/* Wishlist Toggle */}
-            <button
-              onClick={handleWishlistClick}
-              title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
-              className={`w-9 h-9 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center transition-all duration-200 shadow-xs ${
-                inWishlist
-                  ? "text-red-500 hover:bg-white"
-                  : "text-gray-400 hover:text-red-500 hover:bg-white"
-              }`}
-            >
-              <Heart
-                size={16}
-                fill={inWishlist ? "currentColor" : "none"}
-                className={inWishlist ? "scale-110" : "transition-transform group-hover:scale-105"}
-              />
-            </button>
-          </div>
-        </div>
-
-        {/* Product Image Stage */}
-        <div className="relative aspect-square w-full rounded-[20px] flex items-center justify-center overflow-hidden mb-4 p-4">
-          <Link
-            href={`/products/${id}`}
-            className="block w-full h-full flex items-center justify-center"
-          >
-            <img
-              src={activeImage}
-              alt={imageAlt || title}
-              className={`max-w-full max-h-full object-contain transition-transform duration-700 ease-out drop-shadow-sm ${
-                isHovered ? "scale-108 rotate-1" : "scale-100 rotate-0"
-              }`}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "/iPhone_01.png";
-              }}
-            />
-          </Link>
-
-          {/* Quick View Hover Pill */}
-          <div
-            className={`absolute bottom-3 left-1/2 -translate-x-1/2 transition-all duration-300 pointer-events-none ${
-              isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-            }`}
-          >
-            <Link
-              href={`/products/${id}`}
-              className="pointer-events-auto bg-white/95 backdrop-blur-md text-gray-900 px-4 py-2 rounded-full text-xs font-semibold shadow-md hover:bg-black hover:text-white transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap"
-            >
-              <Eye size={13} />
-              <span>Quick View</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* Color Swatches (if available) */}
-        {colors && colors.length > 0 && (
-          <div className="flex items-center gap-1.5 mb-3 px-1">
-            {colors.slice(0, 5).map((color, index) => (
-              <button
-                key={color.name + index}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setSelectedColorIndex(index);
-                }}
-                className={`w-3.5 h-3.5 rounded-full transition-all duration-200 ${
-                  selectedColorIndex === index
-                    ? "ring-2 ring-offset-2 ring-black scale-110"
-                    : "ring-1 ring-black/10 hover:scale-110"
-                }`}
-                style={{ backgroundColor: color.hex }}
-                title={color.name}
-              />
-            ))}
-            {colors.length > 5 && (
-              <span className="text-[10px] text-gray-400 font-medium ml-1">
-                +{colors.length - 5}
-              </span>
-            )}
-          </div>
+      {/* Image Area */}
+      <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 mb-6">
+        {isNew && (
+          <span className="absolute top-2 left-2 z-10 bg-primary text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-tighter">
+            Latest
+          </span>
         )}
 
-        {/* Product Information */}
-        <div className="px-1 space-y-1">
-          {/* Rating */}
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <StarRating rating={rating} />
-            <span className="text-[11px] text-gray-500 font-medium">
-              ({reviewCount})
-            </span>
-          </div>
+        {/* Top actions */}
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
 
-          {/* Title */}
-          <Link href={`/products/${id}`} className="block">
-            <h3 className="text-[18px] md:text-[20px] font-bold text-gray-900 group-hover:text-black transition-colors line-clamp-1 tracking-tight">
-              {title}
-            </h3>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              handleWishlistClick();
+            }}
+            className={`p-2.5 bg-white/80 backdrop-blur-md rounded-full transition-all duration-300 ${inWishlist ? "text-red-500 hover:bg-white" : "text-gray-400 hover:text-red-500 hover:bg-white"
+              }`}
+          >
+            <Heart
+              size={18}
+              fill={inWishlist ? "currentColor" : (isHovered ? "currentColor" : "none")}
+              className={isHovered || inWishlist ? "scale-110" : ""}
+            />
+          </button>
+        </div>
+
+        <Link
+          href={`/products/${id}`}
+          className="block w-full h-full p-8"
+        >
+          <img
+            src={imageSrc}
+            alt={imageAlt || title}
+            className={`w-full h-full object-contain transition-all duration-700 ${isHovered
+              ? "scale-110 rotate-2"
+              : "scale-140 rotate-0"
+              }`}
+          />
+        </Link>
+
+        {/* Quick Actions Overlay */}
+        <div
+          className={`absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 transition-all duration-300 ${isHovered ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
+        >
+          <Link
+            href={`/products/${id}`}
+            className="bg-white text-gray-900 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-gray-900 hover:text-white transition-colors flex items-center gap-1.5 whitespace-nowrap shadow-sm"
+          >
+            <Eye size={14} />
+            Quick View
           </Link>
-
-          {/* Subtitle / Eyebrow */}
-          <p className="text-xs text-gray-500 font-normal line-clamp-1 pb-2">
-            {subtitle || "Apple Intelligence & Titanium Design"}
-          </p>
         </div>
       </div>
 
-      {/* Pricing & CTA Bottom Row */}
-      <div className="pt-4 px-1 border-t border-black/[0.04] flex items-center justify-between mt-auto">
-        <div className="flex flex-col">
-          <span className="text-[9px] uppercase font-bold tracking-widest text-gray-400">
-            Starting At
-          </span>
-          <span className="text-[20px] md:text-[22px] font-bold tracking-tight text-gray-900">
-            {price}
+      {/* Content Area */}
+      <div className="px-2 flex flex-col flex-grow">
+        <div className="flex items-center gap-2 mb-3">
+          <StarRating rating={rating} />
+          <span className="text-[12px] text-foreground-muted font-medium">
+            ({reviewCount})
           </span>
         </div>
 
-        <button
-          onClick={handleCheckoutClick}
-          className="flex items-center gap-1.5 bg-black text-white hover:bg-gray-800 active:scale-95 px-4 py-2.5 rounded-full text-xs font-semibold shadow-xs transition-all duration-200 group/btn"
-          title="Buy Now"
-        >
-          <ShoppingCart
-            size={14}
-            className="group-hover/btn:rotate-6 transition-transform"
-          />
-          <span>Buy Now</span>
-        </button>
+        <Link href={`/products/${id}`}>
+          <h3 className="text-[20px] font-bold text-gray-900 mb-1 group-hover:text-primary transition-colors line-clamp-1 tracking-tight">
+            {title}
+          </h3>
+        </Link>
+
+        <p className="text-foreground-secondary text-sm mb-5 font-light tracking-tight">
+          Apple Intelligence
+        </p>
+
+        <div className="flex items-center justify-between mt-auto">
+          <div className="flex flex-col">
+            <span className="text-[10px] text-foreground-muted font-bold uppercase tracking-widest">
+              Starting At
+            </span>
+            <span className="text-2xl font-bold text-gray-900 tracking-tighter">
+              {price}
+            </span>
+          </div>
+
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              handleCheckoutClick();
+            }}
+            className="w-10 h-10 bg-white border border-border text-gray-900 rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 group/btn overflow-hidden relative shadow-sm"
+          >
+            <ShoppingCart
+              size={18}
+              className="group-hover/btn:rotate-12 transition-transform"
+            />
+          </button>
+        </div>
       </div>
     </motion.div>
   );
